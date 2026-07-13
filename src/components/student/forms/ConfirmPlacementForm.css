@@ -1,0 +1,228 @@
+/* ── ConfirmPlacementForm styles ──────────────────────────────────────────── */
+
+.cp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Section blocks ─────────────────────────────────────────────────────── */
+
+.cp-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 20px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease;
+}
+
+.cp-section:focus-within {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-accent-border);
+}
+
+.cp-section-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-accent);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 8px;
+  margin-bottom: 2px;
+}
+
+/* ── Layouts ────────────────────────────────────────────────────────────── */
+
+.cp-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.cp-row-2-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .cp-row-2,
+  .cp-row-2-inner {
+    grid-template-columns: 1fr;
+  }
+}
+
+.req {
+  color: #ef4444;
+}
+
+/* ── File Drop Area ─────────────────────────────────────────────────────── */
+
+.cp-file-drop {
+  border: 2px dashed var(--color-border);
+  border-radius: 14px;
+  padding: 32px 24px;
+  text-align: center;
+  cursor: pointer;
+  background: var(--color-bg-primary);
+  box-shadow: var(--shadow-inset);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle animated shimmer track on idle */
+.cp-file-drop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.04) 50%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  animation: cp-shine 3s ease infinite;
+  pointer-events: none;
+}
+
+@keyframes cp-shine {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.cp-file-drop:hover {
+  border-color: var(--color-accent);
+  border-style: solid;
+  background: var(--color-accent-muted);
+  box-shadow: var(--shadow-glow-sm), var(--shadow-sm);
+}
+
+.cp-file-drop.has-file {
+  border-style: solid;
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.05);
+  box-shadow:
+    0 0 0 2px rgba(16, 185, 129, 0.18),
+    var(--shadow-sm);
+  padding: 18px 20px;
+}
+
+/* ── File empty state ───────────────────────────────────────────────────── */
+
+.cp-file-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.cp-file-icon {
+  color: var(--color-text-muted);
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.08));
+  transition:
+    color 0.2s,
+    transform 0.2s;
+}
+
+.cp-file-drop:hover .cp-file-icon {
+  color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+.cp-file-icon.success {
+  color: #10b981;
+  filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.25));
+}
+
+.cp-file-empty p {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.cp-file-hint {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--color-surface-overlay);
+  border: 1px solid var(--color-border);
+}
+
+/* ── File preview (has-file state) ─────────────────────────────────────── */
+
+.cp-file-preview {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  background: var(--color-bg-secondary);
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: var(--shadow-xs);
+}
+
+.cp-file-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cp-file-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  word-break: break-all;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cp-file-size {
+  font-size: 11.5px;
+  color: var(--color-text-secondary);
+}
+
+/* ── Remove button ──────────────────────────────────────────────────────── */
+
+.cp-file-remove {
+  background: none;
+  border: 1px solid transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-xs);
+  transition: all 0.18s ease;
+}
+
+.cp-file-remove:hover {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  box-shadow: var(--shadow-sm);
+}

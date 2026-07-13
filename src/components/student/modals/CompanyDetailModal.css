@@ -1,0 +1,177 @@
+/* ── CompanyDetailModal ──────────────────────────────────────────────────── */
+
+.cdm-root {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Verified banner ─────────────────────────────────────────────────────── */
+
+.cdm-verified-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #10b981;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--shadow-xs);
+}
+
+/* ── Info grid ───────────────────────────────────────────────────────────── */
+
+.cdm-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 560px) {
+  .cdm-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cdm-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-xs);
+  transition: box-shadow 0.15s;
+}
+
+.cdm-info-item:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.cdm-info-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.cdm-info-value {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+/* ── CTA note ────────────────────────────────────────────────────────────── */
+
+.cdm-cta-note {
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--color-accent-muted);
+  border: 1px solid var(--color-accent-border);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.cdm-cta-note strong {
+  color: var(--color-accent);
+}
+
+/* ── "View Details" button in table ─────────────────────────────────────── */
+
+.vc-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1px solid var(--color-accent-border);
+  border-radius: 8px;
+  background: var(--color-accent-muted);
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    box-shadow 0.15s,
+    transform 0.15s;
+  white-space: nowrap;
+}
+
+.vc-view-btn:hover {
+  background: var(--color-accent);
+  color: #fff;
+  box-shadow: var(--shadow-glow-sm);
+  transform: translateY(-1px);
+}
+
+/* ── City filter input ───────────────────────────────────────────────────── */
+
+.ac-city-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.ac-city-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.ac-city-input {
+  height: 38px;
+  padding: 0 12px 0 32px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  font-size: 13px;
+  outline: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+  min-width: 160px;
+}
+
+.ac-city-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.ac-city-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.12);
+}
+
+.filter-input {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  font-size: 13px;
+  outline: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+  min-width: 160px;
+}
+
+.filter-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.filter-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.12);
+}
