@@ -7,7 +7,7 @@
   justify-content: space-between;
   gap: 20px;
   padding: 24px;
-  background: var(--color-bg-primary);
+  background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   border-radius: 16px;
   box-shadow: var(--box-shadow);
@@ -57,7 +57,7 @@
 }
 
 .sp-stat {
-  background: var(--color-bg-primary);
+   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 16px;

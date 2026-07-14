@@ -15,6 +15,7 @@
   cursor: pointer;
   transition: all 0.15s;
   width: fit-content;
+  background: var(--color-bg-secondary);
 }
 
 .sv-back:hover {
@@ -28,7 +29,7 @@
   align-items: center;
   gap: 20px;
   padding: 24px;
-  background: var(--color-bg-primary);
+  background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
@@ -110,7 +111,7 @@
 }
 
 .sv-stat-card {
-  background: var(--color-bg-primary);
+  background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 18px 16px;
@@ -178,7 +179,12 @@
 }
 
 .sv-section-body {
-  padding: 4px 0;
+  padding: 16px 18px;
+}
+
+/* Info-row sections need edge-to-edge rows, so override the body padding */
+.sv-section-body:has(.sv-info-row) {
+  padding: 0;
 }
 
 /* ── Info Row ────────────────────────────────────────────────────────────── */

@@ -1,4 +1,4 @@
-import { Eye, Pencil, FileText } from "lucide-react";
+import { Eye, FileText } from "lucide-react";
 import GeneralTable from "../../ui/GeneralTable/GeneralTable";
 import ActionDropDown from "../../ui/ActionDropdown/ActionDropDown";
 import type { Column, TableMeta } from "../../ui/GeneralTable/GeneralTable";
@@ -13,7 +13,6 @@ interface AdminStudentsTableProps {
   onLimitChange: (l: number) => void;
   onView: (student: Student) => void;
   onProgress: (student: Student) => void;
-  onUpdateStatus: (student: Student) => void;
   onViewReport: (student: Student) => void;
   // bulk selection (omit both + set hideCheckbox to render without a selection column)
   selectedIds?: Set<string>;
@@ -122,7 +121,6 @@ export default function AdminStudentsTable({
   onPageChange,
   onLimitChange,
   onView,
-  onUpdateStatus,
   onProgress,
   onViewReport,
   selectedIds = new Set(),
@@ -229,11 +227,6 @@ export default function AdminStudentsTable({
               label: "View IT Report",
               icon: <FileText size={13} />,
               onClick: () => onViewReport(row),
-            },
-            {
-              label: "Update Status",
-              icon: <Pencil size={13} />,
-              onClick: () => onUpdateStatus(row),
             },
           ]}
         />

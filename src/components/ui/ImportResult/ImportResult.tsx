@@ -1,4 +1,4 @@
-import { CheckCircle, AlertCircle } from "lucide-react";
+import { CheckCircle, AlertCircle, AlertTriangle } from "lucide-react";
 import CustomModal from "../CustomModal/CustomModal";
 
 export interface ImportError {
@@ -9,6 +9,7 @@ export interface ImportError {
 export interface ImportData {
   total: number;
   successful: number;
+  skipped?: number;
   failed: number;
   errors: ImportError[];
 }
@@ -36,53 +37,135 @@ export default function ImportResult({
   successLabel = "successful",
   failedLabel = "failed",
 }: ImportResultProps) {
-  const hasErrors = result.data.failed > 0;
+  const { successful, failed, skipped = 0, total } = result.data;
+  const hasErrors = failed > 0;
+  const hasSkipped = skipped > 0;
+
+  // three-state: error > warning (skipped) > success
+  const state = hasErrors ? "error" : hasSkipped ? "warning" : "success";
+  const stateColors = {
+    error: {
+      bg: "rgba(239,68,68,0.06)",
+      border: "rgba(239,68,68,0.18)",
+      icon: <AlertCircle size={24} color="#ef4444" />,
+    },
+    warning: {
+      bg: "rgba(245,158,11,0.06)",
+      border: "rgba(245,158,11,0.20)",
+      icon: <AlertTriangle size={24} color="#f59e0b" />,
+    },
+    success: {
+      bg: "rgba(16,185,129,0.06)",
+      border: "rgba(16,185,129,0.18)",
+      icon: <CheckCircle size={24} color="#10b981" />,
+    },
+  }[state];
+
+  const pills: { label: string; value: number; color: string; bg: string }[] = [
+    {
+      label: successLabel,
+      value: successful,
+      color: "#10b981",
+      bg: "rgba(16,185,129,0.10)",
+    },
+    ...(hasSkipped
+      ? [
+          {
+            label: "skipped",
+            value: skipped,
+            color: "#f59e0b",
+            bg: "rgba(245,158,11,0.10)",
+          },
+        ]
+      : []),
+    {
+      label: failedLabel,
+      value: failed,
+      color: "#ef4444",
+      bg: "rgba(239,68,68,0.10)",
+    },
+  ];
 
   return (
     <CustomModal isOpen={isOpen} onClose={onClose} title={title} size="medium">
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-        {/* Summary Card */}
+        {/* Summary banner */}
         <div
           style={{
-            padding: 16,
+            padding: "14px 16px",
             borderRadius: 12,
-            background: hasErrors
-              ? "rgba(239,68,68,0.05)"
-              : "rgba(16,185,129,0.05)",
-            border: `1px solid ${hasErrors ? "rgba(239,68,68,0.15)" : "rgba(16,185,129,0.15)"}`,
+            background: stateColors.bg,
+            border: `1px solid ${stateColors.border}`,
             display: "flex",
-            alignItems: "center",
+            alignItems: "flex-start",
             gap: 12,
           }}
         >
-          {hasErrors ? (
-            <AlertCircle size={24} color="#ef4444" />
-          ) : (
-            <CheckCircle size={24} color="#10b981" />
-          )}
-          <div>
-            <h4 style={{ 
-              margin: 0, 
-              fontSize: 15, 
-              fontWeight: 700, 
-              color:"var(--color-text-primary)"
-            }}>
+          <div style={{ flexShrink: 0, marginTop: 2 }}>{stateColors.icon}</div>
+          <div style={{ flex: 1 }}>
+            <p
+              style={{
+                margin: "0 0 4px",
+                fontSize: 14,
+                fontWeight: 600,
+                color: "var(--color-text-primary)",
+                lineHeight: 1.4,
+              }}
+            >
               {result.message}
-            </h4>
+            </p>
             <p
               style={{
                 margin: 0,
-                fontSize: 13,
+                fontSize: 12,
                 color: "var(--color-text-secondary)",
               }}
             >
-              {result.data.successful} {successLabel}, {result.data.failed}{" "}
-              {failedLabel}.
+              {total} student{total !== 1 ? "s" : ""} processed
             </p>
           </div>
         </div>
 
-        {/* Error List */}
+        {/* Stat pills */}
+        <div style={{ display: "flex", gap: 10 }}>
+          {pills.map((pill) => (
+            <div
+              key={pill.label}
+              style={{
+                flex: 1,
+                textAlign: "center",
+                padding: "12px 8px",
+                borderRadius: 10,
+                background: pill.bg,
+                border: `1px solid ${pill.color}30`,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 24,
+                  fontWeight: 800,
+                  color: pill.color,
+                  lineHeight: 1,
+                }}
+              >
+                {pill.value}
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: pill.color,
+                  marginTop: 4,
+                  textTransform: "capitalize",
+                }}
+              >
+                {pill.label}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Error list */}
         {result.data.errors.length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <div
@@ -101,7 +184,7 @@ export default function ImportResult({
                 display: "flex",
                 flexDirection: "column",
                 gap: 8,
-                maxHeight: 300,
+                maxHeight: 260,
                 overflowY: "auto",
                 paddingRight: 4,
               }}
@@ -143,9 +226,9 @@ export default function ImportResult({
         <button
           className="modal-submit"
           onClick={onClose}
-          style={{ width: "100%", marginTop: 10 }}
+          style={{ width: "100%", marginTop: 4 }}
         >
-          Close
+          Done
         </button>
       </div>
     </CustomModal>

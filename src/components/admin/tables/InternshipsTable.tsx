@@ -3,8 +3,14 @@ import GeneralTable from "../../ui/GeneralTable/GeneralTable";
 import type { Column, TableMeta } from "../../ui/GeneralTable/GeneralTable";
 import ActionDropdown from "../../ui/ActionDropdown/ActionDropDown";
 import StatusBadge from "../../ui/StatusBadge/StatusBadge";
-import { useInternships, useSetCurrentInternship } from "../../../hooks/useInternships";
-import type { Internship, InternshipParams } from "../../../api/types/internship";
+import {
+  useInternships,
+  useSetCurrentInternship,
+} from "../../../hooks/useInternships";
+import type {
+  Internship,
+  InternshipParams,
+} from "../../../api/types/internship";
 
 interface InternshipsTableProps {
   params: Omit<InternshipParams, "page" | "limit">;
@@ -47,10 +53,16 @@ export default function InternshipsTable({
         if (typeof s === "string") return s;
         return (
           <div className="cell-stack">
-            <span className="cell-primary">
+            <span
+              className="cell-primary"
+              style={{ fontSize: "0.8rem", fontWeight: 500 }}
+            >
               {s.user.firstName} {s.user.lastName}
             </span>
-            <span className="cell-sub">{s.registrationNumber}</span>
+            <br />
+            <span className="cell-sub" style={{ fontSize: "0.8rem" }}>
+              {s.registrationNumber}
+            </span> 
           </div>
         );
       },
@@ -69,8 +81,21 @@ export default function InternshipsTable({
       header: "Current",
       render: (row) =>
         row.isCurrent ? (
-          <span className="badge badge-success">
-            <Star size={11} /> Current
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "2px 8px",
+              borderRadius: 20,
+              fontSize: 11,
+              fontWeight: 700,
+              background: "rgba(234,179,8,0.12)",
+              color: "#ca8a04",
+              border: "1px solid rgba(234,179,8,0.30)",
+            }}
+          >
+            <Star size={11} fill="#ca8a04" color="#ca8a04" /> Current
           </span>
         ) : (
           "—"

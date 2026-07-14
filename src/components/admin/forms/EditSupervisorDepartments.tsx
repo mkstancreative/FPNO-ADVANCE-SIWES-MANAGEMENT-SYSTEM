@@ -87,8 +87,8 @@ export default function EditSupervisorDepartments({
             lineHeight: 1.6,
           }}
         >
-          Adding a department cascade-assigns its students to this supervisor;
-          removing one releases its (non-completed) students. A department
+          Adding a department assigns its students to this supervisor;
+          removing one releases its students. A department
           already owned by another supervisor can't be added here.
         </p>
         <div className="form-group">

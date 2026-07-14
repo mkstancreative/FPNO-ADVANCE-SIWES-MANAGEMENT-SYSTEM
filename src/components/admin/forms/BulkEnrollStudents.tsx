@@ -31,10 +31,14 @@ export default function BulkEnrollStudents({
   const [studentIds, setStudentIds] = useState<string[]>([]);
   const [regNumbersText, setRegNumbersText] = useState("");
   const [sourceBatchId, setSourceBatchId] = useState("");
+  const [filterBatchId, setFilterBatchId] = useState("");
   const [result, setResult] = useState<BulkEnrollResponse | null>(null);
 
   const { data: batchesData } = useBatches({ limit: 1000 });
-  const { data: studentsData } = useStudents({ limit: 1000 });
+  const { data: studentsData } = useStudents({
+    limit: 1000,
+    ...(filterBatchId ? { batchId: filterBatchId } : {}),
+  });
   const { mutate: enroll, isPending } = useBulkEnrollStudents();
 
   const batches = batchesData?.data ?? [];
@@ -51,6 +55,7 @@ export default function BulkEnrollStudents({
     setStudentIds([]);
     setRegNumbersText("");
     setSourceBatchId("");
+    setFilterBatchId("");
     setResult(null);
     onClose();
   };
@@ -88,6 +93,7 @@ export default function BulkEnrollStudents({
       data: {
         total: result.data.total,
         successful: result.data.successful,
+        skipped: result.data.skipped,
         failed: result.data.failed,
         errors: result.data.errors.map((err) => ({
           row: err.row ?? err.studentId ?? "—",
@@ -187,7 +193,8 @@ export default function BulkEnrollStudents({
               style={{
                 flex: 1,
                 padding: "8px 4px",
-                background: mode === t.key ? "var(--color-accent)" : "transparent",
+                background:
+                  mode === t.key ? "var(--color-accent)" : "transparent",
                 color: mode === t.key ? "#fff" : "var(--color-text-secondary)",
                 border: "none",
                 fontWeight: 600,
@@ -201,15 +208,36 @@ export default function BulkEnrollStudents({
         </div>
 
         {mode === "studentIds" && (
-          <div className="form-group">
-            <label className="modal-label">Students</label>
-            <MultiSelectPicker
-              options={studentOptions}
-              value={studentIds}
-              onChange={(ids) => setStudentIds(ids as string[])}
-              placeholder="Search and select students…"
-            />
-          </div>
+          <>
+            <div className="form-group">
+              <label className="modal-label">Filter students by batch</label>
+              <select
+                className="modal-input"
+                value={filterBatchId}
+                onChange={(e) => {
+                  setFilterBatchId(e.target.value);
+                  setStudentIds([]); // reset selection when filter batch changes
+                }}
+              >
+                <option value="">All Students (Unfiltered)</option>
+                {batches.map((b) => (
+                  <option key={b._id} value={b._id}>
+                    {b.name} ({b.session})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label className="modal-label">Students</label>
+              <MultiSelectPicker
+                options={studentOptions}
+                value={studentIds}
+                onChange={(ids) => setStudentIds(ids as string[])}
+                placeholder="Search and select students…"
+              />
+            </div>
+          </>
         )}
 
         {mode === "registrationNumbers" && (
@@ -227,9 +255,7 @@ export default function BulkEnrollStudents({
 
         {mode === "sourceBatchId" && (
           <div className="form-group">
-            <label className="modal-label">
-              Roll students over from batch
-            </label>
+            <label className="modal-label">Roll students over from batch</label>
             <select
               className="modal-input"
               value={sourceBatchId}

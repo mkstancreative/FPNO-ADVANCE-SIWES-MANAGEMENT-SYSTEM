@@ -138,11 +138,6 @@ export default function InternshipView() {
         </div>
         <div className="sv-hero-badge">
           <StatusBadge status={internship.itStatus} />
-          {internship.isCurrent && (
-            <span className="badge badge-success" style={{ marginLeft: 6 }}>
-              <Star size={11} /> Current
-            </span>
-          )}
         </div>
       </div>
 
@@ -185,7 +180,11 @@ export default function InternshipView() {
             style={{ marginTop: 10 }}
           >
             <Star size={13} />{" "}
-            {settingCurrent ? "Setting…" : "Set as Current Internship"}
+            {settingCurrent
+              ? "Setting…"
+              : internship.isCurrent
+              ? "Current"
+              : "Set as Current Internship"}
           </button>
         </Section>
 

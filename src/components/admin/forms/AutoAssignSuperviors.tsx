@@ -129,10 +129,9 @@ export default function AutoAssignSupervisors({
               lineHeight: 1.6,
             }}
           >
-            Assigns the owning department's supervisor to every internship
-            without a school supervisor. Optionally narrow it to a specific
-            batch and/or department — leave either blank to run across
-            everything.
+            Assigns department's supervisor to every internship without a
+            school supervisor. Optionally narrow it to a specific batch
+            and/or department — leave either blank to run across everything.
           </p>
         </div>
 

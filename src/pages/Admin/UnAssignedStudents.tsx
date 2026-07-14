@@ -171,7 +171,6 @@ export default function UnAssignedStudents() {
           onLimitChange={(l) => setField("limit", l)}
           onView={handleView}
           onProgress={handleProgress}
-          onUpdateStatus={() => {}} // Not used in this view or use a generic one
           onViewReport={openViewReport}
           hideSession={true}
           hideDeptCode={true}
