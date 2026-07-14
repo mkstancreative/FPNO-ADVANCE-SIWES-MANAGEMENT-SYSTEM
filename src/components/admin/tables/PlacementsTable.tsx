@@ -91,7 +91,7 @@ export default function PlacementsTable({
       ),
     },
     {
-      header: "Clinical Supervisor",
+      header: "Company Supervisor",
       render: (row) => (
         <div style={{ display: "flex", flexDirection: "column" }}>
           <span style={{ fontWeight: 600 }}>

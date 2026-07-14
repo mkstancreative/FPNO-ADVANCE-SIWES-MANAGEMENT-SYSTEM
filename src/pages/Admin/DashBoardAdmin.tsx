@@ -206,9 +206,7 @@ export default function DashBoardAdmin() {
             <div className="db-ring-card__title">Company Verification</div>
             <div className="db-ring-card__rows">
               <div className="db-ring-card__row">
-                <span className="db-ring-card__row-lbl">
-                  Total Clinics/Hospitals
-                </span>
+                <span className="db-ring-card__row-lbl">Total Companies</span>
                 <span className="db-ring-card__row-val">{companies.total}</span>
               </div>
               <div className="db-ring-card__row">
@@ -299,7 +297,7 @@ export default function DashBoardAdmin() {
       <div className="db-panels">
         <InfoPanel
           title="Supervisor Summary"
-          sub="Teaching & Clinical staff"
+          sub="Teaching & Company staff"
           icon={<UserCheck size={16} />}
           iconColor="purple"
           rows={[
@@ -327,7 +325,7 @@ export default function DashBoardAdmin() {
               ),
             },
             {
-              label: "Clinical Supervisors",
+              label: "Company Supervisors",
               value: (
                 <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <span

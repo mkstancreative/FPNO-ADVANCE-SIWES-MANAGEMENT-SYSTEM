@@ -62,24 +62,24 @@ export const ADMIN_NAV = [
     ],
   },
   {
-    section: "Manage Clinics/Hospitals",
+    section: "Manage Company/Hospitals",
     items: [
       {
-        label: "Clinics/Hospitals",
+        label: "Companies",
         icon: <Building size={18} />,
         children: [
           {
-            label: "Unverified Clinics/Hospitals",
+            label: "Unverified Companies",
             icon: <Building size={18} />,
             path: "/admin/companies",
           },
           {
-            label: "Partially Verified Clinics/Hospitals",
+            label: "Partially Verified Companies",
             icon: <Building size={18} />,
             path: "/admin/partially-verified-companies",
           },
           {
-            label: "Verified Clinics/Hospitals",
+            label: "Verified Companies",
             icon: <Building size={18} />,
             path: "/admin/verified-companies",
           },

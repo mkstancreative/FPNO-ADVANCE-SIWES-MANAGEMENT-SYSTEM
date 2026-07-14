@@ -100,8 +100,8 @@ const ApexULanding = () => {
           />
         </svg>
       ),
-      title: "NMCN/NBTE-Accredited Records",
-      desc: "Generate and submit NMCN/NBTE-compliant reports, letters of acceptance, and completion certificates digitally.",
+      title: "Accredited Records",
+      desc: "Generate and submit accredited reports, letters of acceptance, and completion certificates digitally.",
     },
     {
       icon: (
@@ -167,7 +167,7 @@ const ApexULanding = () => {
 
   const stats = [
     { value: "18,000+", label: "Registered Students" },
-    { value: "500+", label: "Partner Clinics/Hospitals" },
+    { value: "500+", label: "Partner Companies" },
     { value: "94%", label: "Placement Rate" },
     { value: "36", label: "States Covered" },
   ];
@@ -195,7 +195,7 @@ const ApexULanding = () => {
           <div>
             <div className="nav-badge">AI-Powered CIMS Management System</div>
             <h1 className="hero-title">
-              Your Clinical
+              Your Company
               <br />
               Training.
               <br />
@@ -505,7 +505,7 @@ const ApexULanding = () => {
               className="btn-cta-primary"
               onClick={() => navigate("/companies")}
             >
-              View Available Clinics/Hospitals
+              View Available Companies
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M5 12h14M12 5l7 7-7 7"
@@ -519,7 +519,7 @@ const ApexULanding = () => {
           </div>
           <div className="trust-badges">
             {[
-              "NMCN/NBTE-compliant records",
+              "Accredited records",
               "Free for students",
               "24/7 online access",
             ].map((t, i) => (

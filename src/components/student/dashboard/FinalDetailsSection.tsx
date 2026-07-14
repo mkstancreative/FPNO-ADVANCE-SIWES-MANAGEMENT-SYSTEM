@@ -136,7 +136,7 @@ export const FinalDetailsSection: React.FC<FinalDetailsSectionProps> = ({
                 color: "var(--color-text-primary)",
               }}
             >
-              Clinical Supervisor
+              Company Supervisor
             </h4>
             <p
               style={{

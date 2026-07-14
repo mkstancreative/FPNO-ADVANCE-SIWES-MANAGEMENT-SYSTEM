@@ -96,9 +96,9 @@ export default function PartiallyVerified() {
             <ShieldCheck size={20} />
           </div>
           <div>
-            <h2 className="page-title">Partially Verified Clinics/Hospitals</h2>
+            <h2 className="page-title">Partially Verified Companies</h2>
             <p className="page-sub">
-              Verify clinical supervisors for onboarded clinics/hospitals
+              Verify clinical supervisors for onboarded companies
             </p>
           </div>
         </div>

@@ -80,7 +80,7 @@ export const CompletionForm = ({
             <p className="cert-school-sub">
               PMB 1036 Owerri – Imo State, Nigeria
             </p>
-            <p className="cert-dept-name">Clinical Placement Centre</p>
+            <p className="cert-dept-name">Company Placement Centre</p>
             <p className="cert-dept-sub">(CIMS Directorate)</p>
           </div>
 
@@ -110,7 +110,7 @@ export const CompletionForm = ({
           <div className="cert-title-block">
             <h1 className="cert-title">Completion Certificate</h1>
             <p className="cert-title-sub">
-              Mandatory Clinical Training (ND2 / HND2) Graduates
+              Mandatory Company Training (ND2 / HND2) Graduates
             </p>
           </div>
 
@@ -134,7 +134,7 @@ export const CompletionForm = ({
             </p>
             <p className="cert-para">
               Holy Rosary Hospital College of Nursing Sciences has undergone a
-              mandatory Clinical Training in our organisation under{" "}
+              mandatory Company Training in our organisation under{" "}
               <span className="cert-fill cert-fill--md">
                 {placement.position || ""}
               </span>{" "}
@@ -206,7 +206,8 @@ export const CompletionForm = ({
 
         {/* ── Official stamp band ───────────────────────────────── */}
         <div className="cert-stamp-band">
-          OFFICIAL DOCUMENT — Holy Rosary Hospital College of Nursing Sciences CIMS Directorate
+          OFFICIAL DOCUMENT — Holy Rosary Hospital College of Nursing Sciences
+          CIMS Directorate
         </div>
 
         {/* ── Footer ───────────────────────────────────────────── */}

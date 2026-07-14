@@ -275,7 +275,7 @@ export default function AssignedStudentLogBookView() {
           {/* ── Industrial Review ── */}
           {logbook.industrialReview?.comments && (
             <div className="lbv2-section">
-              <SectionTitle>Clinical Supervisor's Review</SectionTitle>
+              <SectionTitle>Company Supervisor's Review</SectionTitle>
               <div className="lbv2-industrial-review">
                 <StarRating
                   value={logbook.industrialReview.rating ?? undefined}

@@ -192,7 +192,7 @@ export default function BatchForm({
         </div>
 
         {/* ── IT Period ── */}
-        <div className="section-title-divider">NMCN/NBTE Period</div>
+        <div className="section-title-divider">IT Period</div>
 
         <div className="form-group col-2">
           <label className="modal-label">

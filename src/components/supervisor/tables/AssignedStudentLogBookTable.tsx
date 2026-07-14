@@ -80,7 +80,7 @@ export default function AssignedStudentLogBookTable({
       render: (row) => <span className="lbt-hours">{row.totalHours}h</span>,
     },
     {
-      header: "Clinical Rating",
+      header: "Company Rating",
       render: (row) => <Rating value={row.industrialReview?.rating} />,
     },
     {

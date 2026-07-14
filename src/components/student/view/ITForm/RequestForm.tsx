@@ -108,7 +108,7 @@ export const RequestForm = () => {
             <p className="cert-school-sub">
               PMB 1036 Emekuku – Owerri, Imo State, Nigeria
             </p>
-            <p className="cert-dept-name">Clinical Placement Centre</p>
+            <p className="cert-dept-name">Company Placement Centre</p>
             <p className="cert-dept-sub">(CIMS Directorate)</p>
           </div>
 
@@ -128,8 +128,8 @@ export const RequestForm = () => {
           <div className="req-title-block">
             <h1 className="req-title">IT Placement Request Form</h1>
             <p className="req-title-sub">
-              Student Clinical Work Experience Scheme (CIMS) — Mandatory
-              Clinical Training
+              Student Company Work Experience Scheme (CIMS) — Mandatory Company
+              Training
             </p>
           </div>
 
@@ -242,7 +242,7 @@ export const RequestForm = () => {
               Polytechnic Nekede, Owerri, hereby declare that all information
               provided in this form is true and correct to the best of my
               knowledge. I understand that any misrepresentation may lead to
-              disciplinary action and/or cancellation of my Clinical Training
+              disciplinary action and/or cancellation of my Company Training
               (CT) placement. I further declare my full commitment to abide by
               the rules and regulations of the placement organisation and the
               CIMS Directorate throughout the duration of my clinical training.
@@ -258,7 +258,7 @@ export const RequestForm = () => {
             <div className="req-sig-block">
               <div className="req-sig-area" />
               <p className="req-sig-label">
-                Clinical Supervisor's Signature, Stamp &amp; Date
+                Company Supervisor's Signature, Stamp &amp; Date
               </p>
             </div>
             <div className="req-sig-block">

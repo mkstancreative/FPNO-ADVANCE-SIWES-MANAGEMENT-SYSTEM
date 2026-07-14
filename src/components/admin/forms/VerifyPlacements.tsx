@@ -227,7 +227,7 @@ export default function VerifyPlacements({
               <span className="vp-dept">{placement.department} Dept.</span>
             </div>
             <div className="vp-section">
-              <label>Clinical Supervisor</label>
+              <label>Company Supervisor</label>
               <p>{placement.industrialSupervisor.name}</p>
               <span className="vp-sub">
                 {placement.industrialSupervisor.email} •{" "}

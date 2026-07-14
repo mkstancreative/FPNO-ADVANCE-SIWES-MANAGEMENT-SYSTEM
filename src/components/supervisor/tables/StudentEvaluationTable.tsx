@@ -109,7 +109,7 @@ export default function StudentEvaluationTable({
       ),
     },
     {
-      header: "Clinical Eval",
+      header: "Company Eval",
       render: (row) => (
         <SubmittedPill
           submitted={row.industrialSubmitted}

@@ -160,7 +160,7 @@ export default function UnverifiedComapnyView({
           <div className="ucv-card">
             <div className="ucv-card-header">
               <Users size={14} color="var(--color-text-secondary)" />
-              <h3 className="ucv-card-title">Clinical Supervisors</h3>
+              <h3 className="ucv-card-title">Company Supervisors</h3>
             </div>
             <div className="ucv-supervisor-list">
               {company.supervisors && company.supervisors.length > 0 ? (
@@ -189,7 +189,7 @@ export default function UnverifiedComapnyView({
                     fontSize: 13,
                   }}
                 >
-                  No Clinical supervisors listed yet.
+                  No Company supervisors listed yet.
                 </div>
               )}
             </div>

@@ -108,8 +108,8 @@ export default function Companies() {
             <Layers size={20} />
           </div>
           <div>
-            <h2 className="page-title">Clinics/Hospitals</h2>
-            <p className="page-sub">Review and verify clinics/hospitals registrations</p>
+            <h2 className="page-title">Companies</h2>
+            <p className="page-sub">Review and verify companies registrations</p>
           </div>
         </div>
         <div className="page-header-right">

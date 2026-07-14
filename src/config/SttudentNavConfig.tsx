@@ -51,10 +51,10 @@ export const STUDENT_NAV = [
   },
 
   {
-    section: "Clinics/Hospitals",
+    section: "Companies",
     items: [
       {
-        label: "Available Clinics/Hospitals",
+        label: "Available Companies",
         icon: <Briefcase size={18} />,
         path: "/student/companies",
       },

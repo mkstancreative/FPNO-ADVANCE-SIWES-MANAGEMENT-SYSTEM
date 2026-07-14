@@ -73,7 +73,7 @@ export const ProgressSection: React.FC<ProgressSectionProps> = ({
         iconColor="purple"
         rows={[
           {
-            label: "Clinical Supervisor",
+            label: "Company Supervisor",
             value: evaluation?.industrialSubmitted ? (
               <span style={{ color: "#10b981", fontWeight: 600 }}>
                 ✓ Submitted

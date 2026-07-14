@@ -281,7 +281,7 @@ export default function AssignedStudentView({
             {/* Industrial Supervisor */}
             {s.supervisors?.industrial && (
               <Section
-                title="Clinical Supervisor"
+                title="Company Supervisor"
                 icon={<Shield size={14} />}
               >
                 <InfoRow label="Name" value={s.supervisors.industrial.name} />
