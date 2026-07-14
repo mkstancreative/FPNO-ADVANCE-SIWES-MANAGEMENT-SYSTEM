@@ -1,6 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { Settings2, UploadCloud } from "lucide-react";
-import { useSystemSettings, useUpdateSystemSettings } from "../../hooks/useSettings";
+import {
+  useSystemSettings,
+  useUpdateSystemSettings,
+} from "../../hooks/useSettings";
 import Spinner from "../../components/ui/Spinner/Spinner";
 
 const apiBase = (import.meta.env.VITE_API_URL ?? "").replace(
@@ -33,7 +36,6 @@ export default function SystemSettings() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>("");
-
 
   const [hasSeeded, setHasSeeded] = useState(false);
   const settings = data?.settings;
@@ -79,7 +81,11 @@ export default function SystemSettings() {
           justifyContent: "center",
         }}
       >
-        <Spinner size={28} color="var(--color-accent)" text="Loading settings…" />
+        <Spinner
+          size={28}
+          color="var(--color-accent)"
+          text="Loading settings…"
+        />
       </div>
     );
   }
@@ -100,127 +106,146 @@ export default function SystemSettings() {
         </div>
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="form-grid"
-        style={{
-          maxWidth: 640,
-          background: "var(--color-bg-primary)",
-          border: "1px solid var(--color-border)",
-          borderRadius: 12,
-          padding: 24,
-        }}
+      <div 
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "var(--color-bg-primary)",
+        border: "1px solid var(--color-border)",
+        borderRadius: 12,
+        padding: 24,
+      }}
       >
-        {/* ── Logo ── */}
-        <div className="form-group col-1">
-          <label className="modal-label">Logo</label>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <div
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: 10,
-                border: "1px solid var(--color-border)",
-                background: "var(--color-bg-secondary)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                overflow: "hidden",
-                flexShrink: 0,
-              }}
-            >
-              {logoPreview ? (
-                <img
-                  src={logoPreview}
-                  alt="Portal logo"
-                  style={{ width: "100%", height: "100%", objectFit: "contain" }}
+        <form
+          onSubmit={handleSubmit}
+          className="form-grid"
+          style={{
+            maxWidth: 640,
+            background: "var(--color-bg-primary)",
+            border: "1px solid var(--color-border)",
+            borderRadius: 12,
+            padding: 24,
+            backgroundColor: "var(--color-bg-secondary)",
+          }}
+        >
+          {/* ── Logo ── */}
+          <div className="form-group col-1">
+            <label className="modal-label">Logo</label>
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <div
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: 10,
+                  border: "1px solid var(--color-border)",
+                  background: "var(--color-bg-secondary)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  overflow: "hidden",
+                  flexShrink: 0,
+                }}
+              >
+                {logoPreview ? (
+                  <img
+                    src={logoPreview}
+                    alt="Portal logo"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain",
+                    }}
+                  />
+                ) : (
+                  <UploadCloud size={22} color="#94a3b8" />
+                )}
+              </div>
+              <label
+                className="modal-cancel"
+                style={{ cursor: "pointer", margin: 0 }}
+              >
+                {logoFile ? logoFile.name : "Choose image…"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={(e) =>
+                    handleLogoChange(e.target.files?.[0] ?? null)
+                  }
                 />
-              ) : (
-                <UploadCloud size={22} color="#94a3b8" />
-              )}
+              </label>
             </div>
-            <label
-              className="modal-cancel"
-              style={{ cursor: "pointer", margin: 0 }}
-            >
-              {logoFile ? logoFile.name : "Choose image…"}
-              <input
-                type="file"
-                accept="image/*"
-                style={{ display: "none" }}
-                onChange={(e) => handleLogoChange(e.target.files?.[0] ?? null)}
-              />
-            </label>
+            <p style={{ margin: "6px 0 0", fontSize: 11, color: "#94a3b8" }}>
+              Optional — leave blank to keep the existing logo.
+            </p>
           </div>
-          <p style={{ margin: "6px 0 0", fontSize: 11, color: "#94a3b8" }}>
-            Optional — leave blank to keep the existing logo.
-          </p>
-        </div>
 
-        {/* ── Name ── */}
-        <div className="form-group col-2">
-          <label className="modal-label">
-            Portal Name <span>*</span>
-          </label>
-          <input
-            className="modal-input"
-            required
-            value={form.name}
-            onChange={(e) => setField("name", e.target.value)}
-            placeholder="FPNO SIWES Portal"
-          />
-        </div>
+          {/* ── Name ── */}
+          <div className="form-group col-2">
+            <label className="modal-label">
+              Portal Name <span>*</span>
+            </label>
+            <input
+              className="modal-input"
+              required
+              value={form.name}
+              onChange={(e) => setField("name", e.target.value)}
+              placeholder="FPNO SIWES Portal"
+            />
+          </div>
 
-        {/* ── Phone ── */}
-        <div className="form-group col-2">
-          <label className="modal-label">
-            Phone <span>*</span>
-          </label>
-          <input
-            className="modal-input"
-            required
-            value={form.phone}
-            onChange={(e) => setField("phone", e.target.value)}
-            placeholder="08031234567"
-          />
-        </div>
+          {/* ── Phone ── */}
+          <div className="form-group col-2">
+            <label className="modal-label">
+              Phone <span>*</span>
+            </label>
+            <input
+              className="modal-input"
+              required
+              value={form.phone}
+              onChange={(e) => setField("phone", e.target.value)}
+              placeholder="08031234567"
+            />
+          </div>
 
-        {/* ── Email ── */}
-        <div className="form-group col-2">
-          <label className="modal-label">
-            Email <span>*</span>
-          </label>
-          <input
-            type="email"
-            className="modal-input"
-            required
-            value={form.email}
-            onChange={(e) => setField("email", e.target.value)}
-            placeholder="siwes@fpno.edu.ng"
-          />
-        </div>
+          {/* ── Email ── */}
+          <div className="form-group col-2">
+            <label className="modal-label">
+              Email <span>*</span>
+            </label>
+            <input
+              type="email"
+              className="modal-input"
+              required
+              value={form.email}
+              onChange={(e) => setField("email", e.target.value)}
+              placeholder="siwes@fpno.edu.ng"
+            />
+          </div>
 
-        {/* ── Address ── */}
-        <div className="form-group col-2">
-          <label className="modal-label">
-            Address <span>*</span>
-          </label>
-          <input
-            className="modal-input"
-            required
-            minLength={10}
-            value={form.address}
-            onChange={(e) => setField("address", e.target.value)}
-            placeholder="Federal Polytechnic Nekede, Owerri, Imo State"
-          />
-        </div>
+          {/* ── Address ── */}
+          <div className="form-group col-2">
+            <label className="modal-label">
+              Address <span>*</span>
+            </label>
+            <input
+              className="modal-input"
+              required
+              minLength={10}
+              value={form.address}
+              onChange={(e) => setField("address", e.target.value)}
+              placeholder="Federal Polytechnic Nekede, Owerri, Imo State"
+            />
+          </div>
 
-        <div className="form-group col-1" style={{ marginTop: 8 }}>
-          <button type="submit" className="modal-submit" disabled={isPending}>
-            {isPending ? <Spinner size={14} color="#fff" /> : "Save Changes"}
-          </button>
-        </div>
-      </form>
+          <div className="form-group col-1" style={{ marginTop: 8 }}>
+            <button type="submit" className="modal-submit" disabled={isPending}>
+              {isPending ? <Spinner size={14} color="#fff" /> : "Save Changes"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

@@ -27,8 +27,8 @@ export default function InternshipHistory() {
           <div>
             <h2 className="page-title">Internship History</h2>
             <p className="page-sub">
-              Every internship you've been enrolled in — select one to view
-              its dashboard, logbooks, and report.
+              Every internship you've been enrolled in — select one to view its
+              dashboard, logbooks, and report.
             </p>
           </div>
         </div>
@@ -71,10 +71,15 @@ export default function InternshipHistory() {
                 <div className="ih-card-row">
                   <StatusBadge status={i.itStatus} />
                 </div>
-                {i.placement && (
+                {i.placement && i.placement.company && (
                   <div className="ih-card-row">
                     <Building2 size={13} />
-                    <span>{i.placement.company}</span>
+                    <span>
+                      {typeof i.placement.company === "object"
+                        ? ((i.placement.company as Record<string, unknown>)
+                            .companyName as string) || "—"
+                        : i.placement.company}
+                    </span>
                   </div>
                 )}
                 {i.itPeriod && (

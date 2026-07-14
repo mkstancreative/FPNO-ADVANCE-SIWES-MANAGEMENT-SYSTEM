@@ -35,8 +35,9 @@ export interface InternshipSupervisors {
 }
 
 export interface InternshipPlacement {
-  company: string;
+  company: string | Record<string, unknown> | null;
   position: string;
+  department?: string;
   startDate: string;
   status: string;
 }
