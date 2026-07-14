@@ -325,7 +325,7 @@ export default function DashBoardAdmin() {
               ),
             },
             {
-              label: "Company Supervisors",
+              label: "Industrial Supervisors",
               value: (
                 <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <span

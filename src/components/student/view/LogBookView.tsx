@@ -203,7 +203,7 @@ function LogBookViewInner({
       {/* ── Industrial Review ── */}
       {e.industrialReview?.comments && (
         <div className="lbv-section">
-          <h4 className="lbv-section-title">Company Supervisor's Review</h4>
+          <h4 className="lbv-section-title">Industrial Supervisor's Review</h4>
           <div className="lbv-review-card industrial">
             <StarRating value={e.industrialReview.rating ?? undefined} />
             <div
@@ -213,7 +213,7 @@ function LogBookViewInner({
               }}
             />
             <div className="lbv-review-footer">
-              <span className="lbv-reviewer">Company Supervisor</span>
+              <span className="lbv-reviewer">Industrial Supervisor</span>
               {e.industrialReview.reviewedAt && (
                 <span className="lbv-review-date">
                   {formatDate(e.industrialReview.reviewedAt)}

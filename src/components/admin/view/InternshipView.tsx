@@ -183,8 +183,8 @@ export default function InternshipView() {
             {settingCurrent
               ? "Setting…"
               : internship.isCurrent
-              ? "Current"
-              : "Set as Current Internship"}
+                ? "Current"
+                : "Set as Current Internship"}
           </button>
         </Section>
 
@@ -207,7 +207,16 @@ export default function InternshipView() {
 
         {internship.placement && (
           <Section title="Placement" icon={<Briefcase size={15} />}>
-            <InfoRow label="Company" value={internship.placement.company} />
+            <InfoRow
+              label="Company"
+              value={
+                typeof internship.placement.company === "object" &&
+                internship.placement.company !== null
+                  ? ((internship.placement.company as Record<string, unknown>)
+                      .companyName as string) || "—"
+                  : (internship.placement.company as string) || "—"
+              }
+            />
             <InfoRow label="Position" value={internship.placement.position} />
             <InfoRow
               label="Start Date"

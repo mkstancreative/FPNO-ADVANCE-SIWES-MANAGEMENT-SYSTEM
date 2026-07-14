@@ -258,7 +258,7 @@ export const RequestForm = () => {
             <div className="req-sig-block">
               <div className="req-sig-area" />
               <p className="req-sig-label">
-                Company Supervisor's Signature, Stamp &amp; Date
+                Industrial Supervisor's Signature, Stamp &amp; Date
               </p>
             </div>
             <div className="req-sig-block">

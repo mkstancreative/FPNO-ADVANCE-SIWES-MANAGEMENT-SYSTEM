@@ -195,7 +195,7 @@ const ApexULanding = () => {
           <div>
             <div className="nav-badge">AI-Powered CIMS Management System</div>
             <h1 className="hero-title">
-              Your Company
+              Your Industrial
               <br />
               Training.
               <br />
@@ -285,9 +285,7 @@ const ApexULanding = () => {
               </div>
 
               <div className="login-card-title">Welcome back</div>
-              <div className="login-card-sub">
-                Sign in to your CIMS account
-              </div>
+              <div className="login-card-sub">Sign in to your CIMS account</div>
 
               <form onSubmit={handleSubmit}>
                 <div className="form-group">
@@ -497,8 +495,8 @@ const ApexULanding = () => {
           </div>
           <h2 className="cta-title">Ready to Begin Your Placement?</h2>
           <p className="cta-desc">
-            Join thousands of Nigerian students who manage their CIMS
-            experience seamlessly through our portal.
+            Join thousands of Nigerian students who manage their CIMS experience
+            seamlessly through our portal.
           </p>
           <div className="cta-buttons">
             <button

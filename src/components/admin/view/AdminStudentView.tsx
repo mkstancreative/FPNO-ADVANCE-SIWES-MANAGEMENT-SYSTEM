@@ -248,7 +248,7 @@ export default function AdminStudentView() {
 
         {/* ── Industrial Supervisor ── */}
         {s.supervisors?.industrial && (
-          <Section title="Company Supervisor" icon={<User size={15} />}>
+          <Section title="Industrial Supervisor" icon={<User size={15} />}>
             <InfoRow label="Name" value={s.supervisors.industrial.name} />
             <InfoRow label="Email" value={s.supervisors.industrial.email} />
             <InfoRow label="Phone" value={s.supervisors.industrial.phone} />
