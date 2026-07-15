@@ -46,6 +46,8 @@ export interface LogbookListParams {
   search?: string;
   page?: number;
   limit?: number;
+  batchId?: string;
+  internshipId?: string;
 }
 
 export const getStudentLogbooks = async (

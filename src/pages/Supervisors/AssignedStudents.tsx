@@ -1,11 +1,10 @@
 import { Layers } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ResetButton from "../../components/ui/ResetButton/ResetButton";
 import SearchInput from "../../components/ui/SearchInput/SearchInput";
 import { useAssignedStudents } from "../../hooks/useSchoolSupervisor";
 import AssignedStudentTable from "../../components/supervisor/tables/AssignedStudentTable";
-import StudentsInternShips from "../../components/supervisor/views/StudentsInternShips";
-import { useModal } from "../../context/ModalContext";
 import type { StudentSummary } from "../../api/types/schoolSupervisor";
 import SelectFilter from "../../components/ui/SelectFilter/SelectFilter";
 import { useGetMe } from "../../hooks/useAuth";
@@ -55,7 +54,7 @@ export default function AssignedStudents() {
     setFilters((prev) => ({ ...prev, [field]: value, page: 1 }));
   };
 
-  const { openModal, closeModal } = useModal();
+  const navigate = useNavigate();
 
   const meta = {
     count: data?.total ?? 0,
@@ -68,13 +67,8 @@ export default function AssignedStudents() {
 
   const handleView = (student: StudentSummary) => {
     const studentName = `${student.user.firstName} ${student.user.lastName}`;
-    openModal(
-      <StudentsInternShips
-        isOpen
-        studentId={student._id}
-        studentName={studentName}
-        onClose={closeModal}
-      />,
+    navigate(
+      `/supervisor/students/${student._id}/internships?name=${encodeURIComponent(studentName)}`,
     );
   };
 

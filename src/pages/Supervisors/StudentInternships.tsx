@@ -5,21 +5,14 @@ import {
   User,
   ChevronRight,
   BookOpen,
+  ArrowLeft,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useInternships } from "../../../hooks/useInternships";
-import CustomModal from "../../ui/CustomModal/CustomModal";
-import StatusBadge from "../../ui/StatusBadge/StatusBadge";
-import { formatDate } from "../../../helpers/utilities";
-import type { Internship } from "../../../api/types/internship";
-import "./StudentsInternShips.css";
-
-interface StudentsInternShipsProps {
-  isOpen: boolean;
-  onClose: () => void;
-  studentId: string;
-  studentName?: string;
-}
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useInternships } from "../../hooks/useInternships";
+import StatusBadge from "../../components/ui/StatusBadge/StatusBadge";
+import { formatDate } from "../../helpers/utilities";
+import type { Internship } from "../../api/types/internship";
+import "../../components/supervisor/views/StudentsInternShips.css";
 
 function InternshipCard({
   internship,
@@ -108,36 +101,38 @@ function InternshipCard({
         )}
       </div>
 
-      {/* ── Navigate to full student profile page ── */}
-      <button className="si-view-btn" onClick={() => onViewProfile(studentId)}>
-        <User size={13} />
-        View Student Profile
-        <ChevronRight size={13} />
-      </button>
+      <div className="si-card-actions">
+        <button
+          className="si-view-btn"
+          onClick={() => onViewProfile(studentId)}
+        >
+          <User size={13} />
+          View Profile
+          <ChevronRight size={13} />
+        </button>
 
-      <button
-        type="button"
-        className="si-logbooks-btn"
-        onClick={() =>
-          onViewLogbooks(studentId, batch?._id ?? "", internship._id)
-        }
-      >
-        <BookOpen size={13} />
-        View Logbooks
-      </button>
+        <button
+          type="button"
+          className="si-logbooks-btn"
+          onClick={() =>
+            onViewLogbooks(studentId, batch?._id ?? "", internship._id)
+          }
+        >
+          <BookOpen size={13} />
+          View Logbooks
+        </button>
+      </div>
     </div>
   );
 }
 
-export default function StudentsInternShips({
-  isOpen,
-  onClose,
-  studentId,
-  studentName,
-}: StudentsInternShipsProps) {
+export default function StudentInternships() {
+  const { studentId } = useParams<{ studentId: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // ── Fetch this student's internships ────────────────────────────────────────
+  const studentName = searchParams.get("name") ?? "";
+
   const { data, isLoading } = useInternships({
     studentId,
     isCurrent: true,
@@ -147,42 +142,61 @@ export default function StudentsInternShips({
   const internships = data?.data ?? [];
 
   const handleViewProfile = (sid: string) => {
-    onClose(); // close modal first
     navigate(`/supervisor/students/${sid}`);
   };
 
   const handleViewLogbooks = (sid: string, bid: string, iid: string) => {
-    onClose(); // close modal first
     navigate(
       `/supervisor/students/${sid}/logbooks?batchId=${bid}&internshipId=${iid}`,
     );
   };
 
   return (
-    <CustomModal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={
-        studentName ? `${studentName}'s Internships` : "Student Internships"
-      }
-      subtitle={`${internships.length} internship record${internships.length !== 1 ? "s" : ""} found`}
-      icon={<Briefcase size={16} />}
-      size="wide"
-      placement="top"
-    >
+    <div className="page-container">
+      {/* ── Back button ── */}
+      <div className="page-header-left" style={{ marginBottom: 8 }}>
+        <button
+          className="dash-btn dash-btn--ghost"
+          onClick={() => navigate("/supervisor/assigned-students")}
+        >
+          <ArrowLeft size={15} /> Assigned Students
+        </button>
+      </div>
+
+      {/* ── Page header ── */}
+      <div className="page-header">
+        <div className="page-header-left">
+          <div className="page-icon orange">
+            <Briefcase size={20} />
+          </div>
+          <div>
+            <h2 className="page-title">
+              {studentName
+                ? `${studentName}'s Internships`
+                : "Student Internships"}
+            </h2>
+            <p className="page-sub">
+              {internships.length} internship record
+              {internships.length !== 1 ? "s" : ""} found
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Content ── */}
       {isLoading ? (
         <div className="si-loading">
-          {[1, 2].map((i) => (
+          {[1, 2, 3].map((i) => (
             <div key={i} className="si-skel" />
           ))}
         </div>
       ) : internships.length === 0 ? (
         <div className="si-empty">
-          <Briefcase size={32} />
+          <Briefcase size={48} />
           <p>No internship records found for this student.</p>
         </div>
       ) : (
-        <div className="si-list">
+        <div className="si-list" style={{ marginTop: 16 }}>
           {internships.map((internship) => (
             <InternshipCard
               key={internship._id}
@@ -193,6 +207,6 @@ export default function StudentsInternShips({
           ))}
         </div>
       )}
-    </CustomModal>
+    </div>
   );
 }

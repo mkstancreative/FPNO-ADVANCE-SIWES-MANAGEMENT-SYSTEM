@@ -1,5 +1,4 @@
-import { Eye, Book } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Eye } from "lucide-react";
 import type { StudentSummary } from "../../../api/types/schoolSupervisor";
 import type { Column, TableMeta } from "../../ui/GeneralTable/GeneralTable";
 import ActionDropdown from "../../ui/ActionDropdown/ActionDropDown";
@@ -23,8 +22,6 @@ export default function AssignedStudentTable({
   onLimitChange,
   onView,
 }: AssignedStudentTableProps) {
-  const navigate = useNavigate();
-
   const columns: Column<StudentSummary>[] = [
     {
       header: "Name",
@@ -59,12 +56,6 @@ export default function AssignedStudentTable({
               label: "View Details",
               icon: <Eye size={13} />,
               onClick: () => onView(row),
-            },
-            {
-              label: "View Logbooks",
-              icon: <Book size={13} />,
-              onClick: () =>
-                navigate(`/supervisor/students/${row._id}/logbooks`),
             },
           ]}
         />

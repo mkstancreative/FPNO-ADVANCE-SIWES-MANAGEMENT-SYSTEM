@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { BookOpen, ArrowLeft, Filter } from "lucide-react";
 import SearchInput from "../../components/ui/SearchInput/SearchInput";
 import ResetButton from "../../components/ui/ResetButton/ResetButton";
@@ -25,6 +25,10 @@ const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
 export default function StudentLogBooks() {
   const { studentId } = useParams<{ studentId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const batchId = searchParams.get("batchId") || undefined;
+  const internshipId = searchParams.get("internshipId") || undefined;
 
   const [filters, setFilters] = useState({
     search: "",
@@ -38,6 +42,8 @@ export default function StudentLogBooks() {
     status: filters.status || undefined,
     page: filters.page,
     limit: filters.limit,
+    batchId,
+    internshipId,
   });
 
   const meta = {

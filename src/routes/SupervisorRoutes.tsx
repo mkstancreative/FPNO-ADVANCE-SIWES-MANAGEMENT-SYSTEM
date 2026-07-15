@@ -6,6 +6,7 @@ const NotFound = lazy(() => import("../pages/NotFound/NotFound"));
 import AssignedStudents from "../pages/Supervisors/AssignedStudents";
 import DashBoardSupervisor from "../pages/Supervisors/DashBoardSupervisor";
 import StudentLogBooks from "../pages/Supervisors/StudentLogBooks";
+import StudentInternships from "../pages/Supervisors/StudentInternships";
 import AssignedStudentLogBookView from "../components/supervisor/views/AssignedStudentLogBookView";
 import StudentsEvaluations from "../pages/Supervisors/StudentsEvaluations";
 import Notifications from "../pages/Shared/Notifications";
@@ -38,6 +39,10 @@ export default function SupervisorRoutes() {
         {/* Supervisor routes */}
         <Route path="dashboard" element={<DashBoardSupervisor />} />
         <Route path="assigned-students" element={<AssignedStudents />} />
+        <Route
+          path="students/:studentId/internships"
+          element={<StudentInternships />}
+        />
         <Route path="students/:studentId" element={<AssignedStudentPage />} />
 
         {/* Logbook routes */}
