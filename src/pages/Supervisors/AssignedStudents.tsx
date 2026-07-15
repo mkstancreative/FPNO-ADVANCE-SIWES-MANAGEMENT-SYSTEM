@@ -7,16 +7,53 @@ import AssignedStudentTable from "../../components/supervisor/tables/AssignedStu
 import StudentsInternShips from "../../components/supervisor/views/StudentsInternShips";
 import { useModal } from "../../context/ModalContext";
 import type { StudentSummary } from "../../api/types/schoolSupervisor";
+import SelectFilter from "../../components/ui/SelectFilter/SelectFilter";
+import { useGetMe } from "../../hooks/useAuth";
+import type { ITStatus } from "../../api/types/student";
+
+interface FilterState {
+  search: string;
+  page: number;
+  limit: number;
+  isCurrent: boolean;
+  status: ITStatus | "";
+  department: string;
+}
 
 export default function AssignedStudents() {
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<FilterState>({
     search: "",
     page: 1,
     limit: 10,
     isCurrent: true,
+    status: "",
+    department: "",
   });
 
   const { data, isLoading } = useAssignedStudents(filters);
+
+  const { data: meData } = useGetMe();
+
+  interface ProfileInfo {
+    departments?: string[];
+    department?: string | { name: string; code?: string };
+  }
+
+  const profile = meData?.data?.profile as ProfileInfo | undefined;
+  const departments: string[] = Array.isArray(profile?.departments)
+    ? profile.departments
+    : typeof profile?.department === "string"
+      ? [profile.department]
+      : profile?.department?.name
+        ? [profile.department.name]
+        : [];
+
+  const setField = <K extends keyof FilterState>(
+    field: K,
+    value: FilterState[K],
+  ) => {
+    setFilters((prev) => ({ ...prev, [field]: value, page: 1 }));
+  };
 
   const { openModal, closeModal } = useModal();
 
@@ -42,7 +79,14 @@ export default function AssignedStudents() {
   };
 
   const handleReset = () => {
-    setFilters({ search: "", page: 1, limit: 10, isCurrent: true });
+    setFilters({
+      search: "",
+      page: 1,
+      limit: 10,
+      isCurrent: true,
+      status: "",
+      department: "",
+    });
   };
 
   return (
@@ -67,6 +111,36 @@ export default function AssignedStudents() {
           }
           placeholder="Search by name, reg number…"
           onClear={handleReset}
+        />
+      </div>
+      <div
+        className="filter-selects-block"
+        style={{ display: "flex", gap: "12px", marginTop: "12px" }}
+      >
+        <SelectFilter
+          label="Status"
+          options={[
+            { value: "", label: "All Statuses" },
+            { value: "uploaded", label: "Uploaded" },
+            { value: "pending_verification", label: "Pending Verification" },
+            { value: "seeking_placement", label: "Seeking Placement" },
+            { value: "active", label: "Active" },
+            { value: "placed", label: "Placed" },
+            { value: "completed", label: "Completed" },
+          ]}
+          value={filters.status}
+          onChange={(value) => setField("status", value as ITStatus | "")}
+          name="status"
+        />
+        <SelectFilter
+          label="Department"
+          options={[
+            { value: "", label: "All Departments" },
+            ...departments.map((d) => ({ value: d, label: d })),
+          ]}
+          value={filters.department}
+          onChange={(value) => setField("department", value)}
+          name="department"
         />
         <ResetButton onClick={handleReset} />
       </div>

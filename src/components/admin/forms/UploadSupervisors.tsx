@@ -54,12 +54,17 @@ export default function UploadSupervisors({ isOpen, onClose }: Props) {
 
   const [result, setResult] = useState<BulkUploadResponse | null>(null);
 
+  const [showManualDept, setShowManualDept] = useState(false);
+  const [manualDept, setManualDept] = useState("");
+
   // ── Handlers ───────────────────────────────────────────────────────────────
   const handleClose = () => {
     setFile(null);
     setForm(EMPTY_FORM);
     setTab("upload");
     setResult(null);
+    setShowManualDept(false);
+    setManualDept("");
     onClose();
   };
 
@@ -440,7 +445,12 @@ export default function UploadSupervisors({ isOpen, onClose }: Props) {
               Departments <span style={{ color: "#ef4444" }}>*</span>
             </label>
             <MultiSelectPicker
-              options={(departmentsData?.data ?? []).map((d) => ({
+              options={Array.from(
+                new Set([
+                  ...(departmentsData?.data ?? []),
+                  ...form.departments,
+                ]),
+              ).map((d) => ({
                 id: d,
                 name: d,
               }))}
@@ -448,10 +458,80 @@ export default function UploadSupervisors({ isOpen, onClose }: Props) {
               onChange={(ids) => setField("departments", ids as string[])}
               placeholder="Search and select departments…"
             />
-            <p style={{ margin: "4px 0 0", fontSize: 11, color: "#94a3b8" }}>
-              A department already owned by another supervisor can't be
-              selected here.
-            </p>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginTop: 4,
+              }}
+            >
+              <p style={{ margin: 0, fontSize: 11, color: "#94a3b8" }}>
+                A department already owned by another supervisor can't be
+                selected here.
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowManualDept(!showManualDept)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "var(--color-accent)",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  padding: 0,
+                  textDecoration: "underline",
+                }}
+              >
+                {showManualDept
+                  ? "Cancel manual entry"
+                  : "Add department manually"}
+              </button>
+            </div>
+
+            {showManualDept && (
+              <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                <input
+                  className="modal-input"
+                  style={{
+                    flex: 1,
+                    padding: "6px 12px",
+                    height: "34px",
+                    fontSize: 13,
+                  }}
+                  value={manualDept}
+                  onChange={(e) => setManualDept(e.target.value)}
+                  placeholder="Enter department name..."
+                />
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const trimmed = manualDept.trim();
+                    if (!trimmed) return;
+                    if (!form.departments.includes(trimmed)) {
+                      setField("departments", [...form.departments, trimmed]);
+                    }
+                    setManualDept("");
+                    setShowManualDept(false);
+                  }}
+                  style={{
+                    background: "var(--color-accent)",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 6,
+                    padding: "0 16px",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    height: "34px",
+                  }}
+                >
+                  Add
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="form-group">

@@ -22,6 +22,9 @@ export interface AssignedStudentsParams {
   limit?: number;
   search?: string;
   isCurrent?: boolean;
+  status?: string;
+  itStatus?: string;
+  department?: string;
 }
 
 export const getAssignedStudents = async (

@@ -9,21 +9,22 @@ import InternshipsTable from "../../components/admin/tables/InternshipsTable";
 import BulkEnrollStudents from "../../components/admin/forms/BulkEnrollStudents";
 import { useModal } from "../../context/ModalContext";
 import { useBatches } from "../../hooks/useBatches";
-import type { Internship, InternshipStatus } from "../../api/types/internship";
+import type { Internship } from "../../api/types/internship";
+import type { ITStatus } from "../../api/types/student";
 
 interface FilterState {
   batchId: string;
-  itStatus: InternshipStatus | "";
-  session: string;
+  itStatus: ITStatus | "";
+  search: string;
   page: number;
   limit: number;
 }
 
-const STATUS_OPTIONS: { value: InternshipStatus | ""; label: string }[] = [
+const STATUS_OPTIONS: { value: ITStatus | ""; label: string }[] = [
   { value: "", label: "All Status" },
   { value: "uploaded", label: "Uploaded" },
-  { value: "seeking_placement", label: "Seeking Placement" },
   { value: "pending_verification", label: "Pending Verification" },
+  { value: "seeking_placement", label: "Seeking Placement" },
   { value: "placed", label: "Placed" },
   { value: "active", label: "Active" },
   { value: "completed", label: "Completed" },
@@ -37,11 +38,10 @@ export default function Internships() {
   const [filter, setFilter] = useState<FilterState>({
     batchId: "",
     itStatus: "",
-    session: "",
+    search: "",
     page: 1,
     limit: 20,
   });
-  const [search, setSearch] = useState("");
 
   const setField = <K extends keyof FilterState>(
     key: K,
@@ -49,8 +49,7 @@ export default function Internships() {
   ) => setFilter((prev) => ({ ...prev, [key]: value, page: 1 }));
 
   const handleReset = () => {
-    setFilter({ batchId: "", itStatus: "", session: "", page: 1, limit: 20 });
-    setSearch("");
+    setFilter({ batchId: "", itStatus: "", search: "", page: 1, limit: 20 });
   };
 
   const openBulkEnroll = () =>
@@ -84,9 +83,9 @@ export default function Internships() {
 
       <div className="filter-wrapper">
         <SearchInput
-          value={search}
-          onChange={setSearch}
-          placeholder="Search by session…"
+          value={filter.search}
+          onChange={(val) => setField("search", val)}
+          placeholder="Search by name, reg number…"
           onClear={handleReset}
         />
       </div>
@@ -107,9 +106,7 @@ export default function Internships() {
           label="Status"
           options={STATUS_OPTIONS}
           value={filter.itStatus}
-          onChange={(value) =>
-            setField("itStatus", value as InternshipStatus | "")
-          }
+          onChange={(value) => setField("itStatus", value as ITStatus | "")}
           name="itStatus"
         />
         <ResetButton onClick={handleReset} />
@@ -120,7 +117,7 @@ export default function Internships() {
           params={{
             batchId: filter.batchId || undefined,
             itStatus: filter.itStatus || undefined,
-            session: search || undefined,
+            search: filter.search || undefined,
           }}
           page={filter.page}
           limit={filter.limit}

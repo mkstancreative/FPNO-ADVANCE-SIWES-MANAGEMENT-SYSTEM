@@ -84,7 +84,8 @@ export interface InternshipParams {
   studentId?: string;
   batchId?: string;
   itStatus?: InternshipStatus | "";
-  session?: string;
+  // session?: string;
+  search?: string;
   program?: string;
   level?: string;
   isCurrent?: boolean;
