@@ -41,6 +41,30 @@ export const getStudentDetail = async (
   return response.data;
 };
 
+export interface BatchParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+export interface BatchItem {
+  _id: string;
+  name: string;
+}
+
+export interface BatchListResponse {
+  success: boolean;
+  total: number;
+  data: BatchItem[];
+}
+
+export const getMyBatches = async (
+  params?: BatchParams,
+): Promise<BatchListResponse> => {
+  const response = await api.get(`/batches/supervisor`, { params });
+  return response.data;
+};
+
 export interface LogbookListParams {
   status?: string;
   search?: string;
@@ -86,6 +110,9 @@ export interface EvaluationListParams {
   search?: string;
   page?: number;
   limit?: number;
+  batchId?: string;
+  status?: string;
+  department?: string;
 }
 
 export const getPendingEvaluations = async (

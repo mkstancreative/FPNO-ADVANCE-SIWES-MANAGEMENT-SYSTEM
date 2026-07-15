@@ -12,6 +12,8 @@ import {
   type AssignedStudentsParams,
   type LogbookListParams,
   type EvaluationListParams,
+  type BatchParams,
+  getMyBatches,
 } from "../api/services/schoolSupervisors";
 import type {
   EvaluationRequestPayload,
@@ -42,6 +44,9 @@ export const supervisorQueryKeys = {
 
   evaluations: (params?: EvaluationListParams) =>
     [...supervisorQueryKeys.all, "evaluations", params] as const,
+
+  batches: (params?: BatchParams) =>
+    [...supervisorQueryKeys.all, "batches", params] as const,
 };
 
 // ─── Hooks ────────────────────────────────────────────────
@@ -58,6 +63,13 @@ export const useStudentDetail = (id: string) => {
     queryKey: supervisorQueryKeys.studentDetail(id),
     queryFn: () => getStudentDetail(id),
     enabled: !!id,
+  });
+};
+
+export const useMyBatches = (params?: BatchParams) => {
+  return useQuery({
+    queryKey: supervisorQueryKeys.batches(params),
+    queryFn: () => getMyBatches(params),
   });
 };
 
