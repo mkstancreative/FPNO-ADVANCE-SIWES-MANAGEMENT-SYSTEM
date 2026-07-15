@@ -17,8 +17,15 @@ export const supervisorDashboardStats = async () => {
   return response.data;
 };
 
+export interface AssignedStudentsParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  isCurrent?: boolean;
+}
+
 export const getAssignedStudents = async (
-  params?: Partial<Pick<StudentsResponse, "page" | "total">>,
+  params?: AssignedStudentsParams,
 ): Promise<StudentsResponse> => {
   const response = await api.get("/supervisors/school/students", { params });
   return response.data;

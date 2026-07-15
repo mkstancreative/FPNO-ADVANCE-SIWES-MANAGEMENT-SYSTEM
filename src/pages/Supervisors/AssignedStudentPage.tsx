@@ -1,0 +1,347 @@
+import React from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  User,
+  Briefcase,
+  BookOpen,
+  Phone,
+  Mail,
+  MapPin,
+  Shield,
+  BarChart2,
+  ClipboardCheck,
+  ArrowLeft,
+} from "lucide-react";
+import StatusBadge from "../../components/ui/StatusBadge/StatusBadge";
+import { useStudentDetail } from "../../hooks/useSchoolSupervisor";
+import { useStudentEvaluations } from "../../hooks/useEvaluations";
+import { formatDate } from "../../helpers/utilities";
+import "../../components/supervisor/views/AssignedStudentView.css";
+
+// ─── Sub-components (reused from AssignedStudentView) ──────────────────────────
+
+function InfoRow({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value?: string | number | null;
+  icon?: React.ReactNode;
+}) {
+  return (
+    <div className="asv-info-row">
+      <span className="asv-info-label">
+        {icon && <span className="asv-row-icon">{icon}</span>}
+        {label}
+      </span>
+      <span className="asv-info-value">{value ?? "—"}</span>
+    </div>
+  );
+}
+
+function Section({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="asv-section">
+      <div className="asv-section-header">
+        <span className="asv-section-icon">{icon}</span>
+        <h3 className="asv-section-title">{title}</h3>
+      </div>
+      <div className="asv-section-body">{children}</div>
+    </div>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: number;
+  color: string;
+}) {
+  return (
+    <div className="asv-stat-card" style={{ borderTop: `3px solid ${color}` }}>
+      <div className="asv-stat-value" style={{ color }}>
+        {value}
+      </div>
+      <div className="asv-stat-label">{label}</div>
+    </div>
+  );
+}
+
+function SkeletonLoader() {
+  return (
+    <div className="asv-skeleton-wrap">
+      <div className="asv-skel asv-skel--hero">
+        <div className="asv-skel asv-skel--avatar" />
+        <div className="asv-skel-lines">
+          <div className="asv-skel asv-skel--line" />
+          <div className="asv-skel asv-skel--line asv-skel--short" />
+          <div className="asv-skel asv-skel--line asv-skel--xshort" />
+        </div>
+      </div>
+      <div className="asv-skel-stats">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="asv-skel asv-skel--stat" />
+        ))}
+      </div>
+      <div className="asv-skel-grid">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="asv-skel asv-skel--card" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Page ──────────────────────────────────────────────────────────────────────
+
+export default function AssignedStudentPage() {
+  const { studentId = "" } = useParams<{ studentId: string }>();
+  const navigate = useNavigate();
+
+  const { data: response, isLoading } = useStudentDetail(studentId);
+  const { data: evaluationsResp } = useStudentEvaluations(studentId);
+
+  const s = response?.data?.student;
+  const stats = response?.data?.logbookStats;
+  const apiBase = (import.meta.env.VITE_API_URL ?? "").replace(
+    /\/api(\/v\d+)?\/?$/,
+    "",
+  );
+
+  const fullName = s ? `${s.user.firstName} ${s.user.lastName}` : "Student";
+  const initials = s
+    ? `${s.user.firstName[0]}${s.user.lastName[0]}`.toUpperCase()
+    : "?";
+
+  return (
+    <div className="page-container">
+      {/* ── Back navigation ── */}
+      <div className="page-header-left" style={{ marginBottom: 8 }}>
+        <button
+          className="dash-btn dash-btn--ghost"
+          onClick={() => navigate(-1)}
+        >
+          <ArrowLeft size={15} /> Back
+        </button>
+      </div>
+
+      {/* ── Page Header ── */}
+      <div className="page-header">
+        <div className="page-header-left">
+          <div className="page-icon orange">
+            <User size={20} />
+          </div>
+          <div>
+            <h2 className="page-title">{isLoading ? "Loading…" : fullName}</h2>
+            <p className="page-sub">{s?.registrationNumber ?? ""}</p>
+          </div>
+        </div>
+        {s && (
+          <div className="page-header-right">
+            <StatusBadge status={s.itStatus} />
+          </div>
+        )}
+      </div>
+
+      {/* ── Content ── */}
+      {isLoading ? (
+        <SkeletonLoader />
+      ) : !s ? (
+        <div className="asv-empty">
+          <p>Student details could not be loaded.</p>
+        </div>
+      ) : (
+        <div className="asv-content">
+          {/* ── Profile Hero ── */}
+          <div className="asv-hero">
+            <div className="asv-avatar-wrap">
+              {s.passportPhoto ? (
+                <img
+                  src={`${apiBase}${s.passportPhoto.startsWith("/") ? "" : "/"}${s.passportPhoto}`}
+                  alt={fullName}
+                  className="asv-avatar"
+                />
+              ) : (
+                <div className="asv-avatar asv-avatar--fallback">
+                  {initials}
+                </div>
+              )}
+            </div>
+            <div className="asv-hero-info">
+              <h2 className="asv-name">{fullName}</h2>
+              <p className="asv-reg">{s.registrationNumber}</p>
+              <div className="asv-meta-row">
+                <span className="asv-meta">
+                  <Mail size={12} /> {s.user.email}
+                </span>
+                <span className="asv-meta">
+                  <Phone size={12} /> {s.user.phone}
+                </span>
+              </div>
+            </div>
+            <div className="asv-hero-badge">
+              <StatusBadge status={s.itStatus} />
+            </div>
+          </div>
+
+          {/* ── Logbook Stats ── */}
+          {stats && (
+            <div className="asv-stats-grid">
+              <StatCard
+                label="Total Entries"
+                value={stats.total}
+                color="#3b82f6"
+              />
+              <StatCard
+                label="Approved"
+                value={stats.approved}
+                color="#10b981"
+              />
+              <StatCard
+                label="Submitted"
+                value={stats.submitted}
+                color="#f59e0b"
+              />
+              <StatCard
+                label="Rejected"
+                value={stats.rejected}
+                color="#ef4444"
+              />
+            </div>
+          )}
+
+          {/* ── Detail Grid ── */}
+          <div className="asv-grid">
+            {/* Academic Details */}
+            <Section title="Academic Details" icon={<BookOpen size={14} />}>
+              <InfoRow
+                label="Department"
+                value={`${s.department.name} (${s.department.code})`}
+              />
+              <InfoRow
+                label="Program"
+                value={`${s.program.type} — ${s.program.level}`}
+              />
+              <InfoRow label="Session" value={s.session} />
+              <InfoRow label="Batch" value={s.batch?.name} />
+            </Section>
+
+            {/* IT Period */}
+            {s.itPeriod && (
+              <Section title="IT Period" icon={<BarChart2 size={14} />}>
+                <InfoRow
+                  label="Start Date"
+                  value={formatDate(s.itPeriod.startDate)}
+                />
+                <InfoRow
+                  label="End Date"
+                  value={formatDate(s.itPeriod.endDate)}
+                />
+                <InfoRow
+                  label="Duration (weeks)"
+                  value={s.itPeriod.expectedDuration}
+                />
+              </Section>
+            )}
+
+            {/* Placement */}
+            {s.placement && (
+              <Section title="Placement" icon={<Briefcase size={14} />}>
+                <InfoRow
+                  label="Company"
+                  value={s.placement.company?.companyName}
+                />
+                <InfoRow
+                  label="Industry"
+                  value={s.placement.company?.industry}
+                />
+                <InfoRow label="Position" value={s.placement.position} />
+                <InfoRow label="Department" value={s.placement.department} />
+                <div className="asv-info-row">
+                  <span className="asv-info-label">Status</span>
+                  <span className="asv-info-value">
+                    <StatusBadge status={s.placement.status} />
+                  </span>
+                </div>
+                {s.placement.company?.address && (
+                  <div className="asv-info-row">
+                    <span className="asv-info-label">
+                      <span className="asv-row-icon">
+                        <MapPin size={11} />
+                      </span>
+                      Address
+                    </span>
+                    <span className="asv-info-value">
+                      {s.placement.company.address.street},{" "}
+                      {s.placement.company.address.city},{" "}
+                      {s.placement.company.address.state}
+                    </span>
+                  </div>
+                )}
+              </Section>
+            )}
+
+            {/* Industrial Supervisor */}
+            {s.supervisors?.industrial && (
+              <Section
+                title="Industrial Supervisor"
+                icon={<Shield size={14} />}
+              >
+                <InfoRow label="Name" value={s.supervisors.industrial.name} />
+                <InfoRow label="Email" value={s.supervisors.industrial.email} />
+                <InfoRow label="Phone" value={s.supervisors.industrial.phone} />
+              </Section>
+            )}
+
+            {/* Guarantor */}
+            {s.guarantor && (
+              <Section title="Guarantor" icon={<User size={14} />}>
+                <InfoRow label="Name" value={s.guarantor.name} />
+                <InfoRow
+                  label="Relationship"
+                  value={s.guarantor.relationship}
+                />
+                <InfoRow label="Phone" value={s.guarantor.phone} />
+                <InfoRow label="Address" value={s.guarantor.address} />
+              </Section>
+            )}
+
+            {/* Evaluations */}
+            {(evaluationsResp?.data?.length ?? 0) > 0 && (
+              <Section title="Evaluations" icon={<ClipboardCheck size={14} />}>
+                {evaluationsResp!.data.map((ev) => (
+                  <div key={ev._id} style={{ marginBottom: 10 }}>
+                    <InfoRow
+                      label={`${ev.type} — ${ev.internship.batch?.name ?? ""}`}
+                      value={ev.isComplete ? "Complete" : "Pending"}
+                    />
+                    <InfoRow
+                      label="Final Score"
+                      value={
+                        ev.finalScore != null
+                          ? `${ev.finalScore} (${ev.finalGrade ?? "—"})`
+                          : "—"
+                      }
+                    />
+                  </div>
+                ))}
+              </Section>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

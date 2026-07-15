@@ -1,11 +1,10 @@
 import { Layers } from "lucide-react";
+import { useState } from "react";
 import ResetButton from "../../components/ui/ResetButton/ResetButton";
 import SearchInput from "../../components/ui/SearchInput/SearchInput";
 import { useAssignedStudents } from "../../hooks/useSchoolSupervisor";
-
-import AssignedStudentView from "../../components/supervisor/views/AssignedStudentView";
 import AssignedStudentTable from "../../components/supervisor/tables/AssignedStudentTable";
-import { useState } from "react";
+import StudentsInternShips from "../../components/supervisor/views/StudentsInternShips";
 import { useModal } from "../../context/ModalContext";
 import type { StudentSummary } from "../../api/types/schoolSupervisor";
 
@@ -14,10 +13,10 @@ export default function AssignedStudents() {
     search: "",
     page: 1,
     limit: 10,
-    itStatus: "" as "active" | "inactive" | "completed" | "",
+    isCurrent: true,
   });
 
-  const { data, isLoading } = useAssignedStudents({ page: filters.page });
+  const { data, isLoading } = useAssignedStudents(filters);
 
   const { openModal, closeModal } = useModal();
 
@@ -31,17 +30,19 @@ export default function AssignedStudents() {
   };
 
   const handleView = (student: StudentSummary) => {
+    const studentName = `${student.user.firstName} ${student.user.lastName}`;
     openModal(
-      <AssignedStudentView
+      <StudentsInternShips
         isOpen
         studentId={student._id}
+        studentName={studentName}
         onClose={closeModal}
       />,
     );
   };
 
   const handleReset = () => {
-    setFilters({ search: "", page: 1, limit: 10, itStatus: "" });
+    setFilters({ search: "", page: 1, limit: 10, isCurrent: true });
   };
 
   return (

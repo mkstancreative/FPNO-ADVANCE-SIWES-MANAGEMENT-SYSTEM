@@ -9,6 +9,7 @@ import {
   getPendingEvaluations,
   requestEvaluations,
   submitSchoolEvaluation,
+  type AssignedStudentsParams,
   type LogbookListParams,
   type EvaluationListParams,
 } from "../api/services/schoolSupervisors";
@@ -27,7 +28,7 @@ function getErrMsg(err: unknown, fallback: string) {
 export const supervisorQueryKeys = {
   all: ["school-supervisor"] as const,
 
-  students: (params?: { page?: number }) =>
+  students: (params?: AssignedStudentsParams) =>
     [...supervisorQueryKeys.all, "students", params] as const,
 
   studentDetail: (id: string) =>
@@ -45,10 +46,7 @@ export const supervisorQueryKeys = {
 
 // ─── Hooks ────────────────────────────────────────────────
 
-export const useAssignedStudents = (params?: {
-  page?: number;
-  total?: number;
-}) => {
+export const useAssignedStudents = (params?: AssignedStudentsParams) => {
   return useQuery({
     queryKey: supervisorQueryKeys.students(params),
     queryFn: () => getAssignedStudents(params),

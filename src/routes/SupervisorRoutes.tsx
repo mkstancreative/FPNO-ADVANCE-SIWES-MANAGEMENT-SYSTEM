@@ -9,6 +9,7 @@ import StudentLogBooks from "../pages/Supervisors/StudentLogBooks";
 import AssignedStudentLogBookView from "../components/supervisor/views/AssignedStudentLogBookView";
 import StudentsEvaluations from "../pages/Supervisors/StudentsEvaluations";
 import Notifications from "../pages/Shared/Notifications";
+import AssignedStudentPage from "../pages/Supervisors/AssignedStudentPage";
 
 export default function SupervisorRoutes() {
   return (
@@ -37,6 +38,7 @@ export default function SupervisorRoutes() {
         {/* Supervisor routes */}
         <Route path="dashboard" element={<DashBoardSupervisor />} />
         <Route path="assigned-students" element={<AssignedStudents />} />
+        <Route path="students/:studentId" element={<AssignedStudentPage />} />
 
         {/* Logbook routes */}
         <Route

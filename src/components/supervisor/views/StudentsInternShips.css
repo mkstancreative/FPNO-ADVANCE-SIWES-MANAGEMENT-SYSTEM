@@ -1,0 +1,199 @@
+/* ── StudentsInternShips Modal Styles ──────────────────────────────────────── */
+
+.si-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+  padding: 4px 0;
+}
+
+/* ── Card ─────────────────────────────────────────────────────────────────── */
+
+.si-card {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.si-card:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.09);
+  transform: translateY(-2px);
+}
+
+/* ── Card Header ─────────────────────────────────────────────────────────── */
+
+.si-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
+  gap: 10px;
+}
+
+.si-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.si-card-title svg {
+  flex-shrink: 0;
+  color: var(--color-accent);
+}
+
+/* ── Card Body ───────────────────────────────────────────────────────────── */
+
+.si-card-body {
+  padding: 4px 0;
+  flex: 1;
+}
+
+.si-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.si-row:last-child {
+  border-bottom: none;
+}
+
+.si-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.si-label svg {
+  flex-shrink: 0;
+}
+
+.si-value {
+  color: var(--color-text-primary);
+  font-weight: 500;
+  font-size: 12.5px;
+  text-align: right;
+  word-break: break-word;
+}
+
+/* ── Current Badge ───────────────────────────────────────────────────────── */
+
+.si-current-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #059669;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  width: fit-content;
+  margin: 2px 0;
+}
+
+/* ── View Button ─────────────────────────────────────────────────────────── */
+
+.si-view-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  padding: 11px 16px;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    gap 0.15s ease;
+  margin-top: auto;
+}
+
+.si-view-btn:hover {
+  background: var(--color-accent-hover, #ea6c05);
+  gap: 10px;
+}
+
+.si-view-btn svg:last-child {
+  transition: transform 0.15s ease;
+}
+
+.si-view-btn:hover svg:last-child {
+  transform: translateX(3px);
+}
+
+/* ── Loading Skeletons ────────────────────────────────────────────────────── */
+
+.si-loading {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.si-skel {
+  height: 180px;
+  border-radius: 14px;
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-secondary) 25%,
+    var(--color-border) 37%,
+    var(--color-bg-secondary) 63%
+  );
+  background-size: 400% 100%;
+  animation: si-shimmer 1.4s ease infinite;
+}
+
+@keyframes si-shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* ── Empty State ─────────────────────────────────────────────────────────── */
+
+.si-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 16px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  text-align: center;
+}
+
+.si-empty svg {
+  opacity: 0.3;
+  color: var(--color-text-secondary);
+}

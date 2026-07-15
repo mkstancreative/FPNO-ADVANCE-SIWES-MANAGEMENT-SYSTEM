@@ -87,6 +87,7 @@ export interface InternshipParams {
   session?: string;
   program?: string;
   level?: string;
+  isCurrent?: boolean;
   page?: number;
   limit?: number;
 }
