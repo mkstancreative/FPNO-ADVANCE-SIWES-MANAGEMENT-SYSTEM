@@ -186,17 +186,19 @@ export default function AssignedStudentLogBookView() {
               <div className="lbv2-sc-row">
                 <span className="lbv2-sc-label">Program</span>
                 <span className="lbv2-sc-value">
-                  {student.program.type} — {student.program.level}
+                  {student.program?.type} — {student.program?.level}
                 </span>
               </div>
               <div className="lbv2-sc-row">
                 <span className="lbv2-sc-label">Department</span>
-                <span className="lbv2-sc-value">{student.department.name}</span>
+                <span className="lbv2-sc-value">
+                  {student.department?.name}
+                </span>
               </div>
               <div className="lbv2-sc-row">
                 <span className="lbv2-sc-label">Position</span>
                 <span className="lbv2-sc-value">
-                  {student.placement.position}
+                  {student.placement?.position ?? "N/A"}
                 </span>
               </div>
             </div>
