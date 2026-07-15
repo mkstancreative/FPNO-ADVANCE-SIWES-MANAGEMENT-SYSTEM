@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ClipboardList, Send, Search } from "lucide-react";
+import { ClipboardList, Send } from "lucide-react";
 import SearchInput from "../../components/ui/SearchInput/SearchInput";
 import ResetButton from "../../components/ui/ResetButton/ResetButton";
 import StudentEvaluationTable from "../../components/supervisor/tables/StudentEvaluationTable";
@@ -12,6 +12,7 @@ import AddButton from "../../components/ui/AddButton/AddButton";
 import SelectFilter from "../../components/ui/SelectFilter/SelectFilter";
 import { useGetMe } from "../../hooks/useAuth";
 import type { ITStatus } from "../../api/types/student";
+import EvaluationReport from "../../components/supervisor/views/EvaluationReport";
 
 export default function StudentsEvaluations() {
   const [filters, setFilters] = useState({
@@ -139,14 +140,19 @@ export default function StudentsEvaluations() {
           </div>
         </div>
 
-        {/* Bulk request button — only visible when rows are selected */}
-        {selectedIds.length > 0 && (
-          <AddButton
-            text={`Request Evaluation (${selectedIds.length})`}
-            icon={<Send size={14} />}
-            onClick={handleOpenRequestModal}
-          />
-        )}
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          {/* Bulk request button — only visible when rows are selected */}
+          {selectedIds.length > 0 && (
+            <AddButton
+              text={`Request Evaluation (${selectedIds.length})`}
+              icon={<Send size={14} />}
+              onClick={handleOpenRequestModal}
+            />
+          )}
+
+          {/* Export composite results button */}
+          <EvaluationReport />
+        </div>
       </div>
 
       {/* ── Filters ── */}
@@ -202,28 +208,6 @@ export default function StudentsEvaluations() {
         />
         <ResetButton onClick={handleReset} />
       </div>
-
-      {/* ── Summary stats ── */}
-      {!isLoading && rows.length > 0 && (
-        <div className="eval-summary-bar">
-          <span className="eval-summary-item">
-            <Search size={12} />
-            {data?.total ?? 0} students found
-          </span>
-          <span className="eval-summary-item eval-summary-item--pending">
-            {rows.filter((r) => !r.schoolSubmitted).length} pending school eval
-          </span>
-          <span className="eval-summary-item eval-summary-item--done">
-            {rows.filter((r) => r.schoolSubmitted).length} completed
-          </span>
-          <style>{`
-            .eval-summary-bar{display:flex;align-items:center;gap:16px;padding:10px 16px;background:var(--color-bg-secondary);border:1px solid var(--color-border);border-radius:10px;font-size:12.5px;color:var(--color-text-secondary);flex-wrap:wrap}
-            .eval-summary-item{display:inline-flex;align-items:center;gap:5px}
-            .eval-summary-item--pending{color:#f59e0b;font-weight:600}
-            .eval-summary-item--done{color:#10b981;font-weight:600}
-          `}</style>
-        </div>
-      )}
 
       {/* ── Table ── */}
       <div className="table-wrapper">

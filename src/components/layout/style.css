@@ -743,7 +743,7 @@
   justify-content: space-between;
   padding: 0 28px;
   border-top: 1px solid var(--color-divider);
-  background: var(--color-footer-bg);
+  background: var(--color-bg-secondary);
 }
 .dash-footer__copy {
   font-size: 12.5px;

@@ -14,6 +14,7 @@ import {
   type EvaluationListParams,
   type BatchParams,
   getMyBatches,
+  exportSchoolEvaluations,
 } from "../api/services/schoolSupervisors";
 import type {
   EvaluationRequestPayload,
@@ -173,5 +174,22 @@ export const useSubmitSchoolEvaluation = () => {
 
       toast.error(getErrMsg(err, "Failed to submit school evaluation."));
     },
+  });
+};
+
+export const useExportSchoolEvaluations = () => {
+  return useMutation({
+    mutationFn: exportSchoolEvaluations,
+    onSuccess: (blob: Blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "evaluation_report.xlsx";
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Evaluation report exported successfully!");
+    },
+    onError: (err: unknown) =>
+      toast.error(getErrMsg(err, "Failed to export evaluation report.")),
   });
 };

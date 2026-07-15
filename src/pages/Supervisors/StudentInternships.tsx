@@ -107,7 +107,7 @@ function InternshipCard({
           onClick={() => onViewProfile(studentId)}
         >
           <User size={13} />
-          View Profile
+          Batch Record
           <ChevronRight size={13} />
         </button>
 

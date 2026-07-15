@@ -136,3 +136,8 @@ export const submitSchoolEvaluation = async (
   const response = await api.post(`/evaluations/school/${studentId}`, payload);
   return response.data;
 };
+
+export const exportSchoolEvaluations = async () => {
+  const response = await api.get("/evaluations/composite-results", { responseType: "blob" });
+  return response.data;
+};
