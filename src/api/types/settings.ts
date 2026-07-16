@@ -8,6 +8,7 @@ export interface SystemSettings {
   phone: string;
   email: string;
   address: string;
+  code: string;
 }
 
 export interface GetSettingsResponse {

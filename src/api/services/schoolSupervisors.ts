@@ -12,6 +12,47 @@ import type {
   SchoolEvaluationResponse,
 } from "../types/schoolSupervisor";
 
+// ─── Evaluation Report ────────────────────────────────────────────────────────
+
+export interface EvaluationReportParams {
+  department?: string;
+  batchId?: string;
+  internshipId?: string;
+  search?: string;
+  status?: string;
+  grade?: string;
+  type?: "midterm" | "final";
+  page?: number;
+  limit?: number;
+}
+
+export interface EvaluationReportItem {
+  student: {
+    _id: string;
+    name: string;
+    registrationNumber: string;
+    department: string;
+  };
+  batch?: { _id: string; name: string };
+  type: string;
+  status: string;
+  grade: string;
+  schoolScore?: number;
+  industrialScore?: number;
+  finalScore?: number;
+  finalGrade?: string;
+  submittedAt?: string;
+}
+
+export interface EvaluationReportResponse {
+  success: boolean;
+  total: number;
+  page: number;
+  pages: number;
+  filters: Record<string, string>;
+  data: EvaluationReportItem[];
+}
+
 export const supervisorDashboardStats = async () => {
   const response = await api.get("/supervisors/dashboard");
   return response.data;
@@ -137,7 +178,19 @@ export const submitSchoolEvaluation = async (
   return response.data;
 };
 
-export const exportSchoolEvaluations = async () => {
-  const response = await api.get("/evaluations/composite-results", { responseType: "blob" });
+export const getEvaluationReport = async (
+  params?: EvaluationReportParams,
+): Promise<EvaluationReportResponse> => {
+  const response = await api.get("/evaluations/composite-results", { params });
+  return response.data;
+};
+
+export const exportSchoolEvaluations = async (
+  params?: EvaluationReportParams,
+) => {
+  const response = await api.get("/evaluations/composite-results", {
+    params,
+    responseType: "blob",
+  });
   return response.data;
 };

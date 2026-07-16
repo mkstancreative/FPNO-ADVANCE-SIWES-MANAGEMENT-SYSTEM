@@ -12,7 +12,6 @@ import AddButton from "../../components/ui/AddButton/AddButton";
 import SelectFilter from "../../components/ui/SelectFilter/SelectFilter";
 import { useGetMe } from "../../hooks/useAuth";
 import type { ITStatus } from "../../api/types/student";
-import EvaluationReport from "../../components/supervisor/views/EvaluationReport";
 
 export default function StudentsEvaluations() {
   const [filters, setFilters] = useState({
@@ -149,9 +148,6 @@ export default function StudentsEvaluations() {
               onClick={handleOpenRequestModal}
             />
           )}
-
-          {/* Export composite results button */}
-          <EvaluationReport />
         </div>
       </div>
 

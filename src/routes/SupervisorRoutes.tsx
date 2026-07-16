@@ -9,6 +9,7 @@ import StudentLogBooks from "../pages/Supervisors/StudentLogBooks";
 import StudentInternships from "../pages/Supervisors/StudentInternships";
 import AssignedStudentLogBookView from "../components/supervisor/views/AssignedStudentLogBookView";
 import StudentsEvaluations from "../pages/Supervisors/StudentsEvaluations";
+import EvaluationReportPage from "../pages/Supervisors/EvaluationReportPage";
 import Notifications from "../pages/Shared/Notifications";
 import AssignedStudentPage from "../pages/Supervisors/AssignedStudentPage";
 
@@ -57,6 +58,7 @@ export default function SupervisorRoutes() {
 
         {/* Evaluation routes */}
         <Route path="students-evaluations" element={<StudentsEvaluations />} />
+        <Route path="evaluation-report" element={<EvaluationReportPage />} />
 
         {/* Notifications */}
         <Route path="notifications" element={<Notifications />} />

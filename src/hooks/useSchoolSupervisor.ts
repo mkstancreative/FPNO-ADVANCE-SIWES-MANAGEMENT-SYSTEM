@@ -15,6 +15,8 @@ import {
   type BatchParams,
   getMyBatches,
   exportSchoolEvaluations,
+  getEvaluationReport,
+  type EvaluationReportParams,
 } from "../api/services/schoolSupervisors";
 import type {
   EvaluationRequestPayload,
@@ -45,6 +47,9 @@ export const supervisorQueryKeys = {
 
   evaluations: (params?: EvaluationListParams) =>
     [...supervisorQueryKeys.all, "evaluations", params] as const,
+
+  evaluationReport: (params?: EvaluationReportParams) =>
+    [...supervisorQueryKeys.all, "evaluation-report", params] as const,
 
   batches: (params?: BatchParams) =>
     [...supervisorQueryKeys.all, "batches", params] as const,
@@ -177,9 +182,17 @@ export const useSubmitSchoolEvaluation = () => {
   });
 };
 
+export const useEvaluationReport = (params?: EvaluationReportParams) => {
+  return useQuery({
+    queryKey: supervisorQueryKeys.evaluationReport(params),
+    queryFn: () => getEvaluationReport(params),
+  });
+};
+
 export const useExportSchoolEvaluations = () => {
   return useMutation({
-    mutationFn: exportSchoolEvaluations,
+    mutationFn: (params?: EvaluationReportParams) =>
+      exportSchoolEvaluations(params),
     onSuccess: (blob: Blob) => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");

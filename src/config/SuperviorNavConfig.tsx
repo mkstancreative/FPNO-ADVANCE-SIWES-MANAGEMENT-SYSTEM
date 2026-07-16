@@ -1,41 +1,42 @@
-import {
-  Bell,
-  LayoutDashboard,
-  Users,
-} from 'lucide-react';
+import { Bell, ClipboardList, LayoutDashboard, Users } from "lucide-react";
 
 export const SUPERVISOR_NAV = [
   {
-    section: 'Overview',
+    section: "Overview",
     items: [
       {
-        label: 'Dashboard',
+        label: "Dashboard",
         icon: <LayoutDashboard size={18} />,
-        path: '/supervisor',
+        path: "/supervisor",
       },
     ],
   },
   {
-    section: 'Students',
+    section: "Students",
     items: [
       {
-        label: 'Assigned Students',
+        label: "Assigned Students",
         icon: <Users size={18} />,
-        path: '/supervisor/assigned-students',
+        path: "/supervisor/assigned-students",
       },
     ],
   },
   {
-    section: 'Evaluations',
+    section: "Evaluations",
     items: [
       {
-        label: 'Students Evaluations',
+        label: "Students Evaluations",
         icon: <Users size={18} />,
-        path: '/supervisor/students-evaluations',
+        path: "/supervisor/students-evaluations",
+      },
+      {
+        label: "Evaluation Report",
+        icon: <ClipboardList size={18} />,
+        path: "/supervisor/evaluation-report",
       },
     ],
   },
-   {
+  {
     section: "Notifications",
     items: [
       {
@@ -45,5 +46,4 @@ export const SUPERVISOR_NAV = [
       },
     ],
   },
-
 ];

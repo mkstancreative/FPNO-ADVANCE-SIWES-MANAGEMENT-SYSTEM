@@ -25,7 +25,7 @@ export default function EvaluationReport() {
         boxShadow: "0 2px 4px rgba(16, 185, 129, 0.2)",
       }}
       disabled={isPending}
-      onClick={() => exportReport()}
+      onClick={() => exportReport(undefined)}
       onMouseEnter={(e) => {
         if (!isPending) {
           e.currentTarget.style.opacity = "0.9";
