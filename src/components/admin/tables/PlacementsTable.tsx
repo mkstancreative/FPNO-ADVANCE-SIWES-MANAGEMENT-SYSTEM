@@ -107,15 +107,19 @@ export default function PlacementsTable({
       header: "IT Period",
       render: (row) => (
         <div style={{ fontSize: 12.5, color: "var(--color-text-primary)" }}>
-          {new Date(row.student.itPeriod.startDate).toLocaleDateString(
-            undefined,
-            { month: "short", day: "numeric" },
-          )}{" "}
-          -{" "}
-          {new Date(row.student.itPeriod.endDate).toLocaleDateString(
-            undefined,
-            { month: "short", day: "numeric", year: "numeric" },
-          )}
+          {row.student.itPeriod?.startDate
+            ? new Date(row.student.itPeriod.startDate).toLocaleDateString(
+                undefined,
+                { month: "short", day: "numeric" },
+              )
+            : "N/A"}
+          {" - "}
+          {row.student.itPeriod?.endDate
+            ? new Date(row.student.itPeriod.endDate).toLocaleDateString(
+                undefined,
+                { month: "short", day: "numeric", year: "numeric" },
+              )
+            : "N/A"}
         </div>
       ),
     },
