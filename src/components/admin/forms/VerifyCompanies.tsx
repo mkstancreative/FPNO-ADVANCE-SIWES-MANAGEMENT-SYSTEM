@@ -225,7 +225,7 @@ export default function VerifyCompanies({ isOpen, onClose, companies }: Props) {
       footer={footer}
     >
       <form
-        id="verify-organization-form"
+        id="verify-company-form"
         onSubmit={handleSubmit}
         style={{ display: "flex", flexDirection: "column", gap: 16 }}
       >
