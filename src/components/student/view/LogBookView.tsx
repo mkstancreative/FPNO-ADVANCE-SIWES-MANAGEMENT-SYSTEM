@@ -329,8 +329,8 @@ function LogBookViewInner({
               <>
                 <RotateCcw size={13} />
                 {status === "rejected"
-                  ? "Request Re-evaluation"
-                  : "Request Approval"}
+                  ? "Rejected By Supervisor"
+                  : "Request Re-evaluation"}
               </>
             )}
           </button>
