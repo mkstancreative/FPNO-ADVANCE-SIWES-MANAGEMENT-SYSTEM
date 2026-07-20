@@ -3,6 +3,8 @@ import { Navigate, useNavigate } from "react-router-dom";
 import "./Login.css";
 import { useLoginUser } from "../../hooks/useAuth";
 import { useAuth } from "../../context/useAuth";
+import { useSystemSettings } from "../../hooks/useSettings";
+import { resolveLogo, resolveName } from "../../utils/branding";
 import type { UserRole } from "../../api/types/auth";
 import ForgotPassword from "../../components/auth/ForgotPassword";
 
@@ -15,6 +17,8 @@ const ApexULanding = () => {
 
   const { mutate: login, isPending } = useLoginUser();
   const { isAuthenticated, user, isLoading } = useAuth();
+  const { data: settingsData } = useSystemSettings();
+  const settings = settingsData?.settings;
 
   if (!isLoading && isAuthenticated && user) {
     const roleHome: Record<UserRole, string> = {
@@ -172,7 +176,8 @@ const ApexULanding = () => {
     { value: "36", label: "States Covered" },
   ];
 
-  const appName = import.meta.env.VITE_APP_NAME;
+  const appName = resolveName(settings);
+  const logo = resolveLogo(settings);
   return (
     <div
       style={{
@@ -272,7 +277,7 @@ const ApexULanding = () => {
                     justifyContent: "center",
                   }}
                 >
-                  <img src="/logo.png" alt="logo" width={36} height={36} />
+                  <img src={logo} alt="logo" width={36} height={36} />
                 </div>
                 <span
                   style={{

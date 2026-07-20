@@ -16,21 +16,12 @@ import {
   useUpdateSystemSettings,
 } from "../../hooks/useSettings";
 import Spinner from "../../components/ui/Spinner/Spinner";
+import { logoSrc } from "../../utils/branding";
+import type { SystemSettings as SystemSettingsData } from "../../api/types/settings";
 
 /* ── helpers ─────────────────────────────────────────────────────────────── */
-const apiBase = (import.meta.env.VITE_API_URL ?? "").replace(
-  /\/api(\/v\d+)?\/?$/,
-  "",
-);
-
-function logoSrc(logo: string) {
-  if (!logo) return "";
-  if (/^https?:\/\//.test(logo)) return logo;
-  return `${apiBase}${logo.startsWith("/") ? "" : "/"}${logo}`;
-}
-
-const logoUrl = (settings: { logo?: { url: string } } | undefined) =>
-  settings?.logo?.url ?? "";
+const logoUrl = (settings: SystemSettingsData | undefined) =>
+  logoSrc(settings?.logo?.url);
 
 /* ── types ───────────────────────────────────────────────────────────────── */
 interface FormState {
@@ -133,7 +124,7 @@ export default function SystemSettings() {
       address: settings.address ?? "",
       code: settings.code ?? "",
     });
-    setLogoPreview(logoSrc(logoUrl(settings)));
+    setLogoPreview(logoUrl(settings));
   }
 
   const setField = <K extends keyof FormState>(key: K, value: FormState[K]) =>
@@ -142,7 +133,7 @@ export default function SystemSettings() {
   const handleLogoChange = (file: File | null) => {
     setLogoFile(file);
     setLogoPreview(
-      file ? URL.createObjectURL(file) : logoSrc(logoUrl(data?.settings)),
+      file ? URL.createObjectURL(file) : logoUrl(data?.settings),
     );
   };
 
@@ -156,7 +147,7 @@ export default function SystemSettings() {
       code: settings.code ?? "",
     });
     setLogoFile(null);
-    setLogoPreview(logoSrc(logoUrl(settings)));
+    setLogoPreview(logoUrl(settings));
   };
 
   const handleSubmit = (e: FormEvent) => {

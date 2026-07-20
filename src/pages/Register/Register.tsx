@@ -2,6 +2,8 @@ import { useState, type FormEvent, type ChangeEvent } from "react";
 import { Link } from "react-router-dom";
 import "../Login/Login.css";
 import { useRegisterStudent } from "../../hooks/useAuth";
+import { useSystemSettings } from "../../hooks/useSettings";
+import { resolveLogo, resolveName } from "../../utils/branding";
 
 const Register = () => {
   const { mutate: register, isPending } = useRegisterStudent();
@@ -41,7 +43,10 @@ const Register = () => {
     register(payload);
   };
 
-  const appName = "CIMS";
+  const { data: settingsData } = useSystemSettings();
+  const settings = settingsData?.settings;
+  const appName = resolveName(settings);
+  const logo = resolveLogo(settings);
 
   return (
     <div
@@ -79,7 +84,7 @@ const Register = () => {
                 justifyContent: "center",
               }}
             >
-              <img src="/logo.png" alt="logo" width={36} height={36} />
+              <img src={logo} alt="logo" width={36} height={36} />
             </div>
             <span style={{ fontWeight: 700, fontSize: 16 }}>{appName}</span>
           </div>

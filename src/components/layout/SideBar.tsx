@@ -7,6 +7,8 @@ import {
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useLogoutUser } from "../../hooks/useAuth";
+import { useSystemSettings } from "../../hooks/useSettings";
+import { resolveLogo, resolveName } from "../../utils/branding";
 import type { NavItem, NavSection } from "./types";
 
 // ─── Expandable Nav Item ──────────────────────────────────────────────────────
@@ -107,7 +109,10 @@ export default function SideBar({
 }: SideBarProps) {
   const { pathname } = useLocation();
   const { mutate: logout, isPending: loggingOut } = useLogoutUser();
-  const appName = import.meta.env.VITE_APP_NAME;
+  const { data } = useSystemSettings();
+  const settings = data?.settings;
+  const appName = resolveName(settings);
+  const logo = resolveLogo(settings);
 
   return (
     <aside
@@ -121,7 +126,7 @@ export default function SideBar({
     >
       {/* ── Logo + collapse toggle ── */}
       <div className="dash-sidebar__logo">
-        <img src="/logo.png" alt="logo" className="dash-sidebar__logo-icon" />
+        <img src={logo} alt="logo" className="dash-sidebar__logo-icon" />
         {!collapsed && (
           <span className="dash-sidebar__logo-text">{appName}</span>
         )}

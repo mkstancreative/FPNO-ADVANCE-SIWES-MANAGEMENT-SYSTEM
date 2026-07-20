@@ -2,6 +2,8 @@ import { useState, type FormEvent } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { KeyRound, CheckCircle2, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { useResetPassword } from "../../hooks/useAuth";
+import { useSystemSettings } from "../../hooks/useSettings";
+import { resolveLogo, resolveName } from "../../utils/branding";
 import "../shared/forms/ChangePassword.css";
 import "../../pages/Login/Login.css";
 
@@ -26,6 +28,10 @@ export default function ResetPassword() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
   const { mutate: resetPassword, isPending } = useResetPassword();
+  const { data: settingsData } = useSystemSettings();
+  const settings = settingsData?.settings;
+  const appName = resolveName(settings);
+  const logo = resolveLogo(settings);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -142,10 +148,10 @@ export default function ResetPassword() {
                   justifyContent: "center",
                 }}
               >
-                <img src="/logo.png" alt="logo" width={36} height={36} />
+                <img src={logo} alt="logo" width={36} height={36} />
               </div>
               <span style={{ fontWeight: 700, fontSize: 16 }}>
-                
+                {appName}
               </span>
             </div>
 

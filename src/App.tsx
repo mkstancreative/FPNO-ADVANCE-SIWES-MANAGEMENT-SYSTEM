@@ -11,6 +11,7 @@ import { ModalProvider } from "./context/ModalProvider";
 import { NotificationsProvider, InternshipProvider } from "./context";
 import { NotificationPopupContainer } from "./components/ui/NotificationPopup";
 import ChangePassword from "./components/shared/forms/ChangePassword";
+import SiteMeta from "./components/layout/SiteMeta";
 import { useAuth } from "./context/useAuth";
 
 // Lazy-load role layouts so each bundle stays small
@@ -82,6 +83,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
+        <SiteMeta />
         <GlobalAuthModals />
         <InternshipProvider>
           <NotificationsProvider>

@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import AvailableCompanies from "../Students/AvailableCompanies";
 import { ChevronLeft } from "lucide-react";
+import { useSystemSettings } from "../../hooks/useSettings";
+import { resolveLogo, resolveName } from "../../utils/branding";
 import "../Login/Login.css";
 
 const responsiveStyles = `
@@ -16,7 +18,10 @@ const responsiveStyles = `
 
 export default function PublicAvailableCompanies() {
   const navigate = useNavigate();
-  const appName = import.meta.env.VITE_APP_NAME;
+  const { data } = useSystemSettings();
+  const settings = data?.settings;
+  const appName = resolveName(settings);
+  const logo = resolveLogo(settings);
 
   return (
     <div
@@ -61,7 +66,7 @@ export default function PublicAvailableCompanies() {
                 justifyContent: "center",
               }}
             >
-              <img src="/logo.png" alt="Logo" style={{ width: 36, height: 36 }} />
+              <img src={logo} alt="Logo" style={{ width: 36, height: 36 }} />
             </div>
             <span
               style={{
