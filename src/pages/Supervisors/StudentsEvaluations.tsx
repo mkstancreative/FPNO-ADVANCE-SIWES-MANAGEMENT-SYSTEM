@@ -17,9 +17,11 @@ export default function StudentsEvaluations() {
   const [filters, setFilters] = useState({
     search: "",
     page: 1,
-    limit: 10,
+    limit: 20,
     batchId: "",
-    status: "" as ITStatus | "",
+    itStatus: "" as ITStatus | "",
+    hasSchoolEvaluation: "",
+    hasIndustrialEvaluation: "",
     department: "",
   });
 
@@ -39,7 +41,9 @@ export default function StudentsEvaluations() {
     page: filters.page,
     limit: filters.limit,
     batchId: filters.batchId || undefined,
-    status: filters.status || undefined,
+    itStatus: filters.itStatus || undefined,
+    hasSchoolEvaluation: filters.hasSchoolEvaluation || undefined,
+    hasIndustrialEvaluation: filters.hasIndustrialEvaluation || undefined,
     department: filters.department || undefined,
   });
 
@@ -126,9 +130,11 @@ export default function StudentsEvaluations() {
     setFilters({
       search: "",
       page: 1,
-      limit: 10,
+      limit: 20,
       batchId: "",
-      status: "",
+      itStatus: "",
+      hasSchoolEvaluation: "",
+      hasIndustrialEvaluation: "",
       department: "",
     });
     setSelectedIds([]);
@@ -189,7 +195,7 @@ export default function StudentsEvaluations() {
           name="batchId"
         />
         <SelectFilter
-          label="Status"
+          label="IT Status"
           options={[
             { value: "", label: "All Statuses" },
             { value: "uploaded", label: "Uploaded" },
@@ -199,9 +205,31 @@ export default function StudentsEvaluations() {
             { value: "placed", label: "Placed" },
             { value: "completed", label: "Completed" },
           ]}
-          value={filters.status}
-          onChange={(value) => setField("status", value as ITStatus | "")}
-          name="status"
+          value={filters.itStatus}
+          onChange={(value) => setField("itStatus", value as ITStatus | "")}
+          name="itStatus"
+        />
+        <SelectFilter
+          label="School Eval"
+          options={[
+            { value: "", label: "All" },
+            { value: "true", label: "Done" },
+            { value: "false", label: "Pending" },
+          ]}
+          value={filters.hasSchoolEvaluation}
+          onChange={(value) => setField("hasSchoolEvaluation", value)}
+          name="hasSchoolEvaluation"
+        />
+        <SelectFilter
+          label="Company Eval"
+          options={[
+            { value: "", label: "All" },
+            { value: "true", label: "Done" },
+            { value: "false", label: "Pending" },
+          ]}
+          value={filters.hasIndustrialEvaluation}
+          onChange={(value) => setField("hasIndustrialEvaluation", value)}
+          name="hasIndustrialEvaluation"
         />
         <SelectFilter
           label="Department"

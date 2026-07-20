@@ -180,6 +180,9 @@ export interface EvaluationListParams {
   limit?: number;
   batchId?: string;
   status?: string;
+  itStatus?: string;
+  hasSchoolEvaluation?: string;
+  hasIndustrialEvaluation?: string;
   department?: string;
 }
 
