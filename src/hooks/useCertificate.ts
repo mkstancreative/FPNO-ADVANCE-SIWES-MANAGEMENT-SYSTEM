@@ -16,10 +16,11 @@ import {
 import { toast } from "react-toastify";
 import type { RRRData } from "../api/types/certificate";
 
-export const useCertificateStatus = () => {
+export const useCertificateStatus = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ["certificate-status"],
     queryFn: getCertificateStatus,
+    enabled: options?.enabled ?? true,
   });
 };
 

@@ -1,5 +1,7 @@
 import { type PendingEvaluation } from "../../../api/types/schoolSupervisor";
-import ActionDropdown from "../../ui/ActionDropdown/ActionDropDown";
+import ActionDropdown, {
+  type Action,
+} from "../../ui/ActionDropdown/ActionDropDown";
 import type { Column, TableMeta } from "../../ui/GeneralTable/GeneralTable";
 import GeneralTable from "../../ui/GeneralTable/GeneralTable";
 import StatusBadge from "../../ui/StatusBadge/StatusBadge";
@@ -131,23 +133,27 @@ export default function StudentEvaluationTable({
     },
     {
       header: "Action",
-      render: (row) => (
-        <ActionDropdown
-          actions={[
-            {
-              label: row.schoolSubmitted ? "Submitted" : "Evaluate",
-              icon: <ClipboardCheck size={14} />,
-              onClick: () => onSubmitEvaluation(row),
-              disabled: row.schoolSubmitted,
-            },
-            {
-              label: "Request Evaluation",
-              icon: <Send size={14} />,
-              onClick: () => onRequestEvaluation(row),
-            },
-          ]}
-        />
-      ),
+      render: (row) => {
+        const showRequest = !(
+          row.itStatus === "completed" && row.schoolSubmitted
+        );
+        const actions: Action[] = [
+          {
+            label: row.schoolSubmitted ? "Submitted" : "Evaluate",
+            icon: <ClipboardCheck size={14} />,
+            onClick: () => onSubmitEvaluation(row),
+            disabled: row.schoolSubmitted,
+          },
+        ];
+        if (showRequest) {
+          actions.push({
+            label: "Request Evaluation",
+            icon: <Send size={14} />,
+            onClick: () => onRequestEvaluation(row),
+          });
+        }
+        return <ActionDropdown actions={actions} />;
+      },
     },
   ];
 

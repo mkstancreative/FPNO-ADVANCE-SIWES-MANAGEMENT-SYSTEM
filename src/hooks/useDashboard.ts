@@ -9,11 +9,15 @@ import type {
 } from "../api/types/dashboard";
 import type { InternshipScopeParams } from "../api/types/internship";
 
-export const useStudentDashboard = (params?: InternshipScopeParams) =>
+export const useStudentDashboard = (
+  params?: InternshipScopeParams,
+  options?: { enabled?: boolean },
+) =>
   useQuery<StudentDashboardResponse>({
     queryKey: ["student-dashboard", params],
     queryFn: () => studentDashboardStats(params),
     staleTime: 2 * 60 * 1000,
+    enabled: options?.enabled ?? true,
   });
 
 export const useAdminDashboard = () =>

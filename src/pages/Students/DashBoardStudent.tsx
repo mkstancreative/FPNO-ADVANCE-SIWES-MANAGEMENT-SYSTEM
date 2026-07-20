@@ -31,15 +31,21 @@ import { NotificationsSection } from "../../components/student/dashboard/Notific
 import type { RRRData } from "../../api/types/certificate";
 import { fmt, ago } from "../../helpers/utilities";
 import { useInternship } from "../../context/useInternship";
+import { useAuth } from "../../context/useAuth";
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 export default function DashBoardStudent() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { selectedInternshipId } = useInternship();
-  const { data: resp, isLoading: loadingStats } = useStudentDashboard({
-    internshipId: selectedInternshipId ?? undefined,
+  const { user } = useAuth();
+  const canFetch = !user?.mustChangePassword;
+  const { data: resp, isLoading: loadingStats } = useStudentDashboard(
+    { internshipId: selectedInternshipId ?? undefined },
+    { enabled: canFetch },
+  );
+  const { data: certStatus, isLoading: loadingCert } = useCertificateStatus({
+    enabled: canFetch,
   });
-  const { data: certStatus, isLoading: loadingCert } = useCertificateStatus();
   const { openModal, closeModal } = useModal();
   const { mutate: verify } = useVerifyCertificatePayment();
   const { certRef, downloadingCert, certData, handleDownloadCert } =
@@ -218,6 +224,7 @@ export default function DashBoardStudent() {
     [openModal, closeModal],
   );
 
+  if (!canFetch) return null;
   if (loadingStats) return <DashboardSkeleton cards={8} wide />;
   if (!resp?.data) return <DashboardError />;
 
