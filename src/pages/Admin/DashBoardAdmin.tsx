@@ -10,6 +10,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useAdminDashboard } from "../../hooks/useDashboard";
+import { useSystemSettings } from "../../hooks/useSettings";
+import { resolveName } from "../../utils/branding";
 import {
   InfoPanel,
   KpiCard,
@@ -26,6 +28,7 @@ import { useAuth } from "../../context/useAuth";
 export default function DashBoardAdmin() {
   const { user } = useAuth();
   const { data: resp, isLoading } = useAdminDashboard();
+  const { data: settingsResp } = useSystemSettings();
 
   if (isLoading) return <DashboardSkeleton cards={8} wide />;
   if (!resp?.data) return <DashboardError />;
@@ -80,7 +83,7 @@ export default function DashBoardAdmin() {
         )
       : 0;
 
-  const appName = "CIMS";
+  const appName = resolveName(settingsResp?.settings);
 
   return (
     <div className="db-page">

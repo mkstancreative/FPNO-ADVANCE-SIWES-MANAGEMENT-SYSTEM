@@ -166,10 +166,10 @@ function ReviewView({
         <ISRStudentBanner
           initials={initials(student.registrationNumber)}
           name={`${student.registrationNumber} (Student)`}
-          department={student.department.name}
-          program={`${student.program.type} ${student.program.level}`}
-          position={student.placement.position}
-          placementDept={student.placement.department}
+          department={student.department?.name ?? ""}
+          program={`${student.program?.type ?? ""} ${student.program?.level ?? ""}`.trim()}
+          position={student.placement?.position ?? ""}
+          placementDept={student.placement?.department}
           evaluatorEmail={supervisorEmail}
           expiresAt={tokenExpiresAt}
         />

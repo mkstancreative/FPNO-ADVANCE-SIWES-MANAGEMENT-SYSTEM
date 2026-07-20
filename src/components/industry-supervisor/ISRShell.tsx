@@ -1,5 +1,7 @@
 import React from "react";
 import { Layers } from "lucide-react";
+import { useSystemSettings } from "../../hooks/useSettings";
+import { resolveName } from "../../utils/branding";
 
 interface ShellProps {
   children: React.ReactNode;
@@ -10,7 +12,8 @@ export function ISRShell({
   children,
   tag = "Industry Supervisor Review",
 }: ShellProps) {
-  const appName = import.meta.env.VITE_APP_NAME;
+  const { data } = useSystemSettings();
+  const appName = resolveName(data?.settings);
   return (
     <div className="isr-shell">
       <header className="isr-header">

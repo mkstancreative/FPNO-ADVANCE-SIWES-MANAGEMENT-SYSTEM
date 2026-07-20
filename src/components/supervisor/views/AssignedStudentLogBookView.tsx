@@ -18,7 +18,7 @@ import {
   useLogbookDetail,
   useReviewLogbook,
 } from "../../../hooks/useSchoolSupervisor";
-import StatusBadge from "../../ui/StatusBadge/StatusBadge";
+// import StatusBadge from "../../ui/StatusBadge/StatusBadge";
 import "./AssignedStudentLogBookView.css";
 
 // ─── Status meta ─────────────────────────────────────────────────────────────
@@ -164,7 +164,7 @@ export default function AssignedStudentLogBookView() {
               <span className={`lbv2-status-pill ${statusEntry?.cls ?? ""}`}>
                 {statusEntry?.label ?? logbook.status}
               </span>
-              <StatusBadge status={student.itStatus} />
+              {/* <StatusBadge status={student.itStatus  } /> */}
             </div>
           </div>
 
