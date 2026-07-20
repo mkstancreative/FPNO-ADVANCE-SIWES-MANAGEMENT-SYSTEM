@@ -20,6 +20,7 @@ import {
 } from "../../../hooks/useSchoolSupervisor";
 // import StatusBadge from "../../ui/StatusBadge/StatusBadge";
 import "./AssignedStudentLogBookView.css";
+import StatusBadge from "../../ui/StatusBadge/StatusBadge";
 
 // ─── Status meta ─────────────────────────────────────────────────────────────
 
@@ -108,8 +109,8 @@ export default function AssignedStudentLogBookView() {
 
   const statusEntry = logbook ? STATUS_META[logbook.status] : null;
 
-  // Review can only be submitted for submitted logbooks
-  const canReview = logbook?.status === "submitted";
+  const hasSchoolReview = !!logbook?.schoolReview?.comments;
+  const canReview = !hasSchoolReview;
 
   const handleSubmitReview = () => {
     if (!reviewText.trim()) return;
@@ -198,7 +199,13 @@ export default function AssignedStudentLogBookView() {
               <div className="lbv2-sc-row">
                 <span className="lbv2-sc-label">Position</span>
                 <span className="lbv2-sc-value">
-                  {student.placement?.position ?? "N/A"}
+                  {logbook?.internship?.placement?.position ?? "N/A"}
+                </span>
+              </div>
+              <div className="lbv2-sc-row">
+                <span className="lbv2-sc-label">Status</span>
+                <span className="lbv2-sc-value">
+                  <StatusBadge status={logbook?.internship?.placement?.status ?? "N/A"} />
                 </span>
               </div>
             </div>
@@ -335,20 +342,27 @@ export default function AssignedStudentLogBookView() {
             >
               <span className="lbv2-review-toggle-left">
                 <MessageSquare size={15} />
-                {canReview ? "Write Review / Comment" : "Add School Review"}
+                {canReview ? "Write Review / Comment" : "School Review"}
               </span>
               {reviewOpen ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
             </button>
 
             {!canReview && (
               <p className="lbv2-review-hint">
-                {logbook.status === "approved" ? (
+                {hasSchoolReview ? (
                   <span className="lbv2-approved-note">
-                    <CheckCircle2 size={13} /> This logbook has already been
-                    approved.
+                    <CheckCircle2 size={13} /> You have already submitted a
+                    review for this logbook.
+                  </span>
+                ) : logbook.status === "approved" ? (
+                  <span className="lbv2-approved-note">
+                    <CheckCircle2 size={13} /> Industrial supervisor has
+                    approved this logbook.
                   </span>
                 ) : (
-                  `Review is only available for logbooks in "submitted" status. Current status: ${logbook.status}.`
+                  `Review is only available once the student has submitted the logbook. Current status: ${
+                    logbook.status
+                  }.`
                 )}
               </p>
             )}

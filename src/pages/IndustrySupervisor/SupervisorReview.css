@@ -641,9 +641,9 @@
   box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
 }
 
-.isr-btn--approve:hover:not(:disabled) {
+/* .isr-btn--approve:hover:not(:disabled) {
   box-shadow: 0 6px 20px rgba(16, 185, 129, 0.38);
-}
+} */
 
 .isr-btn--reject {
   background: #fef2f2;

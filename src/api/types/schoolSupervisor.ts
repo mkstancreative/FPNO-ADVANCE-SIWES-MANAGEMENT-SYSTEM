@@ -219,6 +219,15 @@ export interface LogbookDetail {
     reviewedAt?: string;
     comments?: string;
   };
+  internship?: {
+    placement?: {
+      position?: string;
+      department?: string;
+      company?: string;
+      startDate?: string;
+      status?: string;
+    };
+  };
   __v: number;
 }
 
