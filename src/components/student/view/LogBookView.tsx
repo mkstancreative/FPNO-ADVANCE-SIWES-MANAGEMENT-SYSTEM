@@ -310,16 +310,13 @@ function LogBookViewInner({
         )}
 
         {/* Request approval — rejected or needs_revision */}
-        {(status === "rejected" || status === "needs_revision") && (
+        {status === "needs_revision" && (
           <button
             type="button"
             className="modal-submit lbv-submit-btn"
             disabled={isActionPending}
             style={{
-              background:
-                status === "rejected"
-                  ? "linear-gradient(135deg,#f43f5e,#e11d48)"
-                  : "linear-gradient(135deg,#f59e0b,#d97706)",
+              background: "linear-gradient(135deg,#f59e0b,#d97706)",
             }}
             onClick={() => requestApproval(id, { onSuccess: onClose })}
           >
@@ -328,12 +325,17 @@ function LogBookViewInner({
             ) : (
               <>
                 <RotateCcw size={13} />
-                {status === "rejected"
-                  ? "Rejected By Supervisor"
-                  : "Request Re-evaluation"}
+                Request Re-evaluation
               </>
             )}
           </button>
+        )}
+
+        {status === "rejected" && (
+          <span className="lbv-rejected-note">
+            <AlertCircle size={14} />
+            Rejected by supervisor
+          </span>
         )}
 
         {/* Approved note */}
