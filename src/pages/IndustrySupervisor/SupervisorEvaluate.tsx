@@ -253,7 +253,7 @@ function SummaryPanel({ summary }: { summary: ISEvalSummary }) {
         <div className="isr-stat">
           <div className="isr-stat-inner">
             <div className="isr-stat-label">
-              <BookOpen size={12} /> Logbooks
+              <BookOpen size={12} /> Approved Logbooks
             </div>
             <div className="isr-stat-value">
               {summary.logbooksApproved}/{summary.logbooksSubmitted}

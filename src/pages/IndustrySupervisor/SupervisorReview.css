@@ -71,6 +71,10 @@
   gap: 16px;
 }
 
+.isr-page .isr-card ~ .isr-card {
+  margin-top: 1rem;
+}
+
 /* ── Already-submitted banner ───────────────────────────────────────────────── */
 
 .isr-used-banner {
