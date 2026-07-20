@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import * as XLSX from "xlsx";
 import {
   getAssignedStudents,
   getStudentDetail,
@@ -17,6 +18,7 @@ import {
   exportSchoolEvaluations,
   getEvaluationReport,
   type EvaluationReportParams,
+  type EvaluationReportItem,
 } from "../api/services/schoolSupervisors";
 import type {
   EvaluationRequestPayload,
@@ -183,17 +185,51 @@ export const useEvaluationReport = (params?: EvaluationReportParams) => {
   });
 };
 
+function departmentName(
+  department?: string | { name: string; code?: string },
+) {
+  if (!department) return "";
+  return typeof department === "string" ? department : department.name;
+}
+
+function evaluationReportToSheetRow(row: EvaluationReportItem) {
+  return {
+    "Student Name": row.student.name,
+    "Registration Number": row.student.registrationNumber,
+    Department: departmentName(row.student.department),
+    Program: row.student.program
+      ? `${row.student.program.type} ${row.student.program.level}`
+      : "",
+    Batch: row.batch?.name ?? "",
+    Session: row.batch?.session ?? row.internship?.session ?? "",
+    "IT Status": row.internship?.itStatus ?? "",
+    Position: row.internship?.placement?.position ?? "",
+    "Industrial Score": row.scores?.industrial ?? row.industrialScore ?? "",
+    "School Score": row.scores?.school ?? row.schoolScore ?? "",
+    "Composite Score": row.scores?.composite ?? row.finalScore ?? "",
+    "Final Grade": row.finalGrade ?? row.grade ?? "",
+    Status: row.status,
+    "Completed At": row.completedAt
+      ? new Date(row.completedAt).toLocaleDateString("en-GB")
+      : "",
+  };
+}
+
 export const useExportSchoolEvaluations = () => {
   return useMutation({
     mutationFn: (params?: EvaluationReportParams) =>
       exportSchoolEvaluations(params),
-    onSuccess: (blob: Blob) => {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "evaluation_report.xlsx";
-      a.click();
-      URL.revokeObjectURL(url);
+    onSuccess: (rows: EvaluationReportItem[]) => {
+      if (rows.length === 0) {
+        toast.info("No evaluation records match the current filters.");
+        return;
+      }
+      const sheet = XLSX.utils.json_to_sheet(
+        rows.map(evaluationReportToSheetRow),
+      );
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, sheet, "Evaluation Report");
+      XLSX.writeFile(workbook, "evaluation_report.xlsx");
       toast.success("Evaluation report exported successfully!");
     },
     onError: (err: unknown) =>

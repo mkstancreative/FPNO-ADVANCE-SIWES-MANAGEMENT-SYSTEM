@@ -143,7 +143,7 @@ export default function EvaluationReportPage() {
             ) : (
               <>
                 <FileSpreadsheet size={15} />
-                Export Excel
+                Export Evaluation Report
               </>
             )}
           </button>

@@ -217,10 +217,12 @@ export const getEvaluationReport = async (
 
 export const exportSchoolEvaluations = async (
   params?: EvaluationReportParams,
-) => {
-  const response = await api.get("/evaluations/composite-results", {
-    params,
-    responseType: "blob",
-  });
-  return response.data;
+): Promise<EvaluationReportItem[]> => {
+  // The endpoint returns paginated JSON, not a file — pull every matching
+  // record (not just the current page) so the export reflects all filtered rows.
+  const response = await api.get<EvaluationReportResponse>(
+    "/evaluations/composite-results",
+    { params: { ...params, page: 1, limit: 10000 } },
+  );
+  return response.data.data;
 };
