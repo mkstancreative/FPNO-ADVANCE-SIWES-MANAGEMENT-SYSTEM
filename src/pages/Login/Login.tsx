@@ -193,7 +193,7 @@ const ApexULanding = () => {
         {/* HERO */}
         <section className="hero-section">
           <div>
-            <div className="nav-badge">AI-Powered CIMS Management System</div>
+            <div className="nav-badge">AI-Powered SIWES Management System</div>
             <h1 className="hero-title">
               Your Industrial
               <br />
