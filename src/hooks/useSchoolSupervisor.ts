@@ -136,7 +136,7 @@ export const useRequestEvaluations = () => {
       requestEvaluations(payload),
     onSuccess: (data) => {
       queryClient.invalidateQueries({
-        queryKey: supervisorQueryKeys.evaluations(),
+        queryKey: [...supervisorQueryKeys.all, "evaluations"],
       });
       if (data.data.failed === 0) {
         toast.success(
@@ -165,7 +165,7 @@ export const useSubmitSchoolEvaluation = () => {
     }) => submitSchoolEvaluation(studentId, payload),
     onSuccess: (data) => {
       queryClient.invalidateQueries({
-        queryKey: supervisorQueryKeys.evaluations(),
+        queryKey: [...supervisorQueryKeys.all, "evaluations"],
       });
       toast.success(
         `Evaluation submitted! Score: ${data.data.schoolScore} · Grade: ${data.data.finalGrade}`,

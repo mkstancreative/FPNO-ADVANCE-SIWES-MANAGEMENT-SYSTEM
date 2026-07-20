@@ -1,11 +1,5 @@
 import { useState } from "react";
-import {
-  Award,
-  CheckCircle2,
-  Loader2,
-  SlidersHorizontal,
-  MessageSquare,
-} from "lucide-react";
+import { Award, Loader2, SlidersHorizontal, MessageSquare } from "lucide-react";
 import CustomModal from "../../ui/CustomModal/CustomModal";
 import ConfirmModal from "../../ui/ConfirmModal/ConfirmModal";
 import { useSubmitSchoolEvaluation } from "../../../hooks/useSchoolSupervisor";
@@ -159,7 +153,7 @@ export default function SubmitEvaluationForm({
       {
         onSuccess: (data) => {
           setResult(data);
-          onSuccess?.();
+          onClose();
         },
         onError: (err: unknown) => {
           const apiData = (
@@ -180,9 +174,13 @@ export default function SubmitEvaluationForm({
   const handleClose = () => {
     setRatings(DEFAULT_RATINGS);
     setComments("");
-    setResult(null);
     setValidationError(null);
     onClose();
+  };
+
+  const handleDismissResult = () => {
+    setResult(null);
+    onSuccess?.();
   };
 
   return (
@@ -196,161 +194,102 @@ export default function SubmitEvaluationForm({
         size="medium"
         placement="top"
       >
-        {result ? (
-          /* ── Result card ── */
-          <div className="sef-result">
-            <CheckCircle2 size={40} className="sef-result-icon" />
-            <p className="sef-result-msg">{result.message}</p>
-
-            <div className="sef-result-grid">
-              <div className="sef-result-item">
-                <span className="sef-result-label">Student</span>
-                <span className="sef-result-val">{result.data.student}</span>
-              </div>
-              <div className="sef-result-item">
-                <span className="sef-result-label">Type</span>
-                <span
-                  className="sef-result-val"
-                  style={{ textTransform: "capitalize" }}
-                >
-                  {result.data.type}
-                </span>
-              </div>
-              <div className="sef-result-item">
-                <span className="sef-result-label">School Score</span>
-                <span className="sef-result-val sef-score">
-                  {result.data.schoolScore}
-                </span>
-              </div>
-              <div className="sef-result-item">
-                <span className="sef-result-label">Final Score</span>
-                <span className="sef-result-val sef-score">
-                  {result.data.finalScore}
-                </span>
-              </div>
-              <div className="sef-result-item">
-                <span className="sef-result-label">Grade</span>
-                <GradeChip grade={result.data.finalGrade} />
-              </div>
-              <div className="sef-result-item">
-                <span className="sef-result-label">Status</span>
-                <span
-                  className="sef-result-val"
-                  style={{
-                    color: "#10b981",
-                    fontWeight: 700,
-                    textTransform: "capitalize",
-                  }}
-                >
-                  {result.data.status}
-                </span>
-              </div>
-            </div>
-
-            <div className="modal-actions">
-              <button className="modal-submit" onClick={handleClose}>
-                Done
-              </button>
-            </div>
+        {/* ── Form (always shown) ── */}
+        <div className="sef-form">
+          {/* Total score preview */}
+          <div className="sef-score-preview">
+            <SlidersHorizontal size={14} />
+            <span>Total score preview:</span>
+            <strong className="sef-total-score">{totalScore} / 100</strong>
           </div>
-        ) : (
-          /* ── Form ── */
-          <div className="sef-form">
-            {/* Total score preview */}
-            <div className="sef-score-preview">
-              <SlidersHorizontal size={14} />
-              <span>Total score preview:</span>
-              <strong className="sef-total-score">{totalScore} / 100</strong>
-            </div>
 
-            {/* Rating sliders */}
-            <div className="sef-ratings">
-              <RatingSlider
-                label="Logbook Quality"
-                description="Clarity, detail, and accuracy of entries"
-                field="logbookQuality"
-                max={40}
-                value={ratings.logbookQuality}
-                onChange={handleChange}
-                disabled={isPending}
-              />
-              <RatingSlider
-                label="Logbook Consistency"
-                description="Regularity and timeliness of submissions"
-                field="logbookConsistency"
-                max={30}
-                value={ratings.logbookConsistency}
-                onChange={handleChange}
-                disabled={isPending}
-              />
-              <RatingSlider
-                label="Professional Growth"
-                description="Skills learned and observable development"
-                field="professionalGrowth"
-                max={30}
-                value={ratings.professionalGrowth}
-                onChange={handleChange}
-                disabled={isPending}
-              />
-            </div>
-
-            {/* Comments */}
-            <div className="form-group">
-              <label className="modal-label">
-                <MessageSquare
-                  size={12}
-                  style={{ display: "inline", marginRight: 4 }}
-                />
-                Supervisor Comments
-                <span style={{ color: "#ef4444", marginLeft: 3 }}>*</span>
-              </label>
-              <textarea
-                className="modal-input"
-                rows={4}
-                placeholder="Describe your overall assessment of the student's performance during the IT period…"
-                value={comments}
-                onChange={(e) => setComments(e.target.value)}
-                disabled={isPending}
-              />
-            </div>
-
-            <div className="modal-actions">
-              <button
-                type="button"
-                className="modal-cancel"
-                onClick={handleClose}
-                disabled={isPending}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="modal-submit"
-                disabled={isPending || !comments.trim()}
-                onClick={handleSubmit}
-                style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
-              >
-                {isPending ? (
-                  <>
-                    <Loader2
-                      size={13}
-                      style={{ animation: "spin .8s linear infinite" }}
-                    />
-                    Submitting…
-                  </>
-                ) : (
-                  <>
-                    <Award size={13} /> Submit Evaluation
-                  </>
-                )}
-              </button>
-            </div>
+          {/* Rating sliders */}
+          <div className="sef-ratings">
+            <RatingSlider
+              label="Logbook Quality"
+              description="Clarity, detail, and accuracy of entries"
+              field="logbookQuality"
+              max={40}
+              value={ratings.logbookQuality}
+              onChange={handleChange}
+              disabled={isPending}
+            />
+            <RatingSlider
+              label="Logbook Consistency"
+              description="Regularity and timeliness of submissions"
+              field="logbookConsistency"
+              max={30}
+              value={ratings.logbookConsistency}
+              onChange={handleChange}
+              disabled={isPending}
+            />
+            <RatingSlider
+              label="Professional Growth"
+              description="Skills learned and observable development"
+              field="professionalGrowth"
+              max={30}
+              value={ratings.professionalGrowth}
+              onChange={handleChange}
+              disabled={isPending}
+            />
           </div>
-        )}
+
+          {/* Comments */}
+          <div className="form-group">
+            <label className="modal-label">
+              <MessageSquare
+                size={12}
+                style={{ display: "inline", marginRight: 4 }}
+              />
+              Supervisor Comments
+              <span style={{ color: "#ef4444", marginLeft: 3 }}>*</span>
+            </label>
+            <textarea
+              className="modal-input"
+              rows={4}
+              placeholder="Describe your overall assessment of the student's performance during the IT period…"
+              value={comments}
+              onChange={(e) => setComments(e.target.value)}
+              disabled={isPending}
+            />
+          </div>
+
+          <div className="modal-actions">
+            <button
+              type="button"
+              className="modal-cancel"
+              onClick={handleClose}
+              disabled={isPending}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="modal-submit"
+              disabled={isPending || !comments.trim()}
+              onClick={handleSubmit}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
+            >
+              {isPending ? (
+                <>
+                  <Loader2
+                    size={13}
+                    style={{ animation: "spin .8s linear infinite" }}
+                  />
+                  Submitting…
+                </>
+              ) : (
+                <>
+                  <Award size={13} /> Submit Evaluation
+                </>
+              )}
+            </button>
+          </div>
+        </div>
 
         <style>{`
         /* ── SubmitEvaluationForm styles ── */
-        .sef-form,.sef-result{display:flex;flex-direction:column;gap:20px}
+        .sef-form{display:flex;flex-direction:column;gap:20px}
         /* Score preview */
         .sef-score-preview{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-secondary);padding:10px 14px;background:var(--color-bg-secondary);border:1px solid var(--color-border);border-radius:10px}
         .sef-total-score{font-size:18px;color:var(--color-accent);margin-left:auto}
@@ -369,9 +308,7 @@ export default function SubmitEvaluationForm({
         .sef-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--clr);box-shadow:0 1px 6px rgba(0,0,0,.2);cursor:pointer;transition:transform .15s}
         .sef-slider::-webkit-slider-thumb:hover{transform:scale(1.15)}
         .sef-slider-labels{display:flex;justify-content:space-between;font-size:10.5px;color:var(--color-text-secondary)}
-        /* Result */
-        .sef-result-icon{color:#10b981;align-self:center}
-        .sef-result-msg{font-size:14px;font-weight:600;color:var(--color-text-primary);text-align:center;margin:0}
+        /* Result grid (reused in ConfirmModal) */
         .sef-result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
         .sef-result-item{display:flex;flex-direction:column;gap:4px;padding:12px;border:1px solid var(--color-border);border-radius:10px;background:var(--color-bg-secondary)}
         .sef-result-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-secondary)}
@@ -381,6 +318,65 @@ export default function SubmitEvaluationForm({
       `}</style>
       </CustomModal>
 
+      {/* ── Success result modal ── */}
+      <ConfirmModal
+        isOpen={!!result}
+        variant="success"
+        title={result?.message ?? "Evaluation Submitted"}
+        confirmText="Done"
+        cancelText=""
+        onConfirm={handleDismissResult}
+        onCancel={handleDismissResult}
+      >
+        {result && (
+          <div className="sef-result-grid" style={{ marginTop: 12 }}>
+            <div className="sef-result-item">
+              <span className="sef-result-label">Student</span>
+              <span className="sef-result-val">{result.data.student}</span>
+            </div>
+            <div className="sef-result-item">
+              <span className="sef-result-label">Type</span>
+              <span
+                className="sef-result-val"
+                style={{ textTransform: "capitalize" }}
+              >
+                {result.data.type}
+              </span>
+            </div>
+            <div className="sef-result-item">
+              <span className="sef-result-label">School Score</span>
+              <span className="sef-result-val sef-score">
+                {result.data.schoolScore}
+              </span>
+            </div>
+            <div className="sef-result-item">
+              <span className="sef-result-label">Final Score</span>
+              <span className="sef-result-val sef-score">
+                {result.data.finalScore}
+              </span>
+            </div>
+            <div className="sef-result-item">
+              <span className="sef-result-label">Grade</span>
+              <GradeChip grade={result.data.finalGrade} />
+            </div>
+            <div className="sef-result-item">
+              <span className="sef-result-label">Status</span>
+              <span
+                className="sef-result-val"
+                style={{
+                  color: "#10b981",
+                  fontWeight: 700,
+                  textTransform: "capitalize",
+                }}
+              >
+                {result.data.status}
+              </span>
+            </div>
+          </div>
+        )}
+      </ConfirmModal>
+
+      {/* ── Validation error modal ── */}
       <ConfirmModal
         isOpen={!!validationError}
         title={validationError?.title}

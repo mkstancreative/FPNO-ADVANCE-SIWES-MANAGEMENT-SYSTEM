@@ -9,6 +9,7 @@ interface ConfirmModalProps {
   isOpen: boolean;
   title?: string;
   message?: string;
+  children?: React.ReactNode;
   confirmText?: string;
   cancelText?: string;
   variant?: ConfirmModalVariant;
@@ -21,6 +22,7 @@ function ConfirmModal({
   isOpen,
   title = "Are you sure?",
   message,
+  children,
   confirmText = "Confirm",
   cancelText = "Cancel",
   variant = "danger",
@@ -48,6 +50,7 @@ function ConfirmModal({
         {/* Text */}
         <h3 className="confirm-title">{title}</h3>
         {message && <p className="confirm-message">{message}</p>}
+        {children}
 
         {/* Actions */}
         <div className="confirm-actions">
