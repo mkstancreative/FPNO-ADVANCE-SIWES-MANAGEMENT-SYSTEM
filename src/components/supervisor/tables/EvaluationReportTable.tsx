@@ -102,11 +102,22 @@ export default function EvaluationReportTable({
     },
     {
       header: "Department",
-      render: (row) => (
-        <span style={{ fontSize: 13, color: "var(--color-text-secondary)" }}>
-          {row.student.department || "—"}
-        </span>
-      ),
+      render: (row) => {
+        const dept = row.student?.department;
+        let deptName = "—";
+        if (dept) {
+          if (typeof dept === "string") {
+            deptName = dept;
+          } else if (typeof dept === "object") {
+            deptName = dept.name || dept.code || "—";
+          }
+        }
+        return (
+          <span style={{ fontSize: 13, color: "var(--color-text-secondary)" }}>
+            {deptName}
+          </span>
+        );
+      },
     },
     {
       header: "Batch",
@@ -116,36 +127,46 @@ export default function EvaluationReportTable({
     },
     {
       header: "Type",
-      render: (row) => (
-        <span
-          style={{
-            display: "inline-block",
-            padding: "2px 9px",
-            borderRadius: 20,
-            fontSize: 11.5,
-            fontWeight: 600,
-            background:
-              row.type === "final"
-                ? "rgba(13,148,136,.1)"
-                : "rgba(99,102,241,.1)",
-            color: row.type === "final" ? "var(--color-accent)" : "#6366f1",
-          }}
-        >
-          {row.type ?? "—"}
-        </span>
-      ),
+      render: (row) => {
+        const type = row.type || "final";
+        return (
+          <span
+            style={{
+              display: "inline-block",
+              padding: "2px 9px",
+              borderRadius: 20,
+              fontSize: 11.5,
+              fontWeight: 600,
+              background:
+                type === "final"
+                  ? "rgba(13,148,136,.1)"
+                  : "rgba(99,102,241,.1)",
+              color: type === "final" ? "var(--color-accent)" : "#6366f1",
+              textTransform: "capitalize",
+            }}
+          >
+            {type}
+          </span>
+        );
+      },
     },
     {
       header: "School Score",
-      render: (row) => <ScoreCell value={row.schoolScore} />,
+      render: (row) => (
+        <ScoreCell value={row.scores?.school ?? row.schoolScore} />
+      ),
     },
     {
       header: "Company Score",
-      render: (row) => <ScoreCell value={row.industrialScore} />,
+      render: (row) => (
+        <ScoreCell value={row.scores?.industrial ?? row.industrialScore} />
+      ),
     },
     {
       header: "Final Score",
-      render: (row) => <ScoreCell value={row.finalScore} />,
+      render: (row) => (
+        <ScoreCell value={row.scores?.composite ?? row.finalScore} />
+      ),
     },
     {
       header: "Grade",

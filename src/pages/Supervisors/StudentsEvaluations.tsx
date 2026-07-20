@@ -111,6 +111,17 @@ export default function StudentsEvaluations() {
     setSubmitOpen(true);
   };
 
+  const handleRequestIndividualEvaluation = (row: PendingEvaluation) => {
+    openModal(
+      <EvaluationForm
+        isOpen
+        onClose={closeModal}
+        selectedIds={[row.student._id]}
+        onSuccess={() => {}}
+      />,
+    );
+  };
+
   const handleReset = () => {
     setFilters({
       search: "",
@@ -215,6 +226,7 @@ export default function StudentsEvaluations() {
           onToggleSelect={handleToggleSelect}
           onToggleAll={handleToggleAll}
           onSubmitEvaluation={handleSubmitEvaluation}
+          onRequestEvaluation={handleRequestIndividualEvaluation}
           onPageChange={(page) => setFilters((prev) => ({ ...prev, page }))}
           onLimitChange={(limit) =>
             setFilters((prev) => ({ ...prev, limit, page: 1 }))

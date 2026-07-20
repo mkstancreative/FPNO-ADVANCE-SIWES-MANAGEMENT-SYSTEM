@@ -27,21 +27,48 @@ export interface EvaluationReportParams {
 }
 
 export interface EvaluationReportItem {
+  evaluationId?: string;
+  internshipId?: string;
   student: {
     _id: string;
     name: string;
     registrationNumber: string;
-    department: string;
+    department?: string | { name: string; code: string };
+    program?: { type: string; level: string };
   };
-  batch?: { _id: string; name: string };
-  type: string;
+  batch?: {
+    _id: string;
+    name: string;
+    session?: string;
+    program?: string;
+    level?: string;
+  };
+  internship?: {
+    session: string;
+    itStatus: string;
+    placement?: {
+      company: string;
+      position: string;
+      department: string;
+      startDate: string;
+      acceptanceLetterUrl: string;
+      status: string;
+    };
+  };
+  scores?: {
+    industrial?: number;
+    school?: number;
+    composite?: number;
+  };
+  type?: string;
   status: string;
-  grade: string;
+  grade?: string;
+  finalGrade?: string;
   schoolScore?: number;
   industrialScore?: number;
   finalScore?: number;
-  finalGrade?: string;
   submittedAt?: string;
+  completedAt?: string;
 }
 
 export interface EvaluationReportResponse {

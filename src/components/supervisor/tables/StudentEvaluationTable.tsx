@@ -1,8 +1,9 @@
 import { type PendingEvaluation } from "../../../api/types/schoolSupervisor";
+import ActionDropdown from "../../ui/ActionDropdown/ActionDropDown";
 import type { Column, TableMeta } from "../../ui/GeneralTable/GeneralTable";
 import GeneralTable from "../../ui/GeneralTable/GeneralTable";
 import StatusBadge from "../../ui/StatusBadge/StatusBadge";
-import { CheckSquare, Square, ClipboardCheck } from "lucide-react";
+import { CheckSquare, Square, ClipboardCheck, Send } from "lucide-react";
 
 // ─── Submission indicator ─────────────────────────────────────────────────────
 
@@ -43,6 +44,7 @@ interface StudentEvaluationTableProps {
   onToggleSelect: (id: string) => void;
   onToggleAll: () => void;
   onSubmitEvaluation: (row: PendingEvaluation) => void;
+  onRequestEvaluation: (row: PendingEvaluation) => void;
   onPageChange: (page: number) => void;
   onLimitChange: (limit: number) => void;
 }
@@ -57,6 +59,7 @@ export default function StudentEvaluationTable({
   onToggleSelect,
   onToggleAll,
   onSubmitEvaluation,
+  onRequestEvaluation,
   onPageChange,
   onLimitChange,
 }: StudentEvaluationTableProps) {
@@ -129,17 +132,21 @@ export default function StudentEvaluationTable({
     {
       header: "Action",
       render: (row) => (
-        <button
-          className={`eval-submit-btn ${row.schoolSubmitted ? "eval-submit-btn--done" : ""}`}
-          onClick={() => !row.schoolSubmitted && onSubmitEvaluation(row)}
-          disabled={row.schoolSubmitted}
-          title={
-            row.schoolSubmitted ? "Already submitted" : "Submit evaluation"
-          }
-        >
-          <ClipboardCheck size={13} />
-          {row.schoolSubmitted ? "Submitted" : "Evaluate"}
-        </button>
+        <ActionDropdown
+          actions={[
+            {
+              label: row.schoolSubmitted ? "Submitted" : "Evaluate",
+              icon: <ClipboardCheck size={14} />,
+              onClick: () => onSubmitEvaluation(row),
+              disabled: row.schoolSubmitted,
+            },
+            {
+              label: "Request Evaluation",
+              icon: <Send size={14} />,
+              onClick: () => onRequestEvaluation(row),
+            },
+          ]}
+        />
       ),
     },
   ];

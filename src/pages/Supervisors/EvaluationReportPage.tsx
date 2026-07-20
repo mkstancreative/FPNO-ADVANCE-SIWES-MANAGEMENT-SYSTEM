@@ -109,19 +109,6 @@ export default function EvaluationReportPage() {
         </div>
 
         <div className="page-header-right">
-          {/* Active filters summary */}
-          {data && data.total > 0 && (
-            <span
-              style={{
-                fontSize: 12.5,
-                color: "var(--color-text-muted)",
-                fontWeight: 500,
-              }}
-            >
-              {data.total} result{data.total !== 1 ? "s" : ""}
-            </span>
-          )}
-
           {/* Export button */}
           <button
             type="button"
@@ -140,7 +127,6 @@ export default function EvaluationReportPage() {
               cursor: isExporting ? "not-allowed" : "pointer",
               opacity: isExporting ? 0.7 : 1,
               transition: "all 0.15s ease",
-              boxShadow: "0 2px 8px rgba(16,185,129,.25)",
               border: "none",
             }}
             disabled={isExporting}

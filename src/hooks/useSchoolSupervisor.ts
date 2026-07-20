@@ -108,14 +108,14 @@ export const useReviewLogbook = (studentId: string) => {
       logbookId: string;
       comments: string;
     }) => reviewLogbook(logbookId, { comments }),
-    onSuccess: (_data, { logbookId }) => {
+    onSuccess: (data, { logbookId }) => {
       queryClient.invalidateQueries({
         queryKey: supervisorQueryKeys.logbooks(studentId),
       });
       queryClient.invalidateQueries({
         queryKey: supervisorQueryKeys.logbookDetail(studentId, logbookId),
       });
-      toast.success("Review submitted successfully!");
+      toast.success(data.message);
     },
     onError: (err: unknown) =>
       toast.error(getErrMsg(err, "Failed to submit review.")),
@@ -139,13 +139,9 @@ export const useRequestEvaluations = () => {
         queryKey: [...supervisorQueryKeys.all, "evaluations"],
       });
       if (data.data.failed === 0) {
-        toast.success(
-          `Evaluation requests sent to ${data.data.successful} student(s).`,
-        );
+        toast.success(data.message);
       } else {
-        toast.warning(
-          `Sent to ${data.data.successful}, failed for ${data.data.failed}. Check the result summary.`,
-        );
+        toast.warning(data.message);
       }
     },
     onError: (err: unknown) =>
@@ -167,9 +163,7 @@ export const useSubmitSchoolEvaluation = () => {
       queryClient.invalidateQueries({
         queryKey: [...supervisorQueryKeys.all, "evaluations"],
       });
-      toast.success(
-        `Evaluation submitted! Score: ${data.data.schoolScore} · Grade: ${data.data.finalGrade}`,
-      );
+      toast.success(data.message);
     },
     onError: (err: unknown) => {
       const apiData = (
