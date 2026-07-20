@@ -201,9 +201,9 @@ export default function VerifyCompanies({ isOpen, onClose, companies }: Props) {
         {isPending ? (
           <Spinner size={14} color="#fff" text="" />
         ) : decision === "rejected" ? (
-          `Reject ${isBulk ? `${companies.length} clinics/hospitals` : "clinic/hospital"}`
+          `Reject ${isBulk ? `${companies.length} organizations` : "organization"}`
         ) : decision === "verified" ? (
-          `Verify ${isBulk ? `${companies.length} clinics/hospitals` : "clinic/hospital"}`
+          `Verify ${isBulk ? `${companies.length} organizations` : "organization"}`
         ) : (
           "Select a Decision"
         )}
@@ -215,17 +215,17 @@ export default function VerifyCompanies({ isOpen, onClose, companies }: Props) {
     <CustomModal
       isOpen={isOpen}
       onClose={handleClose}
-      title={isBulk ? "Bulk Verification" : "Review Company"}
+      title={isBulk ? "Bulk Verification" : "Review Organization"}
       subtitle={
         isBulk
-          ? `Processing ${companies.length} selected companies`
+          ? `Processing ${companies.length} selected organizations`
           : `Verify or reject — ${company?.companyName}`
       }
       size="medium"
       footer={footer}
     >
       <form
-        id="verify-company-form"
+        id="verify-organization-form"
         onSubmit={handleSubmit}
         style={{ display: "flex", flexDirection: "column", gap: 16 }}
       >
