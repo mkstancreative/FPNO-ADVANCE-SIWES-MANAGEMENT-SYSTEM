@@ -44,6 +44,13 @@ function initials(reg: string) {
   return reg.slice(0, 2).toUpperCase();
 }
 
+/** Strip HTML tags and decode entities from a string */
+function stripHtml(html: string): string {
+  if (!html) return "";
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  return doc.body.textContent ?? "";
+}
+
 // ── Activity Row ─────────────────────────────────────────────────────────────
 
 function ActivityRow({ activity }: { activity: ISLogbookActivity }) {
@@ -56,7 +63,9 @@ function ActivityRow({ activity }: { activity: ISLogbookActivity }) {
       >
         <div className="isr-activity-left">
           <span className="isr-activity-date">{formatDate(activity.date)}</span>
-          <span className="isr-activity-title">{activity.activity}</span>
+          <span className="isr-activity-title">
+            {stripHtml(activity.activity)}
+          </span>
         </div>
         <div className="isr-activity-right">
           <span className="isr-hrs-chip">{activity.hoursSpent}h</span>
@@ -65,7 +74,7 @@ function ActivityRow({ activity }: { activity: ISLogbookActivity }) {
       </button>
       {open && (
         <div className="isr-activity-body">
-          <p className="isr-prose">{activity.description}</p>
+          <p className="isr-prose">{stripHtml(activity.description)}</p>
           <div className="isr-skills-row">
             {activity.skillsUsed.map((s) => (
               <span key={s} className="isr-skill-chip">
@@ -227,7 +236,7 @@ function ReviewView({
           defaultOpen={false}
         >
           <p className="isr-prose" style={{ padding: 0 }}>
-            {logbook.challengesFaced}
+            {stripHtml(logbook.challengesFaced)}
           </p>
         </ISRSection>
         <ISRSection
@@ -236,7 +245,7 @@ function ReviewView({
           defaultOpen={false}
         >
           <p className="isr-prose" style={{ padding: 0 }}>
-            {logbook.lessonsLearned}
+            {stripHtml(logbook.lessonsLearned)}
           </p>
         </ISRSection>
 
@@ -247,7 +256,7 @@ function ReviewView({
           defaultOpen={false}
         >
           <p className="isr-prose" style={{ padding: 0 }}>
-            {logbook.nextWeekPlan}
+            {stripHtml(logbook.nextWeekPlan)}
           </p>
         </ISRSection>
 
