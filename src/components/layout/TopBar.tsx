@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { Sun, Moon, ChevronDown, LogOut, Menu } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Sun, Moon, ChevronDown, LogOut, Menu, KeyRound } from "lucide-react";
 import { useTheme } from "../../context/useTheme";
+import { useAuth } from "../../context/useAuth";
 import { useLogoutUser } from "../../hooks/useAuth";
 import { NotificationIcon } from "../ui/NotificationCenter";
 import InternshipSwitcher from "../student/InternshipSwitcher";
@@ -24,7 +26,15 @@ export default function TopBar({
   onMobileMenuToggle,
 }: TopBarProps) {
   const { isDark, toggleTheme } = useTheme();
+  const { user } = useAuth();
   const { mutate: logout, isPending: loggingOut } = useLogoutUser();
+
+  const rolePrefix =
+    user?.role === "admin"
+      ? "/admin"
+      : user?.role === "student"
+        ? "/student"
+        : "/supervisor";
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -136,6 +146,15 @@ export default function TopBar({
               </div>
 
               <div className="dash-topbar__dropdown-divider" />
+
+              <Link
+                className="dash-topbar__dropdown-item"
+                to={`${rolePrefix}/change-password`}
+                onClick={() => setUserMenuOpen(false)}
+              >
+                <KeyRound size={14} />
+                <span>Change Password</span>
+              </Link>
 
               <div className="dash-topbar__dropdown-divider" />
 

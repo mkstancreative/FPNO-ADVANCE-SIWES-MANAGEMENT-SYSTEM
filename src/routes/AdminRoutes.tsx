@@ -7,6 +7,7 @@ import Supervisor from "../pages/Admin/Supervisor";
 import Companies from "../pages/Admin/Companies";
 import VerifiedCompanies from "../pages/Admin/VerifiedCompanies";
 import Notifications from "../pages/Shared/Notifications";
+import ChangePassword from "../pages/Shared/ChangePassword";
 import UnAssignedStudents from "../pages/Admin/UnAssignedStudents";
 import PartiallyVerified from "../pages/Admin/PartiallyVerified";
 
@@ -70,6 +71,7 @@ export default function AdminRoutes() {
         <Route path="verified-companies" element={<VerifiedCompanies />} />
         <Route path="certificates" element={<AdminCertificates />} />
         <Route path="notifications" element={<Notifications />} />
+        <Route path="change-password" element={<ChangePassword />} />
         <Route path="settings" element={<SystemSettings />} />
 
         <Route path="*" element={<NotFound />} />

@@ -11,6 +11,7 @@ import AssignedStudentLogBookView from "../components/supervisor/views/AssignedS
 import StudentsEvaluations from "../pages/Supervisors/StudentsEvaluations";
 import EvaluationReportPage from "../pages/Supervisors/EvaluationReportPage";
 import Notifications from "../pages/Shared/Notifications";
+import ChangePassword from "../pages/Shared/ChangePassword";
 import AssignedStudentPage from "../pages/Supervisors/AssignedStudentPage";
 
 export default function SupervisorRoutes() {
@@ -62,6 +63,7 @@ export default function SupervisorRoutes() {
 
         {/* Notifications */}
         <Route path="notifications" element={<Notifications />} />
+        <Route path="change-password" element={<ChangePassword />} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

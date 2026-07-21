@@ -11,6 +11,7 @@ import Report from "../pages/Students/Report";
 import AvailableCompanies from "../pages/Students/AvailableCompanies";
 import InternshipHistory from "../pages/Students/InternshipHistory";
 import Notifications from "../pages/Shared/Notifications";
+import ChangePassword from "../pages/Shared/ChangePassword";
 const PaymentSuccess = lazy(() => import("../pages/Students/PaymentSuccess"));
 const PaymentFailed = lazy(() => import("../pages/Students/PaymentFailed"));
 
@@ -41,6 +42,7 @@ export default function StudentRoutes() {
         <Route path="companies" element={<AvailableCompanies />} />
         <Route path="internships" element={<InternshipHistory />} />
         <Route path="notifications" element={<Notifications />} />
+        <Route path="change-password" element={<ChangePassword />} />
         <Route path="payment/success" element={<PaymentSuccess />} />
         <Route path="payment/failed" element={<PaymentFailed />} />
         <Route path="*" element={<NotFound />} />

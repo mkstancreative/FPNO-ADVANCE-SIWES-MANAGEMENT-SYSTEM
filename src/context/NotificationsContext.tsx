@@ -11,7 +11,7 @@ import {
   NotificationsContext,
   type NotificationsContextType,
 } from "./NotificationsContextValue";
-import { TOKEN_KEY } from "../api/services/api";
+import { useAuth } from "./useAuth";
 
 interface NotificationsProviderProps {
   children: React.ReactNode;
@@ -22,6 +22,7 @@ const NOTIFICATION_POPUP_DURATION = 5000;
 export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({
   children,
 }) => {
+  const { isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [popupNotifications, setPopupNotifications] = useState<Notification[]>(
     [],
@@ -110,12 +111,13 @@ export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({
     [dismissPopup],
   );
 
-  // ── WebSocket lifecycle — connect only when user is authenticated ───────────
-  const hasConnectedRef = useRef(false);
-
+  // ── WebSocket lifecycle — (re)connect whenever auth state flips to signed-in,
+  // disconnect cleanly on sign-out so a fresh login doesn't require a page reload ─
   useEffect(() => {
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (!token) return; // Public route — skip
+    if (!isAuthenticated) {
+      notificationWS.disconnect();
+      return;
+    }
 
     // Subscribe before connecting so we don't miss the first message
     const unsubscribeMsg = notificationWS.subscribe(handleNewNotification);
@@ -123,29 +125,29 @@ export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({
       (connected) => setIsConnected(connected),
     );
 
-    if (!hasConnectedRef.current) {
-      hasConnectedRef.current = true;
-      notificationWS
-        .connect()
-        .catch((err) => console.error("[WS] Initial connect failed:", err));
-    }
+    notificationWS
+      .connect()
+      .catch((err) => console.error("[WS] Initial connect failed:", err));
 
     return () => {
       unsubscribeMsg();
       unsubscribeConn();
     };
-  }, [handleNewNotification]);
+  }, [isAuthenticated, handleNewNotification]);
 
-  // ── Initial REST fetch ──────────────────────────────────────────────────────
-  const hasFetchedRef = useRef(false);
+  // ── REST fetch — runs once per sign-in ───────────────────────────────────────
+  const hasFetchedForSessionRef = useRef(false);
 
   useEffect(() => {
-    const token = localStorage.getItem(TOKEN_KEY);
-    if (!hasFetchedRef.current && token) {
-      hasFetchedRef.current = true;
+    if (!isAuthenticated) {
+      hasFetchedForSessionRef.current = false;
+      return;
+    }
+    if (!hasFetchedForSessionRef.current) {
+      hasFetchedForSessionRef.current = true;
       fetchNotifications();
     }
-  }, [fetchNotifications]);
+  }, [isAuthenticated, fetchNotifications]);
 
   const value: NotificationsContextType = {
     notifications,
