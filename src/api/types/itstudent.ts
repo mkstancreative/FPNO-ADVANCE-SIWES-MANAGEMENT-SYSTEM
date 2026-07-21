@@ -323,13 +323,13 @@ export interface StudentReport {
   totalHoursLogged: number;
   totalWeeksCompleted: number;
   uniqueSkillsUsed: number;
-  skillsAnalysis: SkillsAnalysis;
-  professionalGrowth: ProfessionalGrowth;
+  skillsAnalysis?: SkillsAnalysis;
+  professionalGrowth?: ProfessionalGrowth;
   aiScore?: AiScore;
   finalScore?: number | null;
   finalGrade?: string | null;
-  weeklySummaries: WeeklySummary[];
-  challengesAnalysis: ChallengeAnalysis[];
+  weeklySummaries?: WeeklySummary[];
+  challengesAnalysis?: ChallengeAnalysis[];
   createdAt: string;
   updatedAt: string;
 }

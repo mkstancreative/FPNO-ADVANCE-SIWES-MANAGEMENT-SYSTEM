@@ -19,6 +19,9 @@ const AdminStudentView = lazy(
 const StudentProgress = lazy(
   () => import("../components/admin/view/StudentProgress"),
 );
+const StudentReportPage = lazy(
+  () => import("../pages/Admin/StudentReportPage"),
+);
 const AdminCertificates = lazy(
   () => import("../pages/Admin/AdminCertificates"),
 );
@@ -57,6 +60,7 @@ export default function AdminRoutes() {
         <Route path="students" element={<Students />} />
         <Route path="students/:id" element={<AdminStudentView />} />
         <Route path="students/:id/progress" element={<StudentProgress />} />
+        <Route path="students/:id/report" element={<StudentReportPage />} />
         <Route path="unassigned-students" element={<UnAssignedStudents />} />
         <Route path="internships" element={<Internships />} />
         <Route path="internships/:id" element={<InternshipView />} />

@@ -1,7 +1,7 @@
-/* ── StudentReportModal (admin) ──────────────────────────────────────────── */
+/* ── StudentReportPage (admin/supervisor) ────────────────────────────────── */
 
 /* Import Report.css tokens so rp-* classes are available */
-@import "../../../pages/Students/Report.css";
+@import "../Students/Report.css";
 
 .srm-root {
   display: flex;

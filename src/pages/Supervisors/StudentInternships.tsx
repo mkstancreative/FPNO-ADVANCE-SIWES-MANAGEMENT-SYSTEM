@@ -5,6 +5,7 @@ import {
   User,
   ChevronRight,
   BookOpen,
+  FileText,
   ArrowLeft,
 } from "lucide-react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -18,6 +19,7 @@ function InternshipCard({
   internship,
   onViewProfile,
   onViewLogbooks,
+  onViewReport,
 }: {
   internship: Internship;
   onViewProfile: (studentId: string) => void;
@@ -26,6 +28,7 @@ function InternshipCard({
     batchId: string,
     internshipId: string,
   ) => void;
+  onViewReport: (studentId: string, batchId: string, internshipId: string) => void;
 }) {
   const batch =
     internship.batch && typeof internship.batch === "object"
@@ -121,6 +124,17 @@ function InternshipCard({
           <BookOpen size={13} />
           View Logbooks
         </button>
+
+        <button
+          type="button"
+          className="si-logbooks-btn"
+          onClick={() =>
+            onViewReport(studentId, batch?._id ?? "", internship._id)
+          }
+        >
+          <FileText size={13} />
+          View Report
+        </button>
       </div>
     </div>
   );
@@ -148,6 +162,13 @@ export default function StudentInternships() {
   const handleViewLogbooks = (sid: string, bid: string, iid: string) => {
     navigate(
       `/supervisor/students/${sid}/logbooks?batchId=${bid}&internshipId=${iid}`,
+    );
+  };
+
+  const handleViewReport = (sid: string, bid: string, iid: string) => {
+    const name = encodeURIComponent(studentName || "Student");
+    navigate(
+      `/supervisor/students/${sid}/report?batchId=${bid}&internshipId=${iid}&name=${name}`,
     );
   };
 
@@ -203,6 +224,7 @@ export default function StudentInternships() {
               internship={internship}
               onViewProfile={handleViewProfile}
               onViewLogbooks={handleViewLogbooks}
+              onViewReport={handleViewReport}
             />
           ))}
         </div>

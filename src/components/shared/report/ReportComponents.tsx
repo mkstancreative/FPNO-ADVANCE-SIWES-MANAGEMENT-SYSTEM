@@ -261,21 +261,25 @@ export function ScoreStrip({
 }: {
   grade: string;
   total: number;
-  breakdown: AiScoreBreakdown;
+  breakdown?: AiScoreBreakdown;
 }) {
-  const entries = Object.entries(breakdown) as [string, number][];
+  const entries = breakdown
+    ? (Object.entries(breakdown) as [string, number][])
+    : [];
   return (
     <div className="rp-score-strip">
       <div className={`rp-grade-pill ${gradeClass(grade)}`}>Grade {grade}</div>
       <span className="rp-score-strip-score">{total}/100</span>
-      <span className="rp-score-strip-label">AI Score</span>
-      <div className="rp-score-strip-breakdown">
-        {entries.map(([k, v]) => (
-          <span key={k} className="rp-strip-chip">
-            {formatBreakdownKey(k)}: <strong>{v}</strong>
-          </span>
-        ))}
-      </div>
+      <span className="rp-score-strip-label">Final Score</span>
+      {entries.length > 0 && (
+        <div className="rp-score-strip-breakdown">
+          {entries.map(([k, v]) => (
+            <span key={k} className="rp-strip-chip">
+              {formatBreakdownKey(k)}: <strong>{v}</strong>
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -371,12 +375,22 @@ export function FullReportBody({ report }: { report: StudentReport }) {
 
   return (
     <div className="rp-section">
-      {/* Score strip */}
-      <ScoreStrip
-        grade={report.aiScore.grade}
-        total={report.aiScore.total}
-        breakdown={report.aiScore.breakdown}
-      />
+      {/* Score strip — supports both old aiScore and new finalScore/finalGrade */}
+      {(() => {
+        const grade = report.finalGrade || report.aiScore?.grade;
+        const total =
+          report.finalScore !== undefined && report.finalScore !== null
+            ? report.finalScore
+            : report.aiScore?.total;
+        if (!grade || total === undefined) return null;
+        return (
+          <ScoreStrip
+            grade={grade}
+            total={total}
+            breakdown={report.aiScore?.breakdown}
+          />
+        );
+      })()}
 
       {/* Executive Summary */}
       <div className="rp-card">
@@ -388,16 +402,20 @@ export function FullReportBody({ report }: { report: StudentReport }) {
       <div className="rp-card">
         <div className="rp-card-header">Weekly Summaries</div>
         <div className="rp-accordion-list">
-          {report.weeklySummaries.map((w) => (
-            <WeekAccordion
-              key={w._id}
-              week={w}
-              isOpen={expandedWeek === w._id}
-              toggle={() =>
-                setExpandedWeek(expandedWeek === w._id ? null : w._id)
-              }
-            />
-          ))}
+          {report.weeklySummaries && report.weeklySummaries.length > 0 ? (
+            report.weeklySummaries.map((w) => (
+              <WeekAccordion
+                key={w._id}
+                week={w}
+                isOpen={expandedWeek === w._id}
+                toggle={() =>
+                  setExpandedWeek(expandedWeek === w._id ? null : w._id)
+                }
+              />
+            ))
+          ) : (
+            <p className="rp-prose">No weekly summaries available.</p>
+          )}
         </div>
       </div>
 
@@ -405,16 +423,22 @@ export function FullReportBody({ report }: { report: StudentReport }) {
       <div className="rp-card">
         <div className="rp-card-header">Challenges & Solutions</div>
         <div className="rp-accordion-list">
-          {report.challengesAnalysis.map((c) => (
-            <ChallengeCard
-              key={c._id}
-              challenge={c}
-              isOpen={expandedChallenge === c._id}
-              toggle={() =>
-                setExpandedChallenge(expandedChallenge === c._id ? null : c._id)
-              }
-            />
-          ))}
+          {report.challengesAnalysis && report.challengesAnalysis.length > 0 ? (
+            report.challengesAnalysis.map((c) => (
+              <ChallengeCard
+                key={c._id}
+                challenge={c}
+                isOpen={expandedChallenge === c._id}
+                toggle={() =>
+                  setExpandedChallenge(
+                    expandedChallenge === c._id ? null : c._id,
+                  )
+                }
+              />
+            ))
+          ) : (
+            <p className="rp-prose">No challenges recorded.</p>
+          )}
         </div>
       </div>
 
@@ -423,36 +447,50 @@ export function FullReportBody({ report }: { report: StudentReport }) {
         <div className="rp-card">
           <div className="rp-card-header">Technical Skills</div>
           <div className="rp-skill-table">
-            {report.skillsAnalysis.technicalSkills.map((s) => (
-              <TechnicalSkillRow key={s._id} skill={s} />
-            ))}
+            {report.skillsAnalysis?.technicalSkills &&
+            report.skillsAnalysis.technicalSkills.length > 0 ? (
+              report.skillsAnalysis.technicalSkills.map((s) => (
+                <TechnicalSkillRow key={s._id} skill={s} />
+              ))
+            ) : (
+              <p className="rp-prose">No technical skills recorded.</p>
+            )}
           </div>
         </div>
         <div className="rp-card">
           <div className="rp-card-header">Soft Skills</div>
           <div className="rp-skill-table">
-            {report.skillsAnalysis.softSkills.map((s) => (
-              <SoftSkillRow key={s._id} skill={s} />
-            ))}
+            {report.skillsAnalysis?.softSkills &&
+            report.skillsAnalysis.softSkills.length > 0 ? (
+              report.skillsAnalysis.softSkills.map((s) => (
+                <SoftSkillRow key={s._id} skill={s} />
+              ))
+            ) : (
+              <p className="rp-prose">No soft skills recorded.</p>
+            )}
           </div>
         </div>
       </div>
 
       {/* AI Reasoning */}
-      <div className="rp-card">
-        <div className="rp-card-header">AI Reasoning</div>
-        <ReasoningList items={report.aiScore.reasoning} />
-      </div>
+      {report.aiScore && (
+        <div className="rp-card">
+          <div className="rp-card-header">AI Reasoning</div>
+          <ReasoningList items={report.aiScore.reasoning} />
+        </div>
+      )}
 
       {/* Professional Growth */}
-      <div className="rp-card">
-        <div className="rp-card-header">Professional Growth</div>
-        <GrowthGrid
-          summary={report.professionalGrowth.summary}
-          keyAreas={report.professionalGrowth.keyAreas}
-          recommendations={report.professionalGrowth.recommendations}
-        />
-      </div>
+      {report.professionalGrowth && (
+        <div className="rp-card">
+          <div className="rp-card-header">Professional Growth</div>
+          <GrowthGrid
+            summary={report.professionalGrowth.summary}
+            keyAreas={report.professionalGrowth.keyAreas}
+            recommendations={report.professionalGrowth.recommendations}
+          />
+        </div>
+      )}
 
       {/* Conclusion */}
       <div className="rp-card rp-card--accent">

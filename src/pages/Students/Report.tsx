@@ -565,7 +565,10 @@ export default function Report() {
                 icon={<BookOpen size={16} />}
               >
                 <div className="rp-accordion-list">
-                  {report.weeklySummaries.map((w) => (
+                  {!report.weeklySummaries?.length && (
+                    <p className="rp-prose">No weekly summaries available.</p>
+                  )}
+                  {report.weeklySummaries?.map((w) => (
                     <div
                       key={w._id}
                       className={`rp-accordion ${expandedWeek === w._id ? "open" : ""}`}
@@ -619,7 +622,10 @@ export default function Report() {
                 icon={<AlertCircle size={16} />}
               >
                 <div className="rp-accordion-list">
-                  {report.challengesAnalysis.map((c) => (
+                  {!report.challengesAnalysis?.length && (
+                    <p className="rp-prose">No challenges recorded.</p>
+                  )}
+                  {report.challengesAnalysis?.map((c) => (
                     <div
                       key={c._id}
                       className={`rp-accordion ${expandedChallenge === c._id ? "open" : ""}`}
@@ -680,7 +686,10 @@ export default function Report() {
                 icon={<Zap size={16} />}
               >
                 <div className="rp-skill-table">
-                  {report.skillsAnalysis.technicalSkills.map((s) => (
+                  {!report.skillsAnalysis?.technicalSkills?.length && (
+                    <p className="rp-prose">No technical skills recorded.</p>
+                  )}
+                  {report.skillsAnalysis?.technicalSkills?.map((s) => (
                     <div key={s._id} className="rp-skill-row">
                       <span className="rp-skill-name">{s.skill}</span>
                       <span
@@ -695,7 +704,10 @@ export default function Report() {
               </CollapsibleCard>
               <CollapsibleCard title="Soft Skills" icon={<Brain size={16} />}>
                 <div className="rp-skill-table">
-                  {report.skillsAnalysis.softSkills.map((s) => (
+                  {!report.skillsAnalysis?.softSkills?.length && (
+                    <p className="rp-prose">No soft skills recorded.</p>
+                  )}
+                  {report.skillsAnalysis?.softSkills?.map((s) => (
                     <div key={s._id} className="rp-skill-row">
                       <span className="rp-skill-name">{s.skill}</span>
                       <span className="rp-evidence">{s.evidence[0]}</span>
@@ -705,30 +717,36 @@ export default function Report() {
               </CollapsibleCard>
 
               {/* Professional growth */}
-              <CollapsibleCard
-                title="Professional Growth"
-                icon={<TrendingUp size={16} />}
-              >
-                <p className="rp-prose">{report.professionalGrowth.summary}</p>
-                <div className="rp-two-col rp-growth-grid">
-                  <div>
-                    <div className="rp-growth-label">Key Areas</div>
-                    <ul className="rp-growth-list">
-                      {report.professionalGrowth.keyAreas.map((a, i) => (
-                        <li key={i}>{a}</li>
-                      ))}
-                    </ul>
+              {report.professionalGrowth && (
+                <CollapsibleCard
+                  title="Professional Growth"
+                  icon={<TrendingUp size={16} />}
+                >
+                  <p className="rp-prose">
+                    {report.professionalGrowth.summary}
+                  </p>
+                  <div className="rp-two-col rp-growth-grid">
+                    <div>
+                      <div className="rp-growth-label">Key Areas</div>
+                      <ul className="rp-growth-list">
+                        {report.professionalGrowth.keyAreas.map((a, i) => (
+                          <li key={i}>{a}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <div className="rp-growth-label">Recommendations</div>
+                      <ul className="rp-growth-list">
+                        {report.professionalGrowth.recommendations.map(
+                          (r, i) => (
+                            <li key={i}>{r}</li>
+                          ),
+                        )}
+                      </ul>
+                    </div>
                   </div>
-                  <div>
-                    <div className="rp-growth-label">Recommendations</div>
-                    <ul className="rp-growth-list">
-                      {report.professionalGrowth.recommendations.map((r, i) => (
-                        <li key={i}>{r}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </CollapsibleCard>
+                </CollapsibleCard>
+              )}
             </>
           ) : (
             <EmptyState

@@ -2,6 +2,9 @@ import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Spinner from "../components/ui/Spinner/Spinner";
 const NotFound = lazy(() => import("../pages/NotFound/NotFound"));
+const StudentReportPage = lazy(
+  () => import("../pages/Admin/StudentReportPage"),
+);
 
 import AssignedStudents from "../pages/Supervisors/AssignedStudents";
 import DashBoardSupervisor from "../pages/Supervisors/DashBoardSupervisor";
@@ -46,6 +49,10 @@ export default function SupervisorRoutes() {
           element={<StudentInternships />}
         />
         <Route path="students/:studentId" element={<AssignedStudentPage />} />
+        <Route
+          path="students/:studentId/report"
+          element={<StudentReportPage />}
+        />
 
         {/* Logbook routes */}
         <Route

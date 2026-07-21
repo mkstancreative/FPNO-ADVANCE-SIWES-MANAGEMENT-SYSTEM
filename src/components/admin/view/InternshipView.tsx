@@ -7,6 +7,7 @@ import {
   BookOpen,
   Star,
   Shield,
+  FileText,
 } from "lucide-react";
 import {
   useInternshipById,
@@ -111,14 +112,44 @@ export default function InternshipView() {
     );
   };
 
+  const batchId =
+    batch?._id ?? (typeof internship.batch === "string" ? internship.batch : "");
+
+  const handleViewReport = () => {
+    if (!student) return;
+    const name = encodeURIComponent(
+      `${student.user.firstName} ${student.user.lastName}`,
+    );
+    navigate(
+      `/admin/students/${student._id}/report?internshipId=${internship._id}&batchId=${batchId}&name=${name}`,
+    );
+  };
+
   return (
     <div className="page-container">
-      <button
-        className="sv-back"
-        onClick={() => navigate("/admin/internships")}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
       >
-        <ArrowLeft size={16} /> Internships
-      </button>
+        <button
+          className="sv-back"
+          onClick={() => navigate("/admin/internships")}
+        >
+          <ArrowLeft size={16} /> Internships
+        </button>
+        {student && (
+          <button
+            type="button"
+            className="dash-btn dash-btn--ghost"
+            onClick={handleViewReport}
+          >
+            <FileText size={14} /> View IT Report
+          </button>
+        )}
+      </div>
 
       <div className="sv-hero">
         <div className="sv-hero-info">

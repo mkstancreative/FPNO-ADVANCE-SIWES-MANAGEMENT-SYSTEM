@@ -4,7 +4,6 @@ import AddButton from "../../components/ui/AddButton/AddButton";
 import SearchInput from "../../components/ui/SearchInput/SearchInput";
 import ResetButton from "../../components/ui/ResetButton/ResetButton";
 import AdminStudentsTable from "../../components/admin/tables/AdminStudentsTable";
-import StudentReportModal from "../../components/admin/modals/StudentReportModal";
 import AutoAssignSupervisors from "../../components/admin/forms/AutoAssignSuperviors";
 import { useModal } from "../../context/ModalContext";
 import type { Student, ITStatus } from "../../api/types/student";
@@ -76,8 +75,12 @@ export default function UnAssignedStudents() {
   const handleProgress = (student: Student) =>
     navigate(`/admin/students/${student._id}/progress`);
 
-  const [reportStudent, setReportStudent] = useState<Student | null>(null);
-  const openViewReport = (student: Student) => setReportStudent(student);
+  const openViewReport = (student: Student) => {
+    const name = encodeURIComponent(
+      `${student.user.firstName} ${student.user.lastName}`,
+    );
+    navigate(`/admin/students/${student._id}/report?name=${name}`);
+  };
 
   const handleReset = () => {
     setFilters({
@@ -178,16 +181,6 @@ export default function UnAssignedStudents() {
           hideCheckbox={true}
         />
       </div>
-
-      {/* ── Student IT Report Modal ── */}
-      {reportStudent && (
-        <StudentReportModal
-          isOpen={!!reportStudent}
-          onClose={() => setReportStudent(null)}
-          studentId={reportStudent._id}
-          studentName={`${reportStudent.user.firstName} ${reportStudent.user.lastName}`}
-        />
-      )}
     </div>
   );
 }

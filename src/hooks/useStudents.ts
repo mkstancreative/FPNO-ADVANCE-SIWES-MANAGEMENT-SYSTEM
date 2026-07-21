@@ -13,6 +13,7 @@ import {
 } from "../api/services/manageStudent";
 import type {
   StudentParams,
+  StudentReportParams,
   UploadStudentsPayload,
   UpdateStudentStatusPayload,
   StudentProgressResponse,
@@ -99,19 +100,22 @@ export const useDownloadStudentTemplate = () => {
   });
 };
 
-export const useStudentReport = (id: string) => {
+export const useStudentReport = (id: string, params?: StudentReportParams) => {
   return useQuery({
-    queryKey: ["student-report", id],
-    queryFn: () => getStudentReport(id),
+    queryKey: ["student-report", id, params],
+    queryFn: () => getStudentReport(id, params),
     enabled: !!id,
     retry: false,
   });
 };
 
-export const useAiScoreBreakdown = (id: string) => {
+export const useAiScoreBreakdown = (
+  id: string,
+  params?: StudentReportParams,
+) => {
   return useQuery({
-    queryKey: ["student-ai-score", id],
-    queryFn: () => getAiScoreBreakDown(id),
+    queryKey: ["student-ai-score", id, params],
+    queryFn: () => getAiScoreBreakDown(id, params),
     enabled: !!id,
     retry: false,
   });

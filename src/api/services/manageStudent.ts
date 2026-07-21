@@ -3,6 +3,7 @@ import type {
   StudentListResponse,
   StudentDetailResponse,
   StudentParams,
+  StudentReportParams,
   UploadStudentsPayload,
   UpdateStudentStatusPayload,
   UpdateStatusApiResult,
@@ -54,13 +55,21 @@ export const updateStudentStatus = async (
   return response.data;
 };
 
-export const getStudentReport = async (id: string) => {
-  const response = await api.get(`/reports/student/${id}`);
+export const getStudentReport = async (
+  id: string,
+  params?: StudentReportParams,
+) => {
+  const response = await api.get(`/reports/student/${id}`, { params });
   return response.data;
 };
 
-export const getAiScoreBreakDown = async (id: string) => {
-  const response = await api.get(`/reports/${id}/ai-score-breakdown`);
+export const getAiScoreBreakDown = async (
+  id: string,
+  params?: StudentReportParams,
+) => {
+  const response = await api.get(`/reports/${id}/ai-score-breakdown`, {
+    params,
+  });
   return response.data;
 };
 

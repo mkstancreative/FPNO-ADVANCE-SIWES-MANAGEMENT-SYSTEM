@@ -118,6 +118,12 @@ export interface StudentDetailResponse {
   data: StudentDetail;
 }
 
+// ── Report Params ────────────────────────────────────────────────────────────
+export interface StudentReportParams {
+  internshipId?: string;
+  batchId?: string;
+}
+
 // ── Query Params ─────────────────────────────────────────────────────────────
 export interface StudentParams {
   page?: number;

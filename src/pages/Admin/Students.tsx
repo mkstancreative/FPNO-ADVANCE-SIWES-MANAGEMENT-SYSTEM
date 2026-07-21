@@ -6,7 +6,6 @@ import ResetButton from "../../components/ui/ResetButton/ResetButton";
 import AdminStudentsTable from "../../components/admin/tables/AdminStudentsTable";
 import UploadStudents from "../../components/admin/forms/UploadStudents";
 import UpdateStudentStatus from "../../components/admin/forms/UpdateStudentStatus";
-import StudentReportModal from "../../components/admin/modals/StudentReportModal";
 import { useModal } from "../../context/ModalContext";
 import type { Student, ITStatus } from "../../api/types/student";
 import type { TableMeta } from "../../components/ui/GeneralTable/GeneralTable";
@@ -93,8 +92,12 @@ export default function Students() {
   const handleProgress = (student: Student) =>
     navigate(`/admin/students/${student._id}/progress`);
 
-  const [reportStudent, setReportStudent] = useState<Student | null>(null);
-  const openViewReport = (student: Student) => setReportStudent(student);
+  const openViewReport = (student: Student) => {
+    const name = encodeURIComponent(
+      `${student.user.firstName} ${student.user.lastName}`,
+    );
+    navigate(`/admin/students/${student._id}/report?name=${name}`);
+  };
 
   const handleReset = () => {
     setFilters({
@@ -204,16 +207,6 @@ export default function Students() {
           onSelectionChange={setSelectedIds}
         />
       </div>
-
-      {/* ── Student IT Report Modal ── */}
-      {reportStudent && (
-        <StudentReportModal
-          isOpen={!!reportStudent}
-          onClose={() => setReportStudent(null)}
-          studentId={reportStudent._id}
-          studentName={`${reportStudent.user.firstName} ${reportStudent.user.lastName}`}
-        />
-      )}
     </div>
   );
 }
