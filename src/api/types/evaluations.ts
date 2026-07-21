@@ -29,10 +29,26 @@ export interface EvaluationIndustrialSide {
 export interface Evaluation {
   _id: string;
   student: string;
-  internship: EvaluationInternshipRef;
+  internship: any;
   type: EvaluationType;
   school?: EvaluationSchoolSide;
+  schoolEvaluation?: {
+    ratings: SchoolEvaluationRatings;
+    comments: string;
+    totalScore: number;
+    submittedBy?: string;
+    submittedAt?: string;
+  };
   industrial?: EvaluationIndustrialSide;
+  industrialEvaluation?: {
+    ratings?: Record<string, number>;
+    strengths: string[];
+    weaknesses: string[];
+    comments?: string;
+    wouldHire?: "yes" | "no" | "maybe";
+    totalScore?: number;
+    submittedAt?: string;
+  };
   isComplete: boolean;
   finalScore: number | null;
   finalGrade: string | null;

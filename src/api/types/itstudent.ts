@@ -325,7 +325,9 @@ export interface StudentReport {
   uniqueSkillsUsed: number;
   skillsAnalysis: SkillsAnalysis;
   professionalGrowth: ProfessionalGrowth;
-  aiScore: AiScore;
+  aiScore?: AiScore;
+  finalScore?: number | null;
+  finalGrade?: string | null;
   weeklySummaries: WeeklySummary[];
   challengesAnalysis: ChallengeAnalysis[];
   createdAt: string;

@@ -30,7 +30,7 @@ const blankActivity = (): Omit<LogBookActivity, "_id"> => ({
 
 // ─── Build initial form state ───────────────────────────────────────────────────
 const buildInitial = (internshipId?: string): CreateLogBookPayload => ({
-  weekNumber: 1,
+  weekNumber: "" as unknown as number,
   title: "",
   activities: [blankActivity()],
   challengesFaced: "",
@@ -260,10 +260,14 @@ function CreateLogBookDraftInner({
   // ── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    const payload = {
+      ...form,
+      weekNumber: Number(form.weekNumber),
+    };
     if (isEdit && editId) {
-      update({ id: editId, payload: form }, { onSuccess: onClose });
+      update({ id: editId, payload }, { onSuccess: onClose });
     } else {
-      create(form, { onSuccess: onClose });
+      create(payload, { onSuccess: onClose });
     }
   };
 
@@ -287,7 +291,13 @@ function CreateLogBookDraftInner({
               max={26}
               className="modal-input"
               value={form.weekNumber}
-              onChange={(e) => setField("weekNumber", Number(e.target.value))}
+              onChange={(e) => {
+                const val = e.target.value;
+                setField(
+                  "weekNumber",
+                  val === "" ? ("" as unknown as number) : Number(val),
+                );
+              }}
               required
             />
           </div>

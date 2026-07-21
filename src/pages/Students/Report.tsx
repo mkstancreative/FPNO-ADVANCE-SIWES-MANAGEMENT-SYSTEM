@@ -26,7 +26,6 @@ import {
 import { useMyEvaluation } from "../../hooks/useEvaluations";
 import { useInternship } from "../../context/useInternship";
 import "./Report.css";
-import AddButton from "../../components/ui/AddButton/AddButton";
 
 // ── Grade colour helper ───────────────────────────────────────────────────────
 function gradeClass(grade: string) {
@@ -193,14 +192,7 @@ export default function Report() {
             </p>
           </div>
         </div>
-        <div className="page-header-right">
-          <AddButton
-            text="Generate Report"
-            icon={<Sparkles size={15} />}
-            onClick={() => handleGenerate()}
-            disabled={generating}
-          />
-        </div>
+        <div className="page-header-right"></div>
       </div>
 
       {/* ── Tabs ────────────────────────────────────────────────────────────── */}
@@ -244,13 +236,24 @@ export default function Report() {
                   value={report.uniqueSkillsUsed}
                   color="amber"
                 />
-                <StatCard
-                  icon={<Target size={18} />}
-                  label="AI Score"
-                  value={`${report.aiScore.total}/100`}
-                  color="green"
-                  badge={report.aiScore.grade}
-                />
+                {(report.finalScore !== undefined || report.aiScore) && (
+                  <StatCard
+                    icon={<Target size={18} />}
+                    label="Final Score"
+                    value={
+                      report.finalScore !== undefined &&
+                      report.finalScore !== null
+                        ? `${report.finalScore}/100`
+                        : report.aiScore
+                          ? `${report.aiScore.total}/100`
+                          : "—"
+                    }
+                    color="green"
+                    badge={
+                      report.finalGrade || report.aiScore?.grade || undefined
+                    }
+                  />
+                )}
               </div>
 
               {/* Executive summary */}
@@ -518,24 +521,43 @@ export default function Report() {
           ) : report ? (
             <>
               {/* AI Score strip */}
-              <div className="rp-score-strip">
-                <div
-                  className={`rp-grade-pill ${gradeClass(report.aiScore.grade)}`}
-                >
-                  Grade {report.aiScore.grade}
-                </div>
-                <span className="rp-score-strip-score">
-                  {report.aiScore.total}/100
-                </span>
-                <span className="rp-score-strip-label">AI Score</span>
-                <div className="rp-score-strip-breakdown">
-                  {Object.entries(report.aiScore.breakdown).map(([k, v]) => (
-                    <span key={k} className="rp-strip-chip">
-                      {formatBreakdownKey(k)}: <strong>{v}</strong>
+              {(report.finalScore !== undefined || report.aiScore) && (
+                <div className="rp-score-strip">
+                  {(report.finalGrade || report.aiScore?.grade) && (
+                    <div
+                      className={`rp-grade-pill ${gradeClass(report.finalGrade || report.aiScore?.grade || "")}`}
+                    >
+                      Grade {report.finalGrade || report.aiScore?.grade}
+                    </div>
+                  )}
+                  {report.finalScore !== undefined &&
+                  report.finalScore !== null ? (
+                    <span className="rp-score-strip-score">
+                      {report.finalScore}/100
                     </span>
-                  ))}
+                  ) : report.aiScore ? (
+                    <span className="rp-score-strip-score">
+                      {report.aiScore.total}/100
+                    </span>
+                  ) : null}
+                  <span className="rp-score-strip-label">
+                    {report.finalScore !== undefined
+                      ? "Final Score"
+                      : "AI Score"}
+                  </span>
+                  {report.aiScore?.breakdown && (
+                    <div className="rp-score-strip-breakdown">
+                      {Object.entries(report.aiScore.breakdown).map(
+                        ([k, v]) => (
+                          <span key={k} className="rp-strip-chip">
+                            {formatBreakdownKey(k)}: <strong>{v}</strong>
+                          </span>
+                        ),
+                      )}
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
 
               {/* Weekly summaries accordion */}
               <CollapsibleCard
@@ -746,84 +768,109 @@ export default function Report() {
                 />
               </div>
 
-              {evaluation.evaluation?.school && (
-                <CollapsibleCard
-                  title="School Evaluation"
-                  icon={<BookOpen size={16} />}
-                >
-                  <div className="rp-breakdown-list">
-                    <ScoreBar
-                      label="Logbook Quality"
-                      value={
-                        evaluation.evaluation.school.ratings.logbookQuality
-                      }
-                      max={40}
-                    />
-                    <ScoreBar
-                      label="Logbook Consistency"
-                      value={
-                        evaluation.evaluation.school.ratings.logbookConsistency
-                      }
-                      max={30}
-                    />
-                    <ScoreBar
-                      label="Professional Growth"
-                      value={
-                        evaluation.evaluation.school.ratings.professionalGrowth
-                      }
-                      max={30}
-                    />
-                  </div>
-                  <p className="rp-prose" style={{ marginTop: 12 }}>
-                    {evaluation.evaluation.school.comments}
-                  </p>
-                </CollapsibleCard>
-              )}
+              {(() => {
+                const schoolSide =
+                  evaluation.evaluation?.schoolEvaluation ||
+                  evaluation.evaluation?.school;
+                if (!schoolSide) return null;
+                return (
+                  <CollapsibleCard
+                    title="School Evaluation"
+                    icon={<BookOpen size={16} />}
+                  >
+                    {schoolSide.ratings && (
+                      <div className="rp-breakdown-list">
+                        <ScoreBar
+                          label="Logbook Quality"
+                          value={schoolSide.ratings.logbookQuality}
+                          max={40}
+                        />
+                        <ScoreBar
+                          label="Logbook Consistency"
+                          value={schoolSide.ratings.logbookConsistency}
+                          max={30}
+                        />
+                        <ScoreBar
+                          label="Professional Growth"
+                          value={schoolSide.ratings.professionalGrowth}
+                          max={30}
+                        />
+                      </div>
+                    )}
+                    {schoolSide.comments && (
+                      <p className="rp-prose" style={{ marginTop: 12 }}>
+                        {schoolSide.comments}
+                      </p>
+                    )}
+                  </CollapsibleCard>
+                );
+              })()}
 
-              {evaluation.evaluation?.industrial && (
-                <CollapsibleCard
-                  title="Industrial Evaluation"
-                  icon={<Shield size={16} />}
-                >
-                  <div className="rp-breakdown-list">
-                    {Object.entries(
-                      evaluation.evaluation.industrial.ratings,
-                    ).map(([key, val]) => (
-                      <ScoreBar
-                        key={key}
-                        label={formatBreakdownKey(key)}
-                        value={val}
-                        max={20}
-                      />
-                    ))}
-                  </div>
-                  <p className="rp-prose" style={{ marginTop: 12 }}>
-                    {evaluation.evaluation.industrial.comments}
-                  </p>
-                  <div className="rp-two-col rp-growth-grid">
-                    <div>
-                      <div className="rp-growth-label">Strengths</div>
-                      <ul className="rp-growth-list">
-                        {evaluation.evaluation.industrial.strengths.map(
-                          (s, i) => (
-                            <li key={i}>{s}</li>
+              {(() => {
+                const industrialSide =
+                  evaluation.evaluation?.industrialEvaluation ||
+                  evaluation.evaluation?.industrial;
+                if (!industrialSide) return null;
+                return (
+                  <CollapsibleCard
+                    title="Industrial Evaluation"
+                    icon={<Shield size={16} />}
+                  >
+                    {industrialSide.ratings && (
+                      <div className="rp-breakdown-list">
+                        {Object.entries(industrialSide.ratings).map(
+                          ([key, val]) => (
+                            <ScoreBar
+                              key={key}
+                              label={formatBreakdownKey(key)}
+                              value={val as number}
+                              max={20}
+                            />
                           ),
                         )}
-                      </ul>
-                    </div>
-                    <div>
-                      <div className="rp-growth-label">Weaknesses</div>
-                      <ul className="rp-growth-list">
-                        {evaluation.evaluation.industrial.weaknesses.map(
-                          (w, i) => (
-                            <li key={i}>{w}</li>
-                          ),
-                        )}
-                      </ul>
-                    </div>
-                  </div>
-                </CollapsibleCard>
-              )}
+                      </div>
+                    )}
+                    {industrialSide.comments && (
+                      <p className="rp-prose" style={{ marginTop: 12 }}>
+                        {industrialSide.comments}
+                      </p>
+                    )}
+                    {((industrialSide.strengths &&
+                      industrialSide.strengths.length > 0) ||
+                      (industrialSide.weaknesses &&
+                        industrialSide.weaknesses.length > 0)) && (
+                      <div className="rp-two-col rp-growth-grid">
+                        {industrialSide.strengths &&
+                          industrialSide.strengths.length > 0 && (
+                            <div>
+                              <div className="rp-growth-label">Strengths</div>
+                              <ul className="rp-growth-list">
+                                {industrialSide.strengths.map(
+                                  (s: string, i: number) => (
+                                    <li key={i}>{s}</li>
+                                  ),
+                                )}
+                              </ul>
+                            </div>
+                          )}
+                        {industrialSide.weaknesses &&
+                          industrialSide.weaknesses.length > 0 && (
+                            <div>
+                              <div className="rp-growth-label">Weaknesses</div>
+                              <ul className="rp-growth-list">
+                                {industrialSide.weaknesses.map(
+                                  (w: string, i: number) => (
+                                    <li key={i}>{w}</li>
+                                  ),
+                                )}
+                              </ul>
+                            </div>
+                          )}
+                      </div>
+                    )}
+                  </CollapsibleCard>
+                );
+              })()}
             </>
           ) : (
             <div className="rp-empty">
@@ -940,12 +987,10 @@ function ScoreBar({
 }
 
 function EmptyState({
-  onGenerate,
-  generating,
   text,
 }: {
-  onGenerate: () => void;
-  generating: boolean;
+  onGenerate?: () => void;
+  generating?: boolean;
   text?: string;
 }) {
   return (
@@ -955,12 +1000,6 @@ function EmptyState({
       </div>
       <h3 className="rp-empty-title">No Report Yet</h3>
       <p className="rp-empty-sub">{text}</p>
-      <AddButton
-        text="Generate Report"
-        icon={<Sparkles size={15} />}
-        onClick={onGenerate}
-        disabled={generating}
-      />
     </div>
   );
 }
