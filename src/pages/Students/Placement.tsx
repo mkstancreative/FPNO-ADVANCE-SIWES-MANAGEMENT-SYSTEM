@@ -49,8 +49,7 @@ export default function Placement() {
   const currentItStatus = placement?.itStatus || progress?.itStatus;
 
   const showPlacementActions =
-    (currentItStatus === "seeking_placement" || currentItStatus === "uploaded") &&
-    !placement?.placement?.company;
+    currentItStatus === "completed" && !placement?.placement?.company;
 
   const openCreate = () => setShowForm(true);
 
@@ -70,9 +69,12 @@ export default function Placement() {
             </div>
           </div>
           <div className="page-header-right">
-            {showPlacementActions && (
+
+            <AddButton text="Confirm Placement" onClick={openCreate} />
+
+            {/* {showPlacementActions && (
               <AddButton text="Confirm Placement" onClick={openCreate} />
-            )}
+            )} */}
           </div>
         </div>
 
