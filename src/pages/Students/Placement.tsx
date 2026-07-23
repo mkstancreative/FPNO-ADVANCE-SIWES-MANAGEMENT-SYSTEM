@@ -49,7 +49,8 @@ export default function Placement() {
   const currentItStatus = placement?.itStatus || progress?.itStatus;
 
   const showPlacementActions =
-    currentItStatus === "seeking_placement" && !placement?.placement?.company;
+    (currentItStatus === "seeking_placement" || currentItStatus === "uploaded") &&
+    !placement?.placement?.company;
 
   const openCreate = () => setShowForm(true);
 

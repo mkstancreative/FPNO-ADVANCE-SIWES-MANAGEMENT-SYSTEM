@@ -1,3 +1,5 @@
+import type { ITStatus } from "./student";
+
 // Create Log Book
 export type CreateLogBookActivity = {
   date: string;
@@ -135,13 +137,7 @@ export interface UploadPassportPayload {
 
 // Student Weekly Progress
 export interface StudentWeeklyProgress {
-  itStatus:
-    | "active"
-    | "completed"
-    | "inactive"
-    | "seeking_placement"
-    | "pending_verification"
-    | "placed";
+  itStatus: ITStatus;
   weeksCompleted: number;
   daysRemaining: number;
   totalWeeks: number;
@@ -236,13 +232,7 @@ export interface ITPeriod {
 }
 
 export interface PlacementStatusData {
-  itStatus:
-    | "active"
-    | "completed"
-    | "inactive"
-    | "seeking_placement"
-    | "pending_verification"
-    | "placed";
+  itStatus: ITStatus;
   placement: Placement;
   supervisors: Supervisors;
   itPeriod: ITPeriod;

@@ -7,7 +7,8 @@ export type ITStatus =
   | "seeking_placement"
   | "active"
   | "placed"
-  | "completed";
+  | "completed"
+  | "inactive";
 
 export interface StudentUser {
   _id: string;
