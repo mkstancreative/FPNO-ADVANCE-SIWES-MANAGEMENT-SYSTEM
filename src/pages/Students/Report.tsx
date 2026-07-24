@@ -193,11 +193,12 @@ export default function Report() {
           </div>
         </div>
         <div className="page-header-right">
-          <button
-            className="rp-generate-btn"
-            onClick={handleGenerate}
-            disabled={generating}
-          >
+          {!report && (
+            <button
+              className="rp-generate-btn"
+              onClick={handleGenerate}
+              disabled={generating}
+            >
             {generating ? (
               <>
                 <span className="rp-spinner" />
@@ -206,10 +207,11 @@ export default function Report() {
             ) : (
               <>
                 <Sparkles size={16} />
-                {report ? "Regenerate Report" : "Generate Report"}
+                Generate Report
               </>
             )}
           </button>
+          )}
         </div>
       </div>
 
