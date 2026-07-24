@@ -192,7 +192,25 @@ export default function Report() {
             </p>
           </div>
         </div>
-        <div className="page-header-right"></div>
+        <div className="page-header-right">
+          <button
+            className="rp-generate-btn"
+            onClick={handleGenerate}
+            disabled={generating}
+          >
+            {generating ? (
+              <>
+                <span className="rp-spinner" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles size={16} />
+                {report ? "Regenerate Report" : "Generate Report"}
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* ── Tabs ────────────────────────────────────────────────────────────── */}
@@ -1005,6 +1023,8 @@ function ScoreBar({
 }
 
 function EmptyState({
+  onGenerate,
+  generating,
   text,
 }: {
   onGenerate?: () => void;
@@ -1017,7 +1037,30 @@ function EmptyState({
         <FileText size={32} />
       </div>
       <h3 className="rp-empty-title">No Report Yet</h3>
-      <p className="rp-empty-sub">{text}</p>
+      <p className="rp-empty-sub">
+        {text ??
+          "Generate your AI-powered IT report to see your performance analysis, skill breakdown, and professional growth summary."}
+      </p>
+      {onGenerate && (
+        <button
+          className="rp-generate-btn"
+          onClick={onGenerate}
+          disabled={generating}
+          style={{ marginTop: 4 }}
+        >
+          {generating ? (
+            <>
+              <span className="rp-spinner" />
+              Generating Report...
+            </>
+          ) : (
+            <>
+              <Sparkles size={16} />
+              Generate Report
+            </>
+          )}
+        </button>
+      )}
     </div>
   );
 }
