@@ -27,7 +27,7 @@ function InternshipCard({
   onViewLogbooks,
 }: {
   internship: Internship;
-  onViewProfile: (studentId: string) => void;
+  onViewProfile: (studentId: string, batchId?: string) => void;
   onViewLogbooks: (
     studentId: string,
     batchId: string,
@@ -109,7 +109,7 @@ function InternshipCard({
       </div>
 
       {/* ── Navigate to full student profile page ── */}
-      <button className="si-view-btn" onClick={() => onViewProfile(studentId)}>
+      <button className="si-view-btn" onClick={() => onViewProfile(studentId, batch?._id)}>
         <User size={13} />
         View Student Profile
         <ChevronRight size={13} />
@@ -146,9 +146,11 @@ export default function StudentsInternShips({
 
   const internships = data?.data ?? [];
 
-  const handleViewProfile = (sid: string) => {
+  const handleViewProfile = (sid: string, bid?: string) => {
     onClose(); // close modal first
-    navigate(`/supervisor/students/${sid}`);
+    navigate(
+      bid ? `/supervisor/students/${sid}?batchId=${bid}` : `/supervisor/students/${sid}`,
+    );
   };
 
   const handleViewLogbooks = (sid: string, bid: string, iid: string) => {

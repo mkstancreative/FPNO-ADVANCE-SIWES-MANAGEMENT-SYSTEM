@@ -102,10 +102,15 @@ export const getAssignedStudents = async (
   return response.data;
 };
 
+export interface StudentDetailParams {
+  batchId?: string;
+}
+
 export const getStudentDetail = async (
   id: string,
+  params?: StudentDetailParams,
 ): Promise<StudentDetailResponse> => {
-  const response = await api.get(`/supervisors/school/students/${id}`);
+  const response = await api.get(`/supervisors/school/students/${id}`, { params });
   return response.data;
 };
 

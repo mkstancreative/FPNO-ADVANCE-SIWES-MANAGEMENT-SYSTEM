@@ -19,6 +19,7 @@ import {
   getEvaluationReport,
   type EvaluationReportParams,
   type EvaluationReportItem,
+  type StudentDetailParams,
 } from "../api/services/schoolSupervisors";
 import type {
   EvaluationRequestPayload,
@@ -38,8 +39,8 @@ export const supervisorQueryKeys = {
   students: (params?: AssignedStudentsParams) =>
     [...supervisorQueryKeys.all, "students", params] as const,
 
-  studentDetail: (id: string) =>
-    [...supervisorQueryKeys.all, "student", id] as const,
+  studentDetail: (id: string, params?: StudentDetailParams) =>
+    [...supervisorQueryKeys.all, "student", id, params] as const,
 
   logbooks: (studentId: string, params?: LogbookListParams) =>
     [...supervisorQueryKeys.all, "logbooks", studentId, params] as const,
@@ -66,10 +67,10 @@ export const useAssignedStudents = (params?: AssignedStudentsParams) => {
   });
 };
 
-export const useStudentDetail = (id: string) => {
+export const useStudentDetail = (id: string, params?: StudentDetailParams) => {
   return useQuery({
-    queryKey: supervisorQueryKeys.studentDetail(id),
-    queryFn: () => getStudentDetail(id),
+    queryKey: supervisorQueryKeys.studentDetail(id, params),
+    queryFn: () => getStudentDetail(id, params),
     enabled: !!id,
   });
 };

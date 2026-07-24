@@ -1,5 +1,5 @@
 import React from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import {
   User,
   Briefcase,
@@ -108,9 +108,11 @@ function SkeletonLoader() {
 
 export default function AssignedStudentPage() {
   const { studentId = "" } = useParams<{ studentId: string }>();
+  const [searchParams] = useSearchParams();
+  const batchId = searchParams.get("batchId") ?? undefined;
   const navigate = useNavigate();
 
-  const { data: response, isLoading } = useStudentDetail(studentId);
+  const { data: response, isLoading } = useStudentDetail(studentId, { batchId });
   const { data: evaluationsResp } = useStudentEvaluations(studentId);
 
   const s = response?.data?.student;
