@@ -13,13 +13,11 @@ interface FilterState {
   city: string;
   page: number;
   limit: number;
-  status: "verified" | "pending_verification" | "rejected" | "";
 }
 
 export default function VerifiedCompanies() {
   const [filter, setFilter] = useState<FilterState>({
     search: "",
-    status: "verified",
     state: "",
     city: "",
     page: 1,
@@ -39,17 +37,13 @@ export default function VerifiedCompanies() {
 
   const { data: companiesResp, isLoading } = useVerifiedCompaniesSecure(params);
 
-  // Apply status filter client-side
-  const allCompanies = companiesResp?.data ?? [];
-  const companies = filter.status
-    ? allCompanies.filter((c) => c.verificationStatus === filter.status)
-    : allCompanies;
+  const companies = companiesResp?.data ?? [];
 
   const meta = companiesResp
     ? {
         page: companiesResp.page,
         pages: companiesResp.pages,
-        count: filter.status ? companies.length : companiesResp.total,
+        count: companiesResp.total,
         limit: filter.limit,
         hasPrev: companiesResp.page > 1,
         hasNext: companiesResp.page < companiesResp.pages,
@@ -69,7 +63,6 @@ export default function VerifiedCompanies() {
   const handleReset = () =>
     setFilter({
       search: "",
-      status: "verified",
       state: "",
       city: "",
       page: 1,
@@ -105,18 +98,6 @@ export default function VerifiedCompanies() {
       </div>
 
       <div className="filter-selects-block">
-        <SelectFilter
-          name="status"
-          value={filter.status}
-          onChange={(val) => setField("status", val as FilterState["status"])}
-          label="Status"
-          options={[
-            { value: "", label: "All Statuses" },
-            { value: "verified", label: "Verified" },
-            { value: "pending_verification", label: "Pending" },
-            { value: "rejected", label: "Rejected" },
-          ]}
-        />
         <SelectFilter
           name="state"
           value={filter.state}

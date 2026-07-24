@@ -50,8 +50,16 @@ export default function Report() {
     currentLogbooks?: number;
   } | null>(null);
 
-  const { selectedInternshipId } = useInternship();
-  const scopeParams = { internshipId: selectedInternshipId ?? undefined };
+  const { selectedInternshipId, selectedInternship } = useInternship();
+  const batchId =
+    typeof selectedInternship?.batch === "object"
+      ? selectedInternship.batch._id
+      : selectedInternship?.batch;
+
+  const scopeParams = {
+    internshipId: selectedInternshipId ?? undefined,
+    batchId: batchId ?? undefined,
+  };
 
   const { mutate: generate, isPending: generating } = useGenerateReport();
   const {

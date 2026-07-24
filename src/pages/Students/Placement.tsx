@@ -31,8 +31,16 @@ function strokeColor(pct: number, meets: boolean) {
 
 export default function Placement() {
   const [showForm, setShowForm] = useState(false);
-  const { selectedInternshipId } = useInternship();
-  const scopeParams = { internshipId: selectedInternshipId ?? undefined };
+  const { selectedInternshipId, selectedInternship } = useInternship();
+  const batchId =
+    typeof selectedInternship?.batch === "object"
+      ? selectedInternship.batch._id
+      : selectedInternship?.batch;
+
+  const scopeParams = {
+    internshipId: selectedInternshipId ?? undefined,
+    batchId: batchId ?? undefined,
+  };
 
   const { data: progressData, isLoading: loadingProgress } =
     useStudentWeeklyProgress(scopeParams);

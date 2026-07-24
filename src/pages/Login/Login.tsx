@@ -417,7 +417,7 @@ const ApexULanding = () => {
                   {isPending ? "Signing in…" : "Sign In"}
                 </button>
 
-                {/* <div
+                <div
                   style={{ marginTop: 20, textAlign: "center", fontSize: 14 }}
                 >
                   <span style={{ color: "var(--color-text-muted)" }}>
@@ -437,7 +437,7 @@ const ApexULanding = () => {
                   >
                     Register here
                   </button>
-                </div> */}
+                </div>
 
                 <div className="login-divider">
                   <div className="login-divider-line" />
