@@ -1,13 +1,15 @@
 import { api } from "./api";
 
 export interface CertificateRequest {
-  graduationYear: string;
-  graduationMonth: string;
-  graduationDate: string;
+  graduationYear?: string;
+  graduationMonth?: string;
+  graduationDate?: string;
   ndStatementOfResult?: File;
   itDischargeLetter?: File;
   hndStatementOfResult?: File;
-  placeOfIT: string;
+  placeOfIT?: string;
+  internshipId?: string;
+  batchId?: string;
 }
 
 export const requestCertificate = async (
@@ -21,6 +23,22 @@ export const requestCertificate = async (
   });
   return response.data;
 };
+
+export interface InternshipCertificateRequest {
+  internshipId?: string;
+  batchId?: string;
+}
+
+export const requestInternshipCertificate = async (
+  payload: InternshipCertificateRequest,
+) => {
+  const response = await api.post(
+    "/certificates/request-internship-certificate",
+    payload,
+  );
+  return response.data;
+};
+
 
 export const resendRequest = async (id: string, payload: FormData) => {
   const response = await api.put(`/certificates/re-request/${id}`, payload, {

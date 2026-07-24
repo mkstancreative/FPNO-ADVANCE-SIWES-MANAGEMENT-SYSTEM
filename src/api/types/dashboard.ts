@@ -79,6 +79,22 @@ export interface StudentDashNotifications {
 }
 
 export interface StudentDashboardData {
+  internshipId?: string;
+  hasMultipleInternships?: boolean;
+  batch?: {
+    _id: string;
+    name: string;
+    session: string;
+    program?: string;
+    level?: string;
+    status?: string;
+    itPeriod?: {
+      name?: string;
+      startDate?: string;
+      endDate?: string;
+      duration?: number;
+    };
+  };
   student: StudentDashStudent;
   placement: StudentDashPlacement;
   supervisors: StudentDashSupervisors;

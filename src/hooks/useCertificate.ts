@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getCertificateStatus,
   requestCertificate,
+  requestInternshipCertificate,
   verifyCertificatePayment,
   getAllRequests,
   getCertById,
@@ -45,6 +46,31 @@ export const useRequestCertificate = () => {
       const err = error as { response?: { data?: { message?: string } } };
       toast.error(
         err.response?.data?.message || "Error requesting certificate",
+      );
+    },
+  });
+};
+
+export const useRequestInternshipCertificate = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { internshipId?: string; batchId?: string }) =>
+      requestInternshipCertificate(payload) as Promise<{
+        success: boolean;
+        message: string;
+        data: RRRData;
+      }>,
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success("Certificate request initiated. Please pay the fee.");
+        queryClient.invalidateQueries({ queryKey: ["certificate-status"] });
+      } else {
+        toast.error(data.message || "Failed to request certificate");
+      }
+    },
+    onError: (error: { response?: { data?: { message?: string } } }) => {
+      toast.error(
+        error.response?.data?.message || "Error requesting certificate",
       );
     },
   });

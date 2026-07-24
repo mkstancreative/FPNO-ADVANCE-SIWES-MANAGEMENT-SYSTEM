@@ -99,6 +99,12 @@ export default function DashBoardStudent() {
         <CertificateRequestModal
           isOpen
           requestId={requestId}
+          selfRegistered={resp?.data?.student?.selfRegistered !== false}
+          internshipId={resp?.data?.internshipId ?? selectedInternshipId ?? undefined}
+          batchId={resp?.data?.batch?._id ?? undefined}
+          batchName={resp?.data?.batch?.name ?? undefined}
+          batchSession={resp?.data?.batch?.session ?? undefined}
+          placementCompany={resp?.data?.placement?.company ?? undefined}
           onClose={(rrrData) => {
             closeModal();
             if (rrrData && typeof rrrData === "object" && "rrr" in rrrData) {
@@ -110,7 +116,7 @@ export default function DashBoardStudent() {
         />,
       );
     },
-    [openModal, closeModal, openPaymentModal],
+    [openModal, closeModal, openPaymentModal, resp, selectedInternshipId],
   );
 
   const openRejectionDetails = useMemo(
