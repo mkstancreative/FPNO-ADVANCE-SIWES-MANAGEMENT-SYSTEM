@@ -25,6 +25,9 @@ const StudentReportPage = lazy(
 const AdminCertificates = lazy(
   () => import("../pages/Admin/AdminCertificates"),
 );
+const DiscountStudents = lazy(
+  () => import("../pages/Admin/DiscountStudents"),
+);
 const SystemSettings = lazy(() => import("../pages/Admin/SystemSettings"));
 const UserAccounts = lazy(() => import("../pages/Admin/UserAccounts"));
 const Internships = lazy(() => import("../pages/Admin/Internships"));
@@ -75,6 +78,7 @@ export default function AdminRoutes() {
         />
         <Route path="verified-companies" element={<VerifiedCompanies />} />
         <Route path="certificates" element={<AdminCertificates />} />
+        <Route path="discounted-students" element={<DiscountStudents />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="change-password" element={<ChangePassword />} />
         <Route path="user-accounts" element={<UserAccounts />} />

@@ -79,3 +79,28 @@ export const getUnassignedStudents = async (
   const response = await api.get("/admin/students/unassigned", { params });
   return response.data;
 };
+
+export const uploadDiscountedStudents = async (
+  payload: { file: File } | FormData,
+) => {
+  const formData =
+    payload instanceof FormData ? payload : new FormData();
+  if (!(payload instanceof FormData)) {
+    formData.append("file", payload.file);
+  }
+  const response = await api.post(
+    "/admin/certificate-discounts/upload",
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+    },
+  );
+  return response.data;
+};
+
+export const getDiscountedStudents = async (
+  params?: StudentParams,
+): Promise<StudentListResponse> => {
+  const response = await api.get("/admin/certificate-discounts", { params });
+  return response.data;
+};

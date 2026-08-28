@@ -10,6 +10,8 @@ import {
   getStudentReport,
   getAiScoreBreakDown,
   getUnassignedStudents,
+  getDiscountedStudents,
+  uploadDiscountedStudents,
 } from "../api/services/manageStudent";
 import type {
   StudentParams,
@@ -118,5 +120,26 @@ export const useAiScoreBreakdown = (
     queryFn: () => getAiScoreBreakDown(id, params),
     enabled: !!id,
     retry: false,
+  });
+};
+
+export const useDiscountedStudents = (params?: StudentParams) => {
+  return useQuery({
+    queryKey: ["discounted-students", params],
+    queryFn: () => getDiscountedStudents(params),
+  });
+};
+
+export const useUploadDiscountedStudents = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { file: File } | FormData) =>
+      uploadDiscountedStudents(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["discounted-students"] });
+    },
+    onError: (err: unknown) => {
+      toast.error(getErrMsg(err, "Discount upload failed."));
+    },
   });
 };

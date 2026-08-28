@@ -6,6 +6,7 @@ import {
   Users,
   Bell,
   FileText,
+  Percent,
   Settings2,
   UsersRound,
 } from "lucide-react";
@@ -105,6 +106,11 @@ export const ADMIN_NAV = [
         label: "Certificate Requests",
         icon: <FileText size={18} />,
         path: "/admin/certificates",
+      },
+      {
+        label: "Discounted Students",
+        icon: <Percent size={18} />,
+        path: "/admin/discounted-students",
       },
     ],
   },
