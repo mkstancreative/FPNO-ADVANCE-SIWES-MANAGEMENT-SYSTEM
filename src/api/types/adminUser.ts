@@ -1,16 +1,22 @@
 export interface AdminUserLookupItem {
-  id: string;
+  userId?: string;
+  id?: string;
   _id?: string;
+  name?: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
-  firstName: string;
-  lastName: string;
   role: string;
-  registrationNumber?: string;
+  registrationNumber?: string | null;
   phone?: string;
+  isActive?: boolean;
+  mustChangePassword?: boolean;
+  canReset?: boolean;
 }
 
 export interface AdminUserLookupResponse {
   success: boolean;
+  count?: number;
   message?: string;
   data: AdminUserLookupItem[];
 }

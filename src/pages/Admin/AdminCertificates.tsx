@@ -139,7 +139,7 @@ export default function AdminCertificates() {
         confirmText="Reject All"
         variant="danger"
         showInput={true}
-        inputPlaceholder="e.g. Incomplete documentation, CIMS logbook not verified..."
+        inputPlaceholder="e.g. Incomplete documentation, SIWES logbook not verified..."
         isLoading={rejecting}
         onConfirm={(reason) => {
           if (!reason?.trim()) {

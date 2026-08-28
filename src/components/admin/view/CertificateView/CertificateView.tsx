@@ -93,7 +93,7 @@ const CertificateView: React.FC<CertificateViewProps> = ({ id, onClose }) => {
                 <span className="item-value">{req.graduationMonth}</span>
               </div>
               <div className="section-item">
-                <span className="item-label">CIMS Organization</span>
+                <span className="item-label">SIWES Organization</span>
                 <div
                   style={{
                     display: "flex",

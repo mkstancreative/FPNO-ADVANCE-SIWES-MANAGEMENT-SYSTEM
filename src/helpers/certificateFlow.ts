@@ -78,7 +78,7 @@ export const nextActionDescription = (
     case "resubmit":
       return certificate.rejectionReason
         ? `Reason: ${certificate.rejectionReason}`
-        : "Please contact the CIMS unit";
+        : "Please contact the SIWES unit";
     case "download":
       return "Your certificate is ready for download";
     default:

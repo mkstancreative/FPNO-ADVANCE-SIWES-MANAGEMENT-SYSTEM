@@ -142,7 +142,7 @@ const ApexULanding = () => {
         </svg>
       ),
       title: "Assessment & Grading",
-      desc: "Automated grading workflows for student performance, supervisor evaluations, and final CIMS scores.",
+      desc: "Automated grading workflows for student performance, supervisor evaluations, and final SIWES scores.",
     },
     {
       icon: (
@@ -290,7 +290,7 @@ const ApexULanding = () => {
               </div>
 
               <div className="login-card-title">Welcome back</div>
-              <div className="login-card-sub">Sign in to your CIMS account</div>
+              <div className="login-card-sub">Sign in to your SIWES account</div>
 
               <form onSubmit={handleSubmit}>
                 <div className="form-group">
@@ -299,7 +299,7 @@ const ApexULanding = () => {
                     <input
                       type="email"
                       className="form-input"
-                      placeholder="you@university.edu"
+                      placeholder="you@fpno.edu.ng"
                       style={{ paddingRight: 40 }}
                       value={email}
                       onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -463,7 +463,7 @@ const ApexULanding = () => {
           <div className="section-badge">Portal Features</div>
           <h2 className="section-title">Everything You Need to Succeed</h2>
           <p className="section-desc">
-            A complete CIMS management system with every tool students,
+            A complete SIWES management system with every tool students,
             supervisors, and institutions need.
           </p>
           <div className="features-grid">
@@ -500,7 +500,7 @@ const ApexULanding = () => {
           </div>
           <h2 className="cta-title">Ready to Begin Your Placement?</h2>
           <p className="cta-desc">
-            Join thousands of Nigerian students who manage their CIMS experience
+            Join thousands of Nigerian students who manage their SIWES experience
             seamlessly through our portal.
           </p>
           <div className="cta-buttons">
@@ -559,7 +559,7 @@ const ApexULanding = () => {
                 />
               </svg>
             </div>
-            <span className="footer-logo-text">CIMS</span>
+            <span className="footer-logo-text">SIWES</span>
             <span className="footer-sub">Student Portal</span>
           </div>
           <div className="footer-copy">

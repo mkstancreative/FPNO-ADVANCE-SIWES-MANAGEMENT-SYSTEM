@@ -109,7 +109,7 @@ export const RequestForm = () => {
               PMB 1036 Emekuku – Owerri, Imo State, Nigeria
             </p>
             <p className="cert-dept-name">Company Placement Centre</p>
-            <p className="cert-dept-sub">(CIMS Directorate)</p>
+            <p className="cert-dept-sub">(SIWES Directorate)</p>
           </div>
 
           {/* Right logo */}
@@ -128,7 +128,7 @@ export const RequestForm = () => {
           <div className="req-title-block">
             <h1 className="req-title">IT Placement Request Form</h1>
             <p className="req-title-sub">
-              Student Company Work Experience Scheme (CIMS) — Mandatory Company
+              Student Company Work Experience Scheme (SIWES) — Mandatory Company
               Training
             </p>
           </div>
@@ -245,7 +245,7 @@ export const RequestForm = () => {
               disciplinary action and/or cancellation of my Company Training
               (CT) placement. I further declare my full commitment to abide by
               the rules and regulations of the placement organisation and the
-              CIMS Directorate throughout the duration of my clinical training.
+              SIWES Directorate throughout the duration of my clinical training.
             </div>
           </div>
 
@@ -264,7 +264,7 @@ export const RequestForm = () => {
             <div className="req-sig-block">
               <div className="req-sig-area" />
               <p className="req-sig-label">
-                IPC / CIMS Officer's Signature &amp; Date
+                IPC / SIWES Officer's Signature &amp; Date
               </p>
             </div>
           </div>
@@ -276,7 +276,7 @@ export const RequestForm = () => {
             Ref: <span className="req-footer-id">{ref}</span>
           </span>
           <span>
-            Holy Rosary Hospital College of Nursing Sciences, Emekuku — CIMS
+            Holy Rosary Hospital College of Nursing Sciences, Emekuku — SIWES
             Directorate. All rights reserved.
           </span>
           <span>portal.fpno.edu.ng/siwes-verify</span>

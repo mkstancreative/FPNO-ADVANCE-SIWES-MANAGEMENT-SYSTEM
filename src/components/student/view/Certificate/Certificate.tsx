@@ -79,7 +79,7 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(
                 <h2 className="cert-centre-title">
                   INDUSTRIAL PLACEMENT CENTRE
                 </h2>
-                <p className="cert-siwes-tag">(CIMS DIRECTORATE)</p>
+                <p className="cert-siwes-tag">(SIWES DIRECTORATE)</p>
               </div>
               <div className="cert-logo-right">
                 <img
@@ -214,7 +214,7 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(
                 </div>
                 <div className="cert-sig-line" />
                 <p className="cert-sig-name">Engr. Dr. Okorie N.K.</p>
-                <p className="cert-sig-label">DIRECTOR, IPC/CIMS</p>
+                <p className="cert-sig-label">DIRECTOR, IPC/SIWES</p>
               </div>
 
               <div className="cert-qr-block">
@@ -241,7 +241,7 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(
             {/* ── BOTTOM ── */}
             <div className="cert-bottom-row">
               <div className="cert-serial">
-                FPN/IPC/CIMS/{" "}
+                FPN/IPC/SIWES/{" "}
                 <span style={{ fontSize: "18px" }}>
                   {certificateNumber || serialNumber}
                 </span>

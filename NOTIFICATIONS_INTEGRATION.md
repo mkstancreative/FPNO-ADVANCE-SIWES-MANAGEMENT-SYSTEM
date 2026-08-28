@@ -1,6 +1,6 @@
 # Notifications System Integration Guide
 
-This guide explains how to integrate the WebSocket-based notifications system into your CIMS application.
+This guide explains how to integrate the WebSocket-based notifications system into your SIWES application.
 
 ## System Overview
 

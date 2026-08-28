@@ -41,15 +41,16 @@ export default function AdminResetUserPassword({
     return null;
   }
 
-  const firstName = user.firstName || "";
-  const lastName = user.lastName || "";
   const email = user.email || "";
-  const fullName = `${firstName} ${lastName}`.trim();
-  const initialFirst = firstName ? firstName[0].toUpperCase() : "?";
-  const initialLast = lastName ? lastName[0].toUpperCase() : "";
+  const fullName =
+    user.name || `${user.firstName || ""} ${user.lastName || ""}`.trim();
+  const nameParts = fullName.split(" ").filter(Boolean);
+  const initialFirst = nameParts[0] ? nameParts[0][0].toUpperCase() : "?";
+  const initialLast =
+    nameParts.length > 1 ? nameParts[nameParts.length - 1][0].toUpperCase() : "";
   const roleText =
     typeof user.role === "string" ? user.role.replace(/_/g, " ") : "";
-  const userId = user.id || user._id || "";
+  const userId = user.userId || user.id || user._id || "";
 
   const validate = (): boolean => {
     const next: FormErrors = {};

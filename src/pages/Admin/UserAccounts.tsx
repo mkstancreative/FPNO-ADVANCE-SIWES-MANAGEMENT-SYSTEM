@@ -6,9 +6,12 @@ import type { Column } from "../../components/ui/GeneralTable/GeneralTable";
 import StatusBadge from "../../components/ui/StatusBadge/StatusBadge";
 import Spinner from "../../components/ui/Spinner/Spinner";
 import AdminResetUserPassword from "../../components/admin/forms/AdminResetUserPassword";
+import AdminVerifyRRR from "../../components/admin/forms/AdminVerifyRRR";
 import { useModal } from "../../context/ModalContext";
 import { useAdminUserLookup } from "../../hooks/useAdminUsers";
 import type { AdminUserLookupItem } from "../../api/types/adminUser";
+import AddButton from "../../components/ui/AddButton/AddButton";
+import ResetButton from "../../components/ui/ResetButton/ResetButton";
 
 /** Long enough that typing a reg number does not fire a request per keystroke. */
 const DEBOUNCE_MS = 350;
@@ -47,7 +50,7 @@ export default function UserAccounts() {
       render: (u) => (
         <div style={{ display: "flex", flexDirection: "column" }}>
           <span style={{ fontWeight: 600 }}>
-            {`${u?.firstName || ""} ${u?.lastName || ""}`.trim() || "—"}
+            {u.name || `${u?.firstName || ""} ${u?.lastName || ""}`.trim() || "—"}
           </span>
           <span style={{ fontSize: 11.5, color: "var(--color-text-secondary)" }}>
             {u.email}
@@ -60,12 +63,34 @@ export default function UserAccounts() {
       render: (u) => u.registrationNumber || "—",
     },
     {
-      header: "Phone",
-      render: (u) => u.phone || "—",
-    },
-    {
       header: "Role",
       render: (u) => <StatusBadge status={u.role} />,
+    },
+    {
+      header: "Status",
+      render: (u) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+          {u.isActive !== undefined ? (
+            <StatusBadge status={u.isActive ? "active" : "inactive"} />
+          ) : (
+            "—"
+          )}
+          {u.mustChangePassword && (
+            <span
+              style={{
+                fontSize: 11,
+                padding: "2px 7px",
+                borderRadius: 4,
+                background: "#fef3c7",
+                color: "#92400e",
+                fontWeight: 600,
+              }}
+            >
+              Reset Pending
+            </span>
+          )}
+        </div>
+      ),
     },
     {
       header: "Actions",
@@ -74,7 +99,12 @@ export default function UserAccounts() {
           <button
             className="ua-reset-btn"
             onClick={() => openReset(u)}
-            title="Reset this user's password"
+            disabled={u.canReset === false}
+            title={
+              u.canReset === false
+                ? "Password reset is not available for this user"
+                : "Reset this user's password"
+            }
           >
             <KeyRound size={14} />
             Reset Password
@@ -99,15 +129,20 @@ export default function UserAccounts() {
             </p>
           </div>
         </div>
+
+        <div className="page-header-right">
+          <AddButton text="Verify RRR" onClick={() => openModal(<AdminVerifyRRR isOpen onClose={closeModal} />)} />
+        </div>
       </div>
 
-      <div className="filter-wrapper">
+      <div className="filter-wrapper ua-filter-wrapper">
         <SearchInput
           value={search}
           onChange={setSearch}
           onClear={() => setSearch("")}
           placeholder="Search by name, email, or registration number…"
         />
+        <ResetButton onClick={() => { setSearch(""); }} />
       </div>
 
       <div className="table-wrapper" style={{ marginTop: 24 }}>
@@ -169,6 +204,17 @@ export default function UserAccounts() {
       </div>
 
       <style>{`
+        .ua-filter-wrapper {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          flex-wrap: nowrap;
+        }
+        .ua-filter-wrapper .search-box {
+          flex: 1;
+          width: auto;
+          margin-bottom: 0;
+        }
         .ua-reset-btn {
           display: inline-flex;
           align-items: center;
@@ -183,9 +229,16 @@ export default function UserAccounts() {
           border: 1px solid var(--color-accent);
           transition: background 0.15s, color 0.15s;
         }
-        .ua-reset-btn:hover {
+        .ua-reset-btn:hover:not(:disabled) {
           background: var(--color-accent);
           color: #fff;
+        }
+        .ua-reset-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+          background: var(--color-bg-secondary);
+          color: var(--color-text-muted);
+          border-color: var(--color-border);
         }
         .ua-empty {
           display: flex;

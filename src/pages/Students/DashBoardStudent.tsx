@@ -522,7 +522,7 @@ export default function DashBoardStudent() {
         <div>
           <SectionHead
             title="My Progress"
-            sub="Real-time CIMS tracking"
+            sub="Real-time SIWES tracking"
             icon={<TrendingUp size={16} />}
             color="teal"
           />

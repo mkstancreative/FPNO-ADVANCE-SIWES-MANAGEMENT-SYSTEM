@@ -154,7 +154,7 @@ const VerifyCertificate = () => {
               Holy Rosary Hospital College of Nursing Sciences
             </span>
             <span className="vc-logo-sub">
-              Owerri, Imo State · CIMS Directorate
+              Owerri, Imo State · SIWES Directorate
             </span>
           </div>
         </div>
@@ -169,9 +169,9 @@ const VerifyCertificate = () => {
             <span className="vc-hero-title-accent">Verified ✓</span>
           </h2>
           <p className="vc-hero-sub">
-            This document has been authenticated against the official CIMS
+            This document has been authenticated against the official SIWES
             records of Holy Rosary Hospital College of Nursing Sciences,
-            Emekuku. Issued under the authority of the CIMS Directorate.
+            Emekuku. Issued under the authority of the SIWES Directorate.
           </p>
           <div className="vc-cert-number-box">
             <span className="vc-cert-number-label">Certificate Number</span>
@@ -187,7 +187,7 @@ const VerifyCertificate = () => {
               <ExternalLink size={14} /> fpno.edu.ng
             </a>
             <Link to="/" className="vc-hero-link">
-              <ShieldCheck size={14} /> CIMS Portal
+              <ShieldCheck size={14} /> SIWES Portal
             </Link>
           </div>
         </section>

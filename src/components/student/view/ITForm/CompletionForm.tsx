@@ -32,7 +32,7 @@ const year = (d: string | null | undefined) =>
 const certId = (reg: string) => {
   const dept = reg.split("/")[0]?.toUpperCase() ?? "DEPT";
   const seq = reg.replace(/\D/g, "").slice(-6).padStart(6, "0");
-  return { prefix: `FPNO/CIMS/2026/ND2/${dept}/`, seq };
+  return { prefix: `FPNO/SIWES/2026/ND2/${dept}/`, seq };
 };
 
 // ── Props ──────────────────────────────────────────────────────────────────────
@@ -81,7 +81,7 @@ export const CompletionForm = ({
               PMB 1036 Owerri – Imo State, Nigeria
             </p>
             <p className="cert-dept-name">Company Placement Centre</p>
-            <p className="cert-dept-sub">(CIMS Directorate)</p>
+            <p className="cert-dept-sub">(SIWES Directorate)</p>
           </div>
 
           {/* Right logo */}
@@ -169,7 +169,7 @@ export const CompletionForm = ({
           <div className="cert-sig-row">
             {/* Director */}
             <div className="cert-sig-block">
-              <p className="cert-sig-title">Director, IPC/CIMS</p>
+              <p className="cert-sig-title">Director, IPC/SIWES</p>
               <div className="cert-sig-underline" />
               <p className="cert-sig-director">Dr. Ijeoma Emeagi</p>
             </div>
@@ -207,7 +207,7 @@ export const CompletionForm = ({
         {/* ── Official stamp band ───────────────────────────────── */}
         <div className="cert-stamp-band">
           OFFICIAL DOCUMENT — Holy Rosary Hospital College of Nursing Sciences
-          CIMS Directorate
+          SIWES Directorate
         </div>
 
         {/* ── Footer ───────────────────────────────────────────── */}

@@ -61,10 +61,18 @@ export const useVerifyInternshipPayment = () => {
     mutationFn: (rrr: string) => verifyInternshipPayment(rrr),
     onSuccess: (data) => {
       if (data.success) {
+        toast.success(data.message || "Payment RRR verified successfully!");
         gatedQueries.forEach((queryKey) =>
           queryClient.invalidateQueries({ queryKey }),
         );
+      } else {
+        toast.error(data.message || "Could not verify payment RRR.");
       }
+    },
+    onError: (error: unknown) => {
+      toast.error(
+        getApiErrorMessage(error, "Failed to verify payment RRR."),
+      );
     },
   });
 };

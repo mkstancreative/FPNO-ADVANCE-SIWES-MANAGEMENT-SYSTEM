@@ -306,7 +306,7 @@ export default function Report() {
               onGenerate={handleGenerate}
               generating={generating}
               text=" Generate your AI-powered IT report to see your performance analysis,
-        skill breakdown, and professional growth summary. Overview of your CIMS experience"
+        skill breakdown, and professional growth summary. Overview of your SIWES experience"
             />
           )}
         </div>
