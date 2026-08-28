@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from "react";
-import { Eye, EyeOff, KeyRound, ShieldAlert } from "lucide-react";
+import { Check, Copy, Eye, EyeOff, KeyRound, ShieldAlert, Wand2 } from "lucide-react";
+import { toast } from "react-toastify";
 import CustomModal from "../../ui/CustomModal/CustomModal";
 import Spinner from "../../ui/Spinner/Spinner";
 import { useAdminResetUserPassword } from "../../../hooks/useAdminUsers";
 import type { AdminUserLookupItem } from "../../../api/types/adminUser";
+import { readTemporaryPassword } from "../../../api/types/adminUser";
 
 interface AdminResetUserPasswordProps {
   isOpen: boolean;
@@ -34,6 +36,11 @@ export default function AdminResetUserPassword({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [show, setShow] = useState({ next: false, confirm: false });
   const [errors, setErrors] = useState<FormErrors>({});
+  // Omitting `newPassword` tells the backend to generate one and force a change
+  // on next login — the admin never has to invent a password.
+  const [generate, setGenerate] = useState(false);
+  const [issued, setIssued] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const { mutate: resetPassword, isPending } = useAdminResetUserPassword();
 
@@ -53,6 +60,8 @@ export default function AdminResetUserPassword({
   const userId = user.userId || user.id || user._id || "";
 
   const validate = (): boolean => {
+    if (generate) return true;
+
     const next: FormErrors = {};
 
     if (!newPassword.trim()) {
@@ -77,8 +86,19 @@ export default function AdminResetUserPassword({
     if (!validate() || !userId) return;
 
     resetPassword(
-      { userId, newPassword },
-      { onSuccess: () => onClose() },
+      { userId, newPassword: generate ? undefined : newPassword },
+      {
+        onSuccess: (res) => {
+          const temp = readTemporaryPassword(res);
+          // Keep the modal open while a generated password is on screen —
+          // closing it would lose the only copy the admin ever sees.
+          if (generate && temp) {
+            setIssued(temp);
+            return;
+          }
+          onClose();
+        },
+      },
     );
   };
 
@@ -91,26 +111,67 @@ export default function AdminResetUserPassword({
       icon={<KeyRound size={18} />}
       size="medium"
       footer={
-        <>
-          <button
-            type="button"
-            className="modal-cancel"
-            onClick={onClose}
-            disabled={isPending}
-          >
-            Cancel
+        issued ? (
+          <button type="button" className="modal-submit" onClick={onClose}>
+            Done
           </button>
-          <button
-            type="submit"
-            form="admin-reset-password-form"
-            className="modal-submit"
-            disabled={isPending}
-          >
-            {isPending ? <Spinner size={14} color="#fff" /> : "Reset Password"}
-          </button>
-        </>
+        ) : (
+          <>
+            <button
+              type="button"
+              className="modal-cancel"
+              onClick={onClose}
+              disabled={isPending}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="admin-reset-password-form"
+              className="modal-submit"
+              disabled={isPending}
+            >
+              {isPending ? (
+                <Spinner size={14} color="#fff" />
+              ) : generate ? (
+                "Generate & Reset"
+              ) : (
+                "Reset Password"
+              )}
+            </button>
+          </>
+        )
       }
     >
+      {issued ? (
+        <div className="aru-issued">
+          <div className="aru-issued-head">
+            <Check size={16} />
+            Password reset for {fullName || email}
+          </div>
+          <label className="aru-issued-label">Temporary password</label>
+          <div className="aru-issued-value">
+            <code>{issued}</code>
+            <button
+              type="button"
+              className="aru-copy"
+              onClick={() => {
+                navigator.clipboard.writeText(issued);
+                setCopied(true);
+                toast.info("Copied to clipboard");
+              }}
+            >
+              {copied ? <Check size={14} /> : <Copy size={14} />}
+              {copied ? "Copied" : "Copy"}
+            </button>
+          </div>
+          <p className="aru-issued-note">
+            This is shown once and is not emailed. Pass it to the user through a
+            channel they already trust — they will be asked to choose a new
+            password the next time they sign in.
+          </p>
+        </div>
+      ) : (
       <form
         id="admin-reset-password-form"
         onSubmit={handleSubmit}
@@ -138,95 +199,128 @@ export default function AdminResetUserPassword({
           <div className="aru-warning">
             <ShieldAlert size={16} />
             <span>
-              This replaces the password immediately. Tell the user their new
-              password through a channel they already trust — it is not emailed
-              to them.
+              {generate
+                ? "The backend will generate a password and require the user to change it at their next sign-in. It is shown to you once and is not emailed."
+                : "This replaces the password immediately. Tell the user their new password through a channel they already trust — it is not emailed to them."}
             </span>
           </div>
         </div>
 
-        <div className="form-group col-2">
-          <label className="modal-label">
-            New Password <span className="req">*</span>
-          </label>
-          <div className="aru-input-wrap">
-            <input
-              type={show.next ? "text" : "password"}
-              className={`modal-input${errors.newPassword ? " aru-input-error" : ""}`}
-              value={newPassword}
-              autoComplete="new-password"
-              placeholder="Enter a new password"
-              onChange={(e) => {
-                setNewPassword(e.target.value);
-                if (errors.newPassword) {
-                  setErrors((p) => ({ ...p, newPassword: undefined }));
-                }
-              }}
-              disabled={isPending}
-            />
+        <div className="form-group col-4">
+          <div className="aru-modes">
             <button
               type="button"
-              className="aru-toggle"
-              onClick={() => setShow((p) => ({ ...p, next: !p.next }))}
-              aria-label={show.next ? "Hide password" : "Show password"}
+              className={`aru-mode${!generate ? " active" : ""}`}
+              onClick={() => setGenerate(false)}
               disabled={isPending}
             >
-              {show.next ? <EyeOff size={15} /> : <Eye size={15} />}
+              <KeyRound size={14} />
+              Set a password
+            </button>
+            <button
+              type="button"
+              className={`aru-mode${generate ? " active" : ""}`}
+              onClick={() => {
+                setGenerate(true);
+                setErrors({});
+              }}
+              disabled={isPending}
+            >
+              <Wand2 size={14} />
+              Generate a temporary one
             </button>
           </div>
-          {errors.newPassword && (
-            <span className="aru-error">{errors.newPassword}</span>
-          )}
         </div>
 
-        <div className="form-group col-2">
-          <label className="modal-label">
-            Confirm Password <span className="req">*</span>
-          </label>
-          <div className="aru-input-wrap">
-            <input
-              type={show.confirm ? "text" : "password"}
-              className={`modal-input${errors.confirmPassword ? " aru-input-error" : ""}`}
-              value={confirmPassword}
-              autoComplete="new-password"
-              placeholder="Re-enter the password"
-              onChange={(e) => {
-                setConfirmPassword(e.target.value);
-                if (errors.confirmPassword) {
-                  setErrors((p) => ({ ...p, confirmPassword: undefined }));
-                }
-              }}
-              disabled={isPending}
-            />
-            <button
-              type="button"
-              className="aru-toggle"
-              onClick={() => setShow((p) => ({ ...p, confirm: !p.confirm }))}
-              aria-label={show.confirm ? "Hide password" : "Show password"}
-              disabled={isPending}
-            >
-              {show.confirm ? <EyeOff size={15} /> : <Eye size={15} />}
-            </button>
+        {!generate && (
+          <div className="form-group col-2">
+            <label className="modal-label">
+              New Password <span className="req">*</span>
+            </label>
+            <div className="aru-input-wrap">
+              <input
+                type={show.next ? "text" : "password"}
+                className={`modal-input${errors.newPassword ? " aru-input-error" : ""}`}
+                value={newPassword}
+                autoComplete="new-password"
+                placeholder="Enter a new password"
+                onChange={(e) => {
+                  setNewPassword(e.target.value);
+                  if (errors.newPassword) {
+                    setErrors((p) => ({ ...p, newPassword: undefined }));
+                  }
+                }}
+                disabled={isPending}
+              />
+              <button
+                type="button"
+                className="aru-toggle"
+                onClick={() => setShow((p) => ({ ...p, next: !p.next }))}
+                aria-label={show.next ? "Hide password" : "Show password"}
+                disabled={isPending}
+              >
+                {show.next ? <EyeOff size={15} /> : <Eye size={15} />}
+              </button>
+            </div>
+            {errors.newPassword && (
+              <span className="aru-error">{errors.newPassword}</span>
+            )}
           </div>
-          {errors.confirmPassword && (
-            <span className="aru-error">{errors.confirmPassword}</span>
-          )}
-        </div>
+        )}
+
+        {!generate && (
+          <div className="form-group col-2">
+            <label className="modal-label">
+              Confirm Password <span className="req">*</span>
+            </label>
+            <div className="aru-input-wrap">
+              <input
+                type={show.confirm ? "text" : "password"}
+                className={`modal-input${errors.confirmPassword ? " aru-input-error" : ""}`}
+                value={confirmPassword}
+                autoComplete="new-password"
+                placeholder="Re-enter the password"
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  if (errors.confirmPassword) {
+                    setErrors((p) => ({ ...p, confirmPassword: undefined }));
+                  }
+                }}
+                disabled={isPending}
+              />
+              <button
+                type="button"
+                className="aru-toggle"
+                onClick={() => setShow((p) => ({ ...p, confirm: !p.confirm }))}
+                aria-label={show.confirm ? "Hide password" : "Show password"}
+                disabled={isPending}
+              >
+                {show.confirm ? <EyeOff size={15} /> : <Eye size={15} />}
+              </button>
+            </div>
+            {errors.confirmPassword && (
+              <span className="aru-error">{errors.confirmPassword}</span>
+            )}
+          </div>
+        )}
 
         {/* Live checklist, so the admin sees what is still missing */}
-        <div className="form-group col-4">
-          <ul className="aru-rules">
-            {RULES.map((rule) => {
-              const met = rule.test(newPassword);
-              return (
-                <li key={rule.label} className={met ? "met" : ""}>
-                  {rule.label}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+        {!generate && (
+          <div className="form-group col-4">
+            <ul className="aru-rules">
+              {RULES.map((rule) => {
+                const met = rule.test(newPassword);
+                return (
+                  <li key={rule.label} className={met ? "met" : ""}>
+                    {rule.label}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
       </form>
+      )}
 
       <style>{`
         .aru-target {
@@ -320,6 +414,93 @@ export default function AdminResetUserPassword({
         }
         .aru-rules li.met { color: #16a34a; }
         .aru-rules li.met::before { content: "●"; }
+        .aru-modes {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+          gap: 8px;
+        }
+        .aru-mode {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 7px;
+          padding: 9px 12px;
+          font-size: 12.5px;
+          font-weight: 600;
+          border-radius: 9px;
+          cursor: pointer;
+          color: var(--color-text-muted);
+          background: var(--color-surface-overlay);
+          border: 1px solid var(--color-border);
+          transition: background 0.15s, color 0.15s, border-color 0.15s;
+        }
+        .aru-mode:hover:not(:disabled) { color: var(--color-text-primary); }
+        .aru-mode.active {
+          color: var(--color-accent);
+          background: var(--color-accent-soft);
+          border-color: var(--color-accent);
+        }
+        .aru-issued {
+          padding: 18px;
+          border-radius: 12px;
+          background: #ecfdf5;
+          border: 1px solid #a7f3d0;
+        }
+        .aru-issued-head {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 13.5px;
+          font-weight: 700;
+          color: #166534;
+          margin-bottom: 16px;
+        }
+        .aru-issued-label {
+          display: block;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+          color: #047857;
+          margin-bottom: 7px;
+        }
+        .aru-issued-value {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 12px 14px;
+          border-radius: 9px;
+          background: #fff;
+          border: 1px solid #a7f3d0;
+        }
+        .aru-issued-value code {
+          font-family: monospace;
+          font-size: 17px;
+          font-weight: 700;
+          color: #065f46;
+          word-break: break-all;
+        }
+        .aru-copy {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          flex-shrink: 0;
+          padding: 6px 10px;
+          font-size: 12px;
+          font-weight: 600;
+          border-radius: 7px;
+          cursor: pointer;
+          color: #047857;
+          background: #ecfdf5;
+          border: 1px solid #a7f3d0;
+        }
+        .aru-issued-note {
+          margin: 14px 0 0;
+          font-size: 12.5px;
+          line-height: 1.5;
+          color: #047857;
+        }
       `}</style>
     </CustomModal>
   );

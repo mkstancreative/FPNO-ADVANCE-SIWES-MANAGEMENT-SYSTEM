@@ -22,7 +22,8 @@ export const useAdminResetUserPassword = () => {
       newPassword,
     }: {
       userId: string;
-      newPassword: string;
+      /** Omit to have the backend generate a temporary password. */
+      newPassword?: string;
     }) => resetUserPasswordByAdmin(userId, newPassword),
     onSuccess: (data) => {
       toast.success(data.message || "User password updated successfully!");

@@ -68,32 +68,15 @@ export default function UserAccounts() {
     },
     {
       header: "Status",
-      render: (u) => (
-        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-          {u.isActive !== undefined ? (
-            <StatusBadge status={u.isActive ? "active" : "inactive"} />
-          ) : (
-            "—"
-          )}
-          {u.mustChangePassword && (
-            <span
-              style={{
-                fontSize: 11,
-                padding: "2px 7px",
-                borderRadius: 4,
-                background: "#fef3c7",
-                color: "#92400e",
-                fontWeight: 600,
-              }}
-            >
-              Reset Pending
-            </span>
-          )}
-        </div>
-      ),
+      render: (u) =>
+        u.isActive !== undefined ? (
+          <StatusBadge status={u.isActive ? "active" : "inactive"} />
+        ) : (
+          "—"
+        ),
     },
     {
-      header: "Actions",
+      header: <div style={{ textAlign: "right" }}>Actions</div>,
       render: (u) => (
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
           <button

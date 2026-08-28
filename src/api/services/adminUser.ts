@@ -22,15 +22,19 @@ export const lookupAdminUsers = async (
 };
 
 /**
- * Reset a user's password as Admin.
+ * Reset a user's password as Admin or Coordinator.
  * PUT /admin/users/:userId/password
- * Body: { newPassword }
+ * Body: { newPassword } — omit `newPassword` entirely to have the backend
+ * generate a temporary one and force a change on next login.
+ *
+ * The backend also refuses some pairings (a coordinator resetting an admin, or
+ * anyone resetting themselves); the lookup reports that per row as `canReset`.
  */
 export const resetUserPasswordByAdmin = async (
   userId: string,
-  newPassword: string,
+  newPassword?: string,
 ): Promise<AdminResetPasswordResponse> => {
-  const payload: AdminResetPasswordPayload = { newPassword };
+  const payload: AdminResetPasswordPayload = newPassword ? { newPassword } : {};
   const response = await api.put<AdminResetPasswordResponse>(
     `/admin/users/${userId}/password`,
     payload,
