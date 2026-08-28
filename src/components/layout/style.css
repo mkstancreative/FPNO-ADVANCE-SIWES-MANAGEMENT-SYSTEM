@@ -272,6 +272,19 @@
   color: #fff;
   border-color: var(--color-accent);
 }
+.dash-sidebar__collapse-btn:active {
+  transform: scale(0.92);
+}
+
+/* One chevron that flips, rather than two that swap — a swap remounts the SVG
+   and nothing can tween across it. Timed to the sidebar's own width
+   transition so the arrow and the panel settle together. */
+.dash-sidebar__collapse-icon {
+  transition: transform 0.25s ease;
+}
+.dash-sidebar--collapsed .dash-sidebar__collapse-icon {
+  transform: rotate(180deg);
+}
 
 /* user card (expanded only) */
 .dash-sidebar__user-card {
@@ -383,7 +396,10 @@
   gap: 10px;
   min-width: 0;
 }
-.dash-topbar__mobile-menu-btn {
+/* The button carries both classes, and `.dash-topbar__icon-btn` (which sets
+   `display: flex`) is declared later at equal specificity — so this has to
+   chain both classes to win, or the hamburger leaks onto desktop. */
+.dash-topbar__icon-btn.dash-topbar__mobile-menu-btn {
   display: none;
   flex-shrink: 0;
 }
@@ -798,7 +814,7 @@
     left: 0 !important;
     padding: 0 16px;
   }
-  .dash-topbar__mobile-menu-btn {
+  .dash-topbar__icon-btn.dash-topbar__mobile-menu-btn {
     display: flex;
   }
   .dash-topbar__breadcrumb,

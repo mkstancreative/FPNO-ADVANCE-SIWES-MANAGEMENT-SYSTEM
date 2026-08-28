@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   ChevronDown,
   LogOut,
   ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useLogoutUser } from "../../hooks/useAuth";
@@ -16,12 +15,13 @@ function NavItemRow({
   item,
   activePath,
   collapsed,
+  onNavigate,
 }: {
   item: NavItem;
   activePath: string;
   collapsed: boolean;
+  onNavigate: (path: string) => void;
 }) {
-  const navigate = useNavigate();
   const hasChildren = !!item.children?.length;
   const isActive = !hasChildren && item.path === activePath;
   const isChildActive =
@@ -32,10 +32,12 @@ function NavItemRow({
     return (
       <div
         className={`dash-nav-item${isActive ? " dash-nav-item--active" : ""}${collapsed ? " dash-nav-item--collapsed" : ""}`}
-        onClick={() => item.path && navigate(item.path)}
+        onClick={() => item.path && onNavigate(item.path)}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => e.key === "Enter" && item.path && navigate(item.path)}
+        onKeyDown={(e) =>
+          e.key === "Enter" && item.path && onNavigate(item.path)
+        }
         title={collapsed ? item.label : undefined}
       >
         <span className="dash-nav-item__icon">{item.icon}</span>
@@ -79,9 +81,10 @@ function NavItemRow({
             <div
               key={child.path}
               className={`dash-submenu-item${child.path === activePath ? " dash-submenu-item--active" : ""}`}
-              onClick={() => navigate(child.path)}
+              onClick={() => onNavigate(child.path)}
               role="button"
               tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && onNavigate(child.path)}
             >
               {child.label}
             </div>
@@ -106,13 +109,27 @@ export default function SideBar({
   collapsed,
   mobileOpen,
   onCollapseToggle,
+  onMobileClose,
 }: SideBarProps) {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { mutate: logout, isPending: loggingOut } = useLogoutUser();
   const { data } = useSystemSettings();
   const settings = data?.settings;
   const appName = resolveName(settings);
   const logo = resolveLogo(settings);
+
+  // On mobile the sidebar is an overlay drawer, so following a link has to
+  // dismiss it or the destination stays hidden behind it. Off mobile this is a
+  // no-op: `mobileOpen` is already false and the class it drives only applies
+  // under the 900px breakpoint.
+  const handleNavigate = useCallback(
+    (path: string) => {
+      navigate(path);
+      onMobileClose();
+    },
+    [navigate, onMobileClose],
+  );
 
   return (
     <aside
@@ -136,7 +153,7 @@ export default function SideBar({
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          {collapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
+          <ChevronLeft size={15} className="dash-sidebar__collapse-icon" />
         </button>
       </div>
 
@@ -154,6 +171,7 @@ export default function SideBar({
                 item={item}
                 activePath={pathname}
                 collapsed={collapsed}
+                onNavigate={handleNavigate}
               />
             ))}
           </div>

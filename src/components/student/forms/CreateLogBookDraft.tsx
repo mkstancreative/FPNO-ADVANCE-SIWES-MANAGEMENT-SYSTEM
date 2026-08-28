@@ -286,9 +286,8 @@ function CreateLogBookDraftInner({
               Week Number <span>*</span>
             </label>
             <input
-              type="number"
-              min={1}
-              max={26}
+              type="text"
+              inputMode="numeric"
               className="modal-input"
               value={form.weekNumber}
               onChange={(e) => {
@@ -431,19 +430,18 @@ function CreateLogBookDraftInner({
                           Hours Spent <span>*</span>
                         </label>
                         <input
-                          type="number"
-                          min={0.5}
-                          max={24}
-                          step={0.5}
+                          type="text"
+                          inputMode="numeric"
                           className="modal-input"
                           value={act.hoursSpent}
-                          onChange={(e) =>
+                          onChange={(e) => {
+                            const val = e.target.value;
                             setActivityField(
                               idx,
                               "hoursSpent",
-                              Number(e.target.value),
-                            )
-                          }
+                              val === "" ? ("" as unknown as number) : Number(val),
+                            );
+                          }}
                           required
                         />
                       </div>

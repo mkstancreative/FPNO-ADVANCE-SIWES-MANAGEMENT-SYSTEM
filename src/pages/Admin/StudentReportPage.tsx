@@ -120,13 +120,15 @@ export default function StudentReportPage() {
 
   return (
     <div className="page-container">
-      <button
-        type="button"
-        className="dash-btn dash-btn--ghost"
-        onClick={() => navigate(-1)}
-      >
-        <ArrowLeft size={16} /> Back
-      </button>
+      <div className="page-header-left">
+        <button
+          type="button"
+          className="dash-btn dash-btn--ghost"
+          onClick={() => navigate(-1)}
+        >
+          <ArrowLeft size={16} /> Back
+        </button>
+      </div>
 
       <div className="page-header">
         <div className="page-header-left">

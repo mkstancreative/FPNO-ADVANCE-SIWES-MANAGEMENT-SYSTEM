@@ -242,10 +242,21 @@ button:hover {
   background: var(--color-accent) !important;
 }
 /* --- Remita Global Fix ---------------------------------------------------- */
-/* Force Remita to overlay EVERYTHING including sidebar and dashboard elements */
-iframe[name='remita-pay-inline-widget'], 
-#remita-inline-widget-container,
-.remita-overlay,
-div[id*='remita-'] {
+/*
+ * remita-pay-inline.bundle.js appends two elements straight to <body>:
+ *
+ *   #js-app-loader   the dark loading backdrop, inline `z-index: 99`
+ *   iframe.iframe-pop  the payment widget itself, inline `z-index: 999999`
+ *                      (its id/name is the transactionId, so it cannot be
+ *                      targeted by a fixed id)
+ *
+ * The backdrop's hardcoded 99 loses to `.dash-sidebar` (100), which is why the
+ * sidebar showed through while the widget was loading. Raise both above every
+ * z-index in this app. A stylesheet `!important` outranks Remita's plain inline
+ * declaration, so this sticks. Both elements are removed by the vendor's
+ * `closePaymentWidget()`, so nothing is left behind to trap clicks.
+ */
+#js-app-loader,
+iframe.iframe-pop {
   z-index: 9999999 !important;
 }
