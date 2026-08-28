@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { getApiErrorMessage } from "../api/services/api";
+import { getApiErrorMessage, getApiErrorStatus } from "../api/services/api";
+import { INTERNSHIP_PAYMENT_KEY } from "./useInternshipPayment";
 import {
   updateStudentProfile,
   uploadPassport,
@@ -75,6 +76,17 @@ export const useConfirmPlacement = () => {
       toast.success("Placement request submitted successfully!");
     },
     onError: (error: unknown) => {
+      // Safety net — the Placement page checks `payment-status` first, so a 402
+      // here means the fee lapsed between that check and this submit.
+      if (getApiErrorStatus(error) === 402) {
+        queryClient.invalidateQueries({
+          queryKey: [INTERNSHIP_PAYMENT_KEY],
+        });
+        toast.error(
+          "Your internship fee is outstanding. Settle it to submit your placement.",
+        );
+        return;
+      }
       toast.error(
         getApiErrorMessage(
           error,

@@ -35,6 +35,7 @@ function buildInitial(editing?: Batch | null): BatchPayload {
       session: editing.session,
       program: editing.program,
       level: editing.level,
+      internshipFee: editing.internshipFee,
       itPeriod: {
         name: editing.itPeriod.name,
         startDate: toDateInput(editing.itPeriod.startDate),
@@ -63,6 +64,13 @@ export default function BatchForm({
 
   const set = (field: string, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
+
+  /** Empty clears the fee rather than sending 0, which would mean "free". */
+  const setInternshipFee = (value: string) =>
+    setForm((prev) => ({
+      ...prev,
+      internshipFee: value === "" ? undefined : Number(value),
+    }));
 
   const handleProgramChange = (p: Program) => {
     setForm((prev) => ({
@@ -189,6 +197,28 @@ export default function BatchForm({
               </option>
             ))}
           </select>
+        </div>
+
+        {/* ── Internship Fee ── */}
+        <div className="form-group col-2">
+          <label className="modal-label">Internship Fee (₦)</label>
+          <input
+            type="text"
+            inputMode="numeric"
+            className="modal-input"
+            placeholder="e.g. 5000"
+            value={form.internshipFee ?? ""}
+            onChange={(e) => setInternshipFee(e.target.value)}
+          />
+          <span
+            style={{
+              fontSize: 11.5,
+              color: "var(--color-text-muted)",
+              marginTop: 4,
+            }}
+          >
+            Charged once per student. Leave blank to keep this batch free.
+          </span>
         </div>
 
         {/* ── IT Period ── */}

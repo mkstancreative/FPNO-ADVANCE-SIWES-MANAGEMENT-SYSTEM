@@ -24,6 +24,8 @@ export interface Batch {
   level: Level;
   status: BatchStatus;
   itPeriod: ITPeriod;
+  /** Fee, in naira, each student in this batch pays for their internship. */
+  internshipFee?: number;
   __v?: number;
 }
 
@@ -42,6 +44,7 @@ export interface BatchPayload {
   session: string;
   program: Program;
   level: Level;
+  internshipFee?: number;
   itPeriod: {
     name: string;
     startDate: string; // "YYYY-MM-DD"

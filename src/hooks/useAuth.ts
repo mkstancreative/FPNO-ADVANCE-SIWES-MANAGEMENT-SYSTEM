@@ -20,6 +20,17 @@ import type {
   RegisterPayload,
 } from "../api/types/auth";
 
+/** `/auth/login` allows 3 attempts per 5 minutes per IP. */
+const LOGIN_RATE_LIMITED =
+  "Too many login attempts. Please wait 5 minutes before trying again.";
+
+function getStatus(error: unknown): number | undefined {
+  if (error && typeof error === "object" && "response" in error) {
+    return (error as { response?: { status?: number } }).response?.status;
+  }
+  return undefined;
+}
+
 // ─── Helper: extract API error message ────────────────────────────────────────
 function getErrorMessage(error: unknown, fallback: string): string {
   if (
@@ -69,6 +80,10 @@ export const useLoginUser = () => {
       toast.success(`Welcome back, ${user.firstName}! 👋`);
     },
     onError: (error: unknown) => {
+      if (getStatus(error) === 429) {
+        toast.error(getErrorMessage(error, LOGIN_RATE_LIMITED));
+        return;
+      }
       toast.error(
         getErrorMessage(error, "Login failed. Please check your credentials."),
       );

@@ -132,6 +132,15 @@ const AdminCertTable: React.FC<AdminCertTableProps> = ({
       render: (req) => <StatusBadge status={req.paymentStatus} />,
     },
     {
+      header: "Documents",
+      render: (req) =>
+        req.documentStatus ? (
+          <StatusBadge status={req.documentStatus} />
+        ) : (
+          <span style={{ color: "var(--color-text-muted)" }}>—</span>
+        ),
+    },
+    {
       header: "Approval",
       render: (req) => <StatusBadge status={req.approvalStatus} />,
     },

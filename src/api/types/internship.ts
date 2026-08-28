@@ -58,6 +58,7 @@ export interface Internship {
   supervisors?: InternshipSupervisors;
   placement?: InternshipPlacement;
   itPeriod?: InternshipITPeriod;
+  paymentStatus?: InternshipPaymentStatus;
   createdAt: string;
   updatedAt: string;
 }
@@ -131,4 +132,60 @@ export interface UpdateInternshipStatusPayload {
 export interface InternshipScopeParams {
   internshipId?: string;
   batchId?: string;
+}
+
+// ─── Internship fee payment ────────────────────────────────────────────────────
+
+/**
+ * Platform students pay one fee per internship. It gates placement submission
+ * and, later, the internship certificate — so this status is checked before
+ * either form is rendered rather than after the student has filled it in.
+ */
+export type InternshipPaymentStatus = "pending" | "successful" | "failed";
+
+/**
+ * The single field that decides which payment screen an internship needs.
+ * `none` means there is nothing left to pay.
+ */
+export type InternshipPaymentNextAction =
+  | "pay"
+  | "verify"
+  | "regenerate_rrr"
+  | "none";
+
+export interface InternshipPaymentStatusData {
+  paymentStatus: InternshipPaymentStatus;
+  /** Whether `POST /students/confirm-placement` will be accepted right now. */
+  canSubmitPlacement: boolean;
+  nextAction: InternshipPaymentNextAction;
+  internshipId?: string;
+  rrr?: string;
+  orderId?: string;
+  amount?: number;
+  merchantId?: string;
+  paidAt?: string;
+}
+
+export interface InternshipPaymentStatusResponse {
+  success: boolean;
+  message?: string;
+  data: InternshipPaymentStatusData;
+}
+
+export interface InternshipPaymentInitiationResponse {
+  success: boolean;
+  message?: string;
+  data: {
+    internshipId?: string;
+    orderId: string;
+    rrr: string;
+    amount: number;
+    merchantId?: string;
+  };
+}
+
+export interface InternshipPaymentVerificationResponse {
+  success: boolean;
+  message?: string;
+  data?: InternshipPaymentStatusData;
 }

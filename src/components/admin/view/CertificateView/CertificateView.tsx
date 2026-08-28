@@ -158,6 +158,21 @@ const CertificateView: React.FC<CertificateViewProps> = ({ id, onClose }) => {
                 style={{
                   flexDirection: "column",
                   alignItems: "flex-start",
+                  gap: 6,
+                }}
+              >
+                <span className="item-label">Document Status</span>
+                {req.documentStatus ? (
+                  <StatusBadge status={req.documentStatus} />
+                ) : (
+                  <span className="item-value">—</span>
+                )}
+              </div>
+              <div
+                className="section-item"
+                style={{
+                  flexDirection: "column",
+                  alignItems: "flex-start",
                   gap: 4,
                 }}
               >

@@ -8,6 +8,12 @@ const PaymentFailed: React.FC = () => {
   const reason =
     searchParams.get("reason") || "The payment was not successful.";
 
+  // Send the student back to the screen that can restart *their* payment.
+  const retryTo =
+    searchParams.get("flow") === "internship"
+      ? "/student/placement"
+      : "/student/dashboard";
+
   return (
     <div className="payment-status-container">
       <div className="payment-status-card failed">
@@ -29,7 +35,7 @@ const PaymentFailed: React.FC = () => {
           <Link to="/student/dashboard" className="btn-status-secondary">
             <Home size={18} /> Back to dashboard
           </Link>
-          <Link to="/student/dashboard" className="btn-status-primary">
+          <Link to={retryTo} className="btn-status-primary">
             <RefreshCw size={18} /> Try Again
           </Link>
         </div>

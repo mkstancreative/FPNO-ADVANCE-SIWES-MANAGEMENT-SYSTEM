@@ -17,9 +17,10 @@ import type {
   StudentDashNotifications,
 } from "../../../api/types/dashboard";
 import type {
+  CertificateNextAction,
   CertificateStatus,
-  RRRData,
 } from "../../../api/types/certificate";
+import { resolveNextAction } from "../../../helpers/certificateFlow";
 
 interface StudentMetricsGridProps {
   progress: StudentDashProgress;
@@ -30,11 +31,19 @@ interface StudentMetricsGridProps {
   certificate: CertificateStatus | null;
   downloadingCert: boolean;
   downloadingReq: boolean;
-  onDownloadCert: () => void;
   onDownloadReq: () => void;
-  onOpenPayment: (data: RRRData, showVerify: boolean) => void;
-  onOpenRequest: (requestId?: string) => void;
+  /** Same entry point the status banner uses, so the two never disagree. */
+  onCertificateAction: (action: CertificateNextAction) => void;
 }
+
+/** Wording for the certificate KPI's clickable sub-line. */
+const CERT_CARD_LINK: Record<CertificateNextAction, string> = {
+  pay: "Pay Certificate Fee",
+  upload_documents: "Upload Documents",
+  await_approval: "Awaiting Approval",
+  resubmit: "View Rejection",
+  download: "Download Certificate",
+};
 
 export const StudentMetricsGrid: React.FC<StudentMetricsGridProps> = ({
   progress,
@@ -45,11 +54,11 @@ export const StudentMetricsGrid: React.FC<StudentMetricsGridProps> = ({
   certificate,
   downloadingCert,
   downloadingReq,
-  onDownloadCert,
   onDownloadReq,
-  onOpenPayment,
-  onOpenRequest,
+  onCertificateAction,
 }) => {
+  const certAction = resolveNextAction(certificate);
+
   return (
     <div className="db-kpi-grid db-kpi-grid--wide" style={{ marginTop: 16 }}>
       <KpiCard
@@ -148,41 +157,20 @@ export const StudentMetricsGrid: React.FC<StudentMetricsGridProps> = ({
           <span
             onClick={(e) => {
               e.stopPropagation();
-              if (
-                certificate?.rrr &&
-                certificate?.rrr !== "Pending" &&
-                certificate?.paymentStatus !== "successful"
-              ) {
-                onOpenPayment(certificate as RRRData, false);
-              } else if (
-                !certificate ||
-                certificate.rrr === "Pending" ||
-                certificate.paymentStatus === "failed"
-              ) {
-                onOpenRequest();
-              } else if (certificate?.canDownload) {
-                onDownloadCert();
-              }
+              if (certAction) onCertificateAction(certAction);
             }}
             style={{
-              cursor: "pointer",
-              textDecoration: "underline",
+              cursor: certAction ? "pointer" : "default",
+              textDecoration: certAction ? "underline" : "none",
               color: "var(--color-accent)",
               fontWeight: 500,
             }}
           >
             {downloadingCert
               ? "Generating PDF..."
-              : !certificate ||
-                  certificate.paymentStatus === "failed" ||
-                  certificate.rrr === "Pending" ||
-                  !certificate.rrr
-                ? "Request Certificate"
-                : certificate.paymentStatus !== "successful"
-                  ? "Verify Payment/Pay"
-                  : certificate.approvalStatus !== "approved"
-                    ? "Awaiting Approval"
-                    : "Download Certificate"}
+              : certAction
+                ? CERT_CARD_LINK[certAction]
+                : "Not yet available"}
           </span>
         }
         icon={<Download size={18} />}

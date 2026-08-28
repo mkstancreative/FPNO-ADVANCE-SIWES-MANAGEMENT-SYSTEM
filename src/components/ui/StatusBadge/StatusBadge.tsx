@@ -33,6 +33,8 @@ type StatusKey =
   | "unread"
   | "successful"
   | "approved"
+  | "covered"
+  | "submitted"
 
 const statusMap: Record<StatusKey, StatusKey> = {
   // Student / applicant
@@ -81,6 +83,8 @@ const statusMap: Record<StatusKey, StatusKey> = {
 
   // Certificate
   successful: "successful",
+  covered: "covered",
+  submitted: "submitted",
 };
 
 interface StatusBadgeProps {

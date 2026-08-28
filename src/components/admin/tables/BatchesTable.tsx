@@ -99,6 +99,11 @@ export default function BatchesTable({
         row.itPeriod?.endDate ? formatDate(row.itPeriod.endDate) : "—",
     },
     {
+      header: "Internship Fee",
+      render: (row) =>
+        row.internshipFee ? `₦${row.internshipFee.toLocaleString()}` : "Free",
+    },
+    {
       header: "Status",
       render: (row) => <StatusBadge status={row.status} />,
     },

@@ -4,17 +4,37 @@ import {
   useRegenerateRRR,
   useCertificateStatus,
 } from "../../../hooks/useCertificate";
+import {
+  useRegenerateInternshipRRR,
+  useInternshipPaymentStatus,
+} from "../../../hooks/useInternshipPayment";
 import { toast } from "react-toastify";
 import CustomModal from "../../ui/CustomModal/CustomModal";
 import Spinner from "../../ui/Spinner/Spinner";
 import type { RRRData } from "../../../api/types/certificate";
+import type { InternshipScopeParams } from "../../../api/types/internship";
+
+/** Which fee this RRR belongs to. Each has its own regenerate + status route. */
+export type PaymentFlow = "certificate" | "internship";
 
 interface PaymentVerificationModalProps {
   isOpen: boolean;
   onClose: () => void;
   data: RRRData;
-  showVerify?: boolean;
+  flow?: PaymentFlow;
+  /**
+   * Which internship this fee belongs to. Must match the scope the opening
+   * screen queried with, or the modal reads a different cache entry and fires
+   * a redundant unscoped request.
+   */
+  scope?: InternshipScopeParams;
+  title?: string;
+  subtitle?: string;
 }
+
+const REMITA_PUBLIC_KEY =
+  import.meta.env.VITE_REMITA_PUBLIC_KEY ||
+  "RzAwMDAzODk5NTh8MTEwMDQwOTIxNTU5fDlmMmE5ZTFmOTdmN2Y4MDg1ZTE5ODkxY2I2ZDZjN2M2YTcxNWFkMzE3NDU2ZGNmZDc5OWQyYjgzZTdkOWViZDc2ZjE5NTUzZDA4YjJjYmM5ZjU0OTA0NWI5NGMzYmM4MzA5MmU1MmE5ZGRiYjAyYWY1MmJkYzkwOTk3ODUxMjBi";
 
 declare global {
   interface Window {
@@ -28,22 +48,53 @@ declare global {
 
 export const PaymentVerificationModal: React.FC<
   PaymentVerificationModalProps
-> = ({ isOpen, onClose, data: initialData }) => {
-  const { mutate: regenerate, isPending: regenerating } = useRegenerateRRR();
-  const { data: certResponse } = useCertificateStatus();
+> = ({
+  isOpen,
+  onClose,
+  data: initialData,
+  flow = "certificate",
+  scope,
+  title,
+  subtitle,
+}) => {
+  const isInternship = flow === "internship";
 
-  // Get the latest status from the cache, fallback to initial data from props
-  const latestData = certResponse?.data;
-  const data = React.useMemo(
+  const { mutate: regenerateCert, isPending: regeneratingCert } =
+    useRegenerateRRR();
+  const { mutate: regenerateInternship, isPending: regeneratingInternship } =
+    useRegenerateInternshipRRR();
+  const regenerate = isInternship ? regenerateInternship : regenerateCert;
+  const regenerating = isInternship ? regeneratingInternship : regeneratingCert;
+
+  // Only the flow in play is queried; the other stays disabled so opening the
+  // internship modal never fires a certificate-status request and vice versa.
+  const { data: certResponse } = useCertificateStatus({
+    enabled: isOpen && !isInternship,
+  });
+  const { data: internshipResponse } = useInternshipPaymentStatus(scope, {
+    enabled: isOpen && isInternship,
+  });
+
+  // Prefer whatever the cache knows now — a regenerate that lands while this
+  // modal is open should swap the RRR under the student without a reopen.
+  const latestData = isInternship
+    ? internshipResponse?.data
+    : certResponse?.data;
+
+  const data = React.useMemo<RRRData>(
     () =>
       latestData
         ? {
             rrr: latestData.rrr || initialData.rrr,
-            amount: latestData.amount || initialData.amount,
+            amount: latestData.amount ?? initialData.amount,
             orderId: latestData.orderId || initialData.orderId,
             merchantId: latestData.merchantId || initialData.merchantId,
             certificateId:
-              latestData.certificateId || initialData.certificateId,
+              (latestData as { certificateId?: string }).certificateId ||
+              initialData.certificateId,
+            internshipId:
+              (latestData as { internshipId?: string }).internshipId ||
+              initialData.internshipId,
           }
         : initialData,
     [latestData, initialData],
@@ -63,7 +114,6 @@ export const PaymentVerificationModal: React.FC<
       onSuccess: (res) => {
         if (res.success) {
           toast.success("RRR regenerated successfully!");
-          // Removed onClose() to keep modal open as requested
         } else {
           toast.error(res.message || "Failed to regenerate RRR");
         }
@@ -73,6 +123,23 @@ export const PaymentVerificationModal: React.FC<
       },
     });
   };
+
+  /** Where Remita drops the student once checkout finishes. */
+  const buildReturnUrl = React.useCallback(
+    (confirmedRrr: string, confirmedOrder: string) => {
+      const params = new URLSearchParams({
+        flow,
+        rrr: confirmedRrr,
+        orderId: confirmedOrder,
+      });
+      const scopeId = isInternship ? data.internshipId : data.certificateId;
+      if (scopeId) {
+        params.set(isInternship ? "internshipId" : "certificateId", scopeId);
+      }
+      return `${window.location.origin}/student/payment/success?${params.toString()}`;
+    },
+    [flow, isInternship, data.internshipId, data.certificateId],
+  );
 
   const handleRemitaPay = React.useCallback(() => {
     if (!data.rrr || data.rrr === "Pending") {
@@ -85,40 +152,28 @@ export const PaymentVerificationModal: React.FC<
       return;
     }
 
-    const baseUrl = window.location.origin;
-
     setIsPayLoading(true);
     const paymentEngine = window.RmPaymentEngine.init({
-      key: "RzAwMDAzODk5NTh8MTEwMDQwOTIxNTU5fDlmMmE5ZTFmOTdmN2Y4MDg1ZTE5ODkxY2I2ZDZjN2M2YTcxNWFkMzE3NDU2ZGNmZDc5OWQyYjgzZTdkOWViZDc2ZjE5NTUzZDA4YjJjYmM5ZjU0OTA0NWI5NGMzYmM4MzA5MmU1MmE5ZGRiYjAyYWY1MmJkYzkwOTk3ODUxMjBi",
+      key: REMITA_PUBLIC_KEY,
       processRrr: true,
       transactionId: data.orderId || data.rrr,
       extendedData: {
-        customFields: [
-          {
-            name: "rrr",
-            value: data.rrr,
-          },
-        ],
+        customFields: [{ name: "rrr", value: data.rrr }],
       },
       onSuccess: function (response: unknown) {
         setIsPayLoading(false);
-        console.log("callback Successful Response", response);
-        // Extract return data from Remita response if available
         const res = response as { rrr?: string; paymentReference?: string };
-        const confirmedRrr = res.rrr || data.rrr;
-        const confirmedOrder = res.paymentReference || data.orderId;
-
-        const finalUrl = `${baseUrl}/student/payment/success?certificateId=${data.certificateId}&rrr=${confirmedRrr}&orderId=${confirmedOrder}`;
-        window.location.href = finalUrl;
+        window.location.href = buildReturnUrl(
+          res.rrr || data.rrr,
+          res.paymentReference || data.orderId,
+        );
       },
-      onError: function (response: unknown) {
+      onError: function () {
         setIsPayLoading(false);
-        console.log("callback Error Response", response);
         toast.error("Payment failed. Please try again.");
       },
       onClose: function () {
         setIsPayLoading(false);
-        console.log("closed");
       },
     });
 
@@ -128,14 +183,22 @@ export const PaymentVerificationModal: React.FC<
     onClose();
 
     setTimeout(() => setIsPayLoading(false), 2000);
-  }, [data, onClose]);
+  }, [data, onClose, buildReturnUrl]);
+
+  const heading =
+    title ?? (isInternship ? "Internship Fee Payment" : "Certificate Fee Payment");
+  const subheading =
+    subtitle ??
+    (isInternship
+      ? "Pay your internship fee to unlock placement and your certificate"
+      : "Use the RRR below to complete your payment");
 
   return (
     <CustomModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Certificate Fee Payment"
-      subtitle="Use the RRR below to complete your payment"
+      title={heading}
+      subtitle={subheading}
       icon={<CreditCard size={18} />}
       footer={
         <>
@@ -212,7 +275,9 @@ export const PaymentVerificationModal: React.FC<
 
         <div className="amount-box">
           <label>Amount to Pay</label>
-          <div className="amount-value">₦{data.amount.toLocaleString()}</div>
+          <div className="amount-value">
+            ₦{(data.amount ?? 0).toLocaleString()}
+          </div>
         </div>
       </div>
 
@@ -229,6 +294,17 @@ export const PaymentVerificationModal: React.FC<
           <div className="step-content">
             <h5>Complete Payment</h5>
             <p>Choose your method (Card, Bank, or Transfer) and finalize.</p>
+          </div>
+        </div>
+        <div className="instruction-step">
+          <div className="step-number">3</div>
+          <div className="step-content">
+            <h5>{isInternship ? "Submit Your Placement" : "Upload Documents"}</h5>
+            <p>
+              {isInternship
+                ? "Once confirmed, your placement form unlocks automatically."
+                : "Once confirmed, upload your supporting documents for review."}
+            </p>
           </div>
         </div>
       </div>

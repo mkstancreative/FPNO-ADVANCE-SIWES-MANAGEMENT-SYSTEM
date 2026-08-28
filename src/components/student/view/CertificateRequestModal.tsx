@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CheckCircle2, Building2, BookOpen, Info } from "lucide-react";
+import { CheckCircle2, Building2, BookOpen, Info, ShieldCheck } from "lucide-react";
 import {
   useRequestCertificate,
   useRequestInternshipCertificate,
@@ -7,11 +7,15 @@ import {
 } from "../../../hooks/useCertificate";
 import CustomModal from "../../ui/CustomModal/CustomModal";
 import Spinner from "../../ui/Spinner/Spinner";
-import type { RRRData } from "../../../api/types/certificate";
 
+/**
+ * Document submission only. Payment now happens *before* this modal opens —
+ * external students via `initiate-payment`, platform students via their
+ * internship fee — so nothing here returns an RRR or opens a payment screen.
+ */
 interface CertificateRequestModalProps {
   isOpen: boolean;
-  onClose: (data?: RRRData) => void;
+  onClose: () => void;
   requestId?: string;
   // When selfRegistered is false, the backend only needs internshipId + batchId
   selfRegistered?: boolean;
@@ -77,14 +81,14 @@ export const CertificateRequestModal: React.FC<
     e.preventDefault();
 
     if (!selfRegistered) {
-      // Non-self-registered: dedicated endpoint with internshipId + batchId
+      // Platform student: the internship fee already covered this, so the
+      // dedicated endpoint takes only internshipId + batchId and returns
+      // nothing to pay.
       requestInternship(
         { internshipId, batchId },
         {
           onSuccess: (res) => {
-            if (res.success) {
-              onClose(res.data);
-            }
+            if (res.success) onClose();
           },
         },
       );
@@ -113,18 +117,14 @@ export const CertificateRequestModal: React.FC<
         { id: requestId, payload: data },
         {
           onSuccess: (res) => {
-            if (res.success) {
-              onClose(res.data);
-            }
+            if (res.success) onClose();
           },
         },
       );
     } else {
       request(data, {
         onSuccess: (res) => {
-          if (res.success) {
-            onClose(res.data);
-          }
+          if (res.success) onClose();
         },
       });
     }
@@ -141,7 +141,7 @@ export const CertificateRequestModal: React.FC<
         requestId
           ? "Update your details and resubmit for review"
           : selfRegistered
-            ? "Provide your graduation and placement details"
+            ? "Your fee is paid — upload your documents to finish"
             : "Confirm your internship details to request your certificate"
       }
       icon={<CheckCircle2 size={18} />}
@@ -166,6 +166,8 @@ export const CertificateRequestModal: React.FC<
               <Spinner size={14} color="#fff" />
             ) : requestId ? (
               "Resubmit Request"
+            ) : selfRegistered ? (
+              "Submit Documents"
             ) : (
               "Submit Request"
             )}
@@ -300,13 +302,26 @@ export const CertificateRequestModal: React.FC<
                   color: "var(--color-text-muted)",
                 }}
               >
-                This certificate request will be linked to your internship and batch.
+                Your internship fee covers this certificate — there is nothing
+                further to pay.
               </div>
             </div>
           </div>
         ) : (
           /* ── Self-registered: full graduation + document form ── */
           <>
+            {!requestId && (
+              <div className="form-group col-4">
+                <div className="cert-fee-paid">
+                  <ShieldCheck size={16} />
+                  <span>
+                    Certificate fee received. Complete the details below to send
+                    your request for review.
+                  </span>
+                </div>
+              </div>
+            )}
+
             <div className="form-group col-2">
               <label className="modal-label">Graduation Year</label>
               <select
@@ -456,6 +471,21 @@ export const CertificateRequestModal: React.FC<
             )}
           </>
         )}
+        <style>{`
+          .cert-fee-paid {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #166534;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            border-left: 4px solid #059669;
+          }
+        `}</style>
       </form>
     </CustomModal>
   );

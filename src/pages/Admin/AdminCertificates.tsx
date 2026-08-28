@@ -32,9 +32,21 @@ interface FilterStates {
   search: string;
   status: string | "";
   paymentStatus: string | "";
+  documentStatus: string | "";
   page: number;
   limit: number;
 }
+
+const INITIAL_FILTERS: FilterStates = {
+  startDate: "2025-01-01",
+  endDate: "2026-12-31",
+  search: "",
+  status: "",
+  paymentStatus: "",
+  documentStatus: "",
+  page: 1,
+  limit: 10,
+};
 
 interface BulkResult {
   success: boolean;
@@ -47,15 +59,7 @@ interface BulkResult {
 
 export default function AdminCertificates() {
   const { openModal, closeModal } = useModal();
-  const [filters, setFilters] = useState<FilterStates>({
-    startDate: "2025-01-01",
-    endDate: "2026-12-31",
-    search: "",
-    status: "",
-    paymentStatus: "",
-    page: 1,
-    limit: 10,
-  });
+  const [filters, setFilters] = useState<FilterStates>(INITIAL_FILTERS);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const { data: requestsData, isLoading: loadingReqs } =
@@ -66,15 +70,7 @@ export default function AdminCertificates() {
   const { mutate: rejectBulk, isPending: rejecting } = useBulkRejectCert();
 
   const handleReset = () => {
-    setFilters({
-      startDate: "2025-01-01",
-      endDate: "2026-12-31",
-      search: "",
-      status: "",
-      paymentStatus: "",
-      page: 1,
-      limit: 10,
-    });
+    setFilters(INITIAL_FILTERS);
     setSelectedIds(new Set());
   };
 
@@ -341,12 +337,27 @@ export default function AdminCertificates() {
           label="Payment Status"
           options={[
             { value: "", label: "All Payments" },
+            { value: "pending", label: "Pending" },
             { value: "successful", label: "Successful" },
+            { value: "covered", label: "Covered" },
             { value: "failed", label: "Failed" },
           ]}
           value={filters.paymentStatus}
           onChange={(v) => setField("paymentStatus", v)}
           name="paymentStatus"
+        />
+        <SelectFilter
+          label="Document Status"
+          options={[
+            { value: "", label: "All Documents" },
+            { value: "pending", label: "Pending" },
+            { value: "submitted", label: "Submitted" },
+            { value: "approved", label: "Approved" },
+            { value: "rejected", label: "Rejected" },
+          ]}
+          value={filters.documentStatus}
+          onChange={(v) => setField("documentStatus", v)}
+          name="documentStatus"
         />
         <DateFilter
           label="Start Date"

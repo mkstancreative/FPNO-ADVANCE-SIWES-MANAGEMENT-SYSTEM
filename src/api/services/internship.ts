@@ -1,4 +1,4 @@
-import { api } from "./api";
+import { api, publicApi } from "./api";
 import type {
   InternshipListResponse,
   InternshipDetailResponse,
@@ -7,6 +7,10 @@ import type {
   BulkEnrollPayload,
   BulkEnrollResponse,
   UpdateInternshipStatusPayload,
+  InternshipPaymentStatusResponse,
+  InternshipPaymentInitiationResponse,
+  InternshipPaymentVerificationResponse,
+  InternshipScopeParams,
 } from "../types/internship";
 
 // ── Student self-service ───────────────────────────────────────────────────────
@@ -59,5 +63,50 @@ export const setCurrentInternship = async (
   id: string,
 ): Promise<InternshipDetailResponse> => {
   const response = await api.put(`/internships/${id}/set-current`);
+  return response.data;
+};
+
+// ── Internship fee payment ─────────────────────────────────────────────────────
+
+/**
+ * Drives the internship payment screen. `canSubmitPlacement` says whether the
+ * placement form may be rendered at all; `nextAction` says which screen to show
+ * when it may not.
+ */
+export const getInternshipPaymentStatus = async (
+  params?: InternshipScopeParams,
+): Promise<InternshipPaymentStatusResponse> => {
+  const response = await api.get("/internships/payment-status", { params });
+  return response.data;
+};
+
+/** Raises the order for one internship's fee and returns its RRR. */
+export const initiateInternshipPayment = async (
+  payload?: InternshipScopeParams,
+): Promise<InternshipPaymentInitiationResponse> => {
+  const response = await api.post("/internships/initiate-payment", payload ?? {});
+  return response.data;
+};
+
+/**
+ * Remita redirects here after checkout. Public by design — no `Authorization`
+ * header.
+ */
+export const verifyInternshipPayment = async (
+  rrr: string,
+): Promise<InternshipPaymentVerificationResponse> => {
+  const response = await publicApi.post(
+    `/internships/verify-payment?rrr=${encodeURIComponent(rrr)}`,
+  );
+  return response.data;
+};
+
+/** Issues a fresh RRR when the previous one has expired on Remita's side. */
+export const regenerateInternshipRRR = async (
+  lastRRR: string,
+): Promise<InternshipPaymentInitiationResponse> => {
+  const response = await api.patch(
+    `/internships/regenerate-rrr/${encodeURIComponent(lastRRR)}`,
+  );
   return response.data;
 };

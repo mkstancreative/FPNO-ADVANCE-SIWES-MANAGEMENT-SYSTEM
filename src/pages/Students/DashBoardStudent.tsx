@@ -1,11 +1,16 @@
 import { CheckCircle2, TrendingUp } from "lucide-react";
-import { useMemo, useEffect } from "react";
+import { useCallback, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useStudentDashboard } from "../../hooks/useDashboard";
 import {
   useCertificateStatus,
+  useInitiateCertificatePayment,
   useVerifyCertificatePayment,
 } from "../../hooks/useCertificate";
+import {
+  useInitiateInternshipPayment,
+  useInternshipPaymentStatus,
+} from "../../hooks/useInternshipPayment";
 import {
   useCertificateDownload,
   useRequestFormDownload,
@@ -24,11 +29,16 @@ import { PaymentVerificationModal } from "../../components/student/view/PaymentV
 import CustomConfirm from "../../components/ui/CustomConfirm";
 import Certificate from "../../components/student/view/Certificate/Certificate";
 import { CertificateStatusBanner } from "../../components/student/dashboard/CertificateStatusBanner";
+import { InternshipFeeBanner } from "../../components/student/dashboard/InternshipFeeBanner";
 import { StudentMetricsGrid } from "../../components/student/dashboard/StudentMetricsGrid";
 import { ProgressSection } from "../../components/student/dashboard/ProgressSection";
 import { FinalDetailsSection } from "../../components/student/dashboard/FinalDetailsSection";
 import { NotificationsSection } from "../../components/student/dashboard/NotificationsSection";
-import type { RRRData } from "../../api/types/certificate";
+import type {
+  CertificateNextAction,
+  RRRData,
+} from "../../api/types/certificate";
+import { isFeeSettled } from "../../helpers/certificateFlow";
 import { fmt, ago } from "../../helpers/utilities";
 import { useInternship } from "../../context/useInternship";
 import { useAuth } from "../../context/useAuth";
@@ -46,18 +56,30 @@ export default function DashBoardStudent() {
   const { data: certStatus, isLoading: loadingCert } = useCertificateStatus({
     enabled: canFetch,
   });
+  const internshipScope = useMemo(
+    () => ({ internshipId: selectedInternshipId ?? undefined }),
+    [selectedInternshipId],
+  );
+  const { data: internshipPayment, isLoading: loadingInternshipPayment } =
+    useInternshipPaymentStatus(internshipScope, { enabled: canFetch });
   const { openModal, closeModal } = useModal();
   const { mutate: verify } = useVerifyCertificatePayment();
+  const { mutate: initiateCertPayment, isPending: startingCertPayment } =
+    useInitiateCertificatePayment();
+  const {
+    mutate: initiateInternshipPayment,
+    isPending: startingInternshipPayment,
+  } = useInitiateInternshipPayment();
   const { certRef, downloadingCert, certData, handleDownloadCert } =
     useCertificateDownload();
   const { reqRef, downloadingReq, handleDownloadReq } =
     useRequestFormDownload();
 
-  // Auto-verify if returning from payment with orderId in URL
+  // Fallback for a Remita redirect that lands here instead of /payment/success.
   useEffect(() => {
     const orderId = searchParams.get("orderId") || searchParams.get("RRR");
     const cert = certStatus?.data;
-    if (orderId && cert && cert.paymentStatus === "pending") {
+    if (orderId && cert && !isFeeSettled(cert.paymentStatus)) {
       verify(
         { orderId: orderId, rrr: orderId },
         {
@@ -71,56 +93,123 @@ export default function DashBoardStudent() {
     }
   }, [searchParams, certStatus, verify, setSearchParams]);
 
-  const openPaymentModal = useMemo(
-    () =>
-      (data: RRRData, showVerify = true) => {
-        const cleanOrderId = data.orderId?.trim().replace(/\s+$/, "");
-        openModal(
-          <PaymentVerificationModal
-            isOpen
-            onClose={closeModal}
-            showVerify={showVerify}
-            data={{
-              rrr: data.rrr || "Pending",
-              amount: data.amount || 4000,
-              orderId: cleanOrderId,
-              merchantId: data.merchantId,
-              certificateId: data.certificateId,
-            }}
-          />,
-        );
-      },
-    [openModal, closeModal],
-  );
-
-  const openRequestModal = useMemo(
-    () => (requestId?: string) => {
+  const openPaymentModal = useCallback(
+    (data: RRRData, flow: "certificate" | "internship" = "certificate") => {
       openModal(
-        <CertificateRequestModal
+        <PaymentVerificationModal
           isOpen
-          requestId={requestId}
-          selfRegistered={resp?.data?.student?.selfRegistered !== false}
-          internshipId={resp?.data?.internshipId ?? selectedInternshipId ?? undefined}
-          batchId={resp?.data?.batch?._id ?? undefined}
-          batchName={resp?.data?.batch?.name ?? undefined}
-          batchSession={resp?.data?.batch?.session ?? undefined}
-          placementCompany={resp?.data?.placement?.company ?? undefined}
-          onClose={(rrrData) => {
-            closeModal();
-            if (rrrData && typeof rrrData === "object" && "rrr" in rrrData) {
-              setTimeout(() => {
-                openPaymentModal(rrrData as RRRData);
-              }, 50);
-            }
+          flow={flow}
+          scope={internshipScope}
+          onClose={closeModal}
+          data={{
+            rrr: data.rrr || "Pending",
+            amount: data.amount ?? 0,
+            orderId: data.orderId?.trim() ?? "",
+            merchantId: data.merchantId,
+            certificateId: data.certificateId,
+            internshipId: data.internshipId,
           }}
         />,
       );
     },
-    [openModal, closeModal, openPaymentModal, resp, selectedInternshipId],
+    [openModal, closeModal, internshipScope],
   );
 
-  const openRejectionDetails = useMemo(
-    () => (id: string, reason: string) => {
+  const selfRegistered = resp?.data?.student?.selfRegistered !== false;
+
+  const openRequestModal = useCallback(
+    (requestId?: string) => {
+      openModal(
+        <CertificateRequestModal
+          isOpen
+          requestId={requestId}
+          selfRegistered={selfRegistered}
+          internshipId={
+            resp?.data?.internshipId ?? selectedInternshipId ?? undefined
+          }
+          batchId={resp?.data?.batch?._id ?? undefined}
+          batchName={resp?.data?.batch?.name ?? undefined}
+          batchSession={resp?.data?.batch?.session ?? undefined}
+          placementCompany={resp?.data?.placement?.company ?? undefined}
+          onClose={closeModal}
+        />,
+      );
+    },
+    [openModal, closeModal, resp, selectedInternshipId, selfRegistered],
+  );
+
+  /** Raise a fresh internship order, then hand the RRR to the payment widget. */
+  const startInternshipPayment = useCallback(() => {
+    const existing = internshipPayment?.data;
+
+    // A live reference is reusable — only mint a new order when there is none.
+    if (existing?.rrr && existing.nextAction !== "regenerate_rrr") {
+      openPaymentModal(
+        {
+          rrr: existing.rrr,
+          amount: existing.amount ?? 0,
+          orderId: existing.orderId ?? "",
+          merchantId: existing.merchantId,
+          internshipId: existing.internshipId,
+        },
+        "internship",
+      );
+      return;
+    }
+
+    initiateInternshipPayment(internshipScope, {
+      onSuccess: (res) => {
+        if (res.success && res.data) openPaymentModal(res.data, "internship");
+      },
+    });
+  }, [
+    internshipPayment,
+    internshipScope,
+    initiateInternshipPayment,
+    openPaymentModal,
+  ]);
+
+  /**
+   * Certificate payment, step 1. Platform students never reach this — their
+   * internship fee covers the certificate, so an unpaid one sends them to the
+   * internship fee instead.
+   */
+  const startCertificatePayment = useCallback(() => {
+    if (!selfRegistered) {
+      startInternshipPayment();
+      return;
+    }
+
+    const existing = certStatus?.data;
+    if (existing?.rrr && existing.rrr !== "Pending") {
+      openPaymentModal(
+        {
+          rrr: existing.rrr,
+          amount: existing.amount ?? 0,
+          orderId: existing.orderId ?? "",
+          merchantId: existing.merchantId,
+          certificateId: existing.certificateId,
+        },
+        "certificate",
+      );
+      return;
+    }
+
+    initiateCertPayment(undefined, {
+      onSuccess: (res) => {
+        if (res.success && res.data) openPaymentModal(res.data, "certificate");
+      },
+    });
+  }, [
+    selfRegistered,
+    startInternshipPayment,
+    certStatus,
+    initiateCertPayment,
+    openPaymentModal,
+  ]);
+
+  const openRejectionDetails = useCallback(
+    (id: string, reason: string) => {
       openModal(
         <CustomConfirm
           isOpen={true}
@@ -139,13 +228,12 @@ export default function DashBoardStudent() {
     [openModal, closeModal, openRequestModal],
   );
 
-  const openPendingDetails = useMemo(
-    () =>
-      (data: {
-        requestId?: string;
-        paymentStatus?: string;
-        requestDate?: string;
-      }) => {
+  const openPendingDetails = useCallback(
+    (data: {
+      requestId?: string;
+      paymentStatus?: string;
+      requestDate?: string;
+    }) => {
         openModal(
           <CustomConfirm
             isOpen={true}
@@ -226,8 +314,47 @@ export default function DashBoardStudent() {
             onConfirm={closeModal}
           />,
         );
-      },
+    },
     [openModal, closeModal],
+  );
+
+  /**
+   * One dispatcher for every certificate CTA, so the banner and the KPI card
+   * can never send the student to different screens for the same state.
+   */
+  const handleCertificateAction = useCallback(
+    (action: CertificateNextAction) => {
+      const cert = certStatus?.data;
+      switch (action) {
+        case "pay":
+          startCertificatePayment();
+          break;
+        case "upload_documents":
+          openRequestModal();
+          break;
+        case "resubmit":
+          openRejectionDetails(
+            cert?.requestId || "",
+            cert?.rejectionReason || "No reason provided",
+          );
+          break;
+        case "download":
+          handleDownloadCert(cert?.canDownload || false);
+          break;
+        case "await_approval":
+        default:
+          openPendingDetails(cert ?? {});
+          break;
+      }
+    },
+    [
+      certStatus,
+      startCertificatePayment,
+      openRequestModal,
+      openRejectionDetails,
+      openPendingDetails,
+      handleDownloadCert,
+    ],
   );
 
   if (!canFetch) return null;
@@ -358,17 +485,18 @@ export default function DashBoardStudent() {
           }
         />
 
+        <InternshipFeeBanner
+          payment={internshipPayment?.data ?? null}
+          loading={loadingInternshipPayment}
+          busy={startingInternshipPayment}
+          onPay={startInternshipPayment}
+        />
+
         <CertificateStatusBanner
           certificate={certificate || null}
           loadingCert={loadingCert}
-          downloadingCert={downloadingCert}
-          onOpenRejection={openRejectionDetails}
-          onOpenPayment={openPaymentModal}
-          onOpenRequest={openRequestModal}
-          onDownload={() =>
-            handleDownloadCert(certificate?.canDownload || false)
-          }
-          onOpenPending={openPendingDetails}
+          busy={downloadingCert || startingCertPayment}
+          onAction={handleCertificateAction}
         />
 
         <div>
@@ -387,12 +515,8 @@ export default function DashBoardStudent() {
             certificate={certificate || null}
             downloadingCert={downloadingCert}
             downloadingReq={downloadingReq}
-            onDownloadCert={() =>
-              handleDownloadCert(certificate?.canDownload || false)
-            }
             onDownloadReq={handleDownloadReq}
-            onOpenPayment={openPaymentModal}
-            onOpenRequest={openRequestModal}
+            onCertificateAction={handleCertificateAction}
           />
         </div>
 

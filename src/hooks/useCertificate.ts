@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getCertificateStatus,
+  initiateCertificatePayment,
   requestCertificate,
   requestInternshipCertificate,
   verifyCertificatePayment,
@@ -14,17 +15,73 @@ import {
   getMyCertificate,
   certificateQRCode,
 } from "../api/services/certificate";
+import {
+  getApiErrorData,
+  getApiErrorMessage,
+  getApiErrorStatus,
+} from "../api/services/api";
 import { toast } from "react-toastify";
-import type { RRRData } from "../api/types/certificate";
+import type {
+  AdminCertificateParams,
+  RRRData,
+} from "../api/types/certificate";
+
+const CERT_STATUS_KEY = ["certificate-status"];
+
+/**
+ * `POST /certificates/request` rejects an unpaid order with a 400 whose body
+ * carries the `rrr` to resume from. Pull it out so the caller can drop the
+ * student straight back onto the payment screen.
+ */
+export const getUnpaidRRRFromError = (error: unknown): string | undefined => {
+  if (getApiErrorStatus(error) !== 400) return undefined;
+  const data = getApiErrorData<{ rrr?: string; data?: { rrr?: string } }>(error);
+  return data?.rrr ?? data?.data?.rrr;
+};
+
+/** True when the request failed because no payment has been started yet. */
+export const isPaymentNotStarted = (error: unknown): boolean =>
+  getApiErrorStatus(error) === 404;
+
+/** True when the request failed because a fee is still outstanding (402). */
+export const isPaymentRequired = (error: unknown): boolean =>
+  getApiErrorStatus(error) === 402;
 
 export const useCertificateStatus = (options?: { enabled?: boolean }) => {
   return useQuery({
-    queryKey: ["certificate-status"],
+    queryKey: CERT_STATUS_KEY,
     queryFn: getCertificateStatus,
     enabled: options?.enabled ?? true,
   });
 };
 
+/**
+ * Step 1 for external students — raise the order and get an RRR. Nothing is
+ * submitted yet; the documents follow once this payment clears.
+ */
+export const useInitiateCertificatePayment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: initiateCertificatePayment,
+    onSuccess: (data) => {
+      if (data.success) {
+        queryClient.invalidateQueries({ queryKey: CERT_STATUS_KEY });
+      } else {
+        toast.error(data.message || "Could not start the certificate payment");
+      }
+    },
+    onError: (error: unknown) => {
+      toast.error(
+        getApiErrorMessage(error, "Error starting the certificate payment"),
+      );
+    },
+  });
+};
+
+/**
+ * Step 2 for external students — submit the documents against a paid order.
+ * No RRR comes back any more; the payment screen is behind us at this point.
+ */
 export const useRequestCertificate = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -32,25 +89,33 @@ export const useRequestCertificate = () => {
       requestCertificate(payload) as Promise<{
         success: boolean;
         message: string;
-        data: RRRData;
       }>,
     onSuccess: (data) => {
       if (data.success) {
-        toast.success("Certificate request initiated. Please pay the fee.");
-        queryClient.invalidateQueries({ queryKey: ["certificate-status"] });
+        toast.success("Documents submitted. Your request is now under review.");
+        queryClient.invalidateQueries({ queryKey: CERT_STATUS_KEY });
       } else {
-        toast.error(data.message || "Failed to request certificate");
+        toast.error(data.message || "Failed to submit certificate request");
       }
     },
-    onError: (error: Error) => {
-      const err = error as { response?: { data?: { message?: string } } };
-      toast.error(
-        err.response?.data?.message || "Error requesting certificate",
-      );
+    onError: (error: unknown) => {
+      if (isPaymentNotStarted(error)) {
+        toast.error("Start the certificate payment before submitting.");
+        return;
+      }
+      if (getUnpaidRRRFromError(error)) {
+        toast.error("Your certificate fee is still unpaid.");
+        return;
+      }
+      toast.error(getApiErrorMessage(error, "Error requesting certificate"));
     },
   });
 };
 
+/**
+ * Platform students. The internship fee already covered this, so there is no
+ * RRR and no payment screen — only a 402 when that fee was never paid.
+ */
 export const useRequestInternshipCertificate = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -58,20 +123,25 @@ export const useRequestInternshipCertificate = () => {
       requestInternshipCertificate(payload) as Promise<{
         success: boolean;
         message: string;
-        data: RRRData;
       }>,
     onSuccess: (data) => {
       if (data.success) {
-        toast.success("Certificate request initiated. Please pay the fee.");
-        queryClient.invalidateQueries({ queryKey: ["certificate-status"] });
+        toast.success(
+          "Certificate requested. Your request is now under review.",
+        );
+        queryClient.invalidateQueries({ queryKey: CERT_STATUS_KEY });
       } else {
         toast.error(data.message || "Failed to request certificate");
       }
     },
-    onError: (error: { response?: { data?: { message?: string } } }) => {
-      toast.error(
-        error.response?.data?.message || "Error requesting certificate",
-      );
+    onError: (error: unknown) => {
+      if (isPaymentRequired(error)) {
+        toast.error(
+          "Your internship fee is outstanding. Settle it to request your certificate.",
+        );
+        return;
+      }
+      toast.error(getApiErrorMessage(error, "Error requesting certificate"));
     },
   });
 };
@@ -84,13 +154,13 @@ export const useResendCertificateRequest = () => {
     onSuccess: (data) => {
       if (data.success) {
         toast.success("Request resent successfully!");
-        queryClient.invalidateQueries({ queryKey: ["certificate-status"] });
+        queryClient.invalidateQueries({ queryKey: CERT_STATUS_KEY });
       } else {
         toast.error(data.message || "Failed to resend request");
       }
     },
-    onError: (error: { response?: { data?: { message?: string } } }) => {
-      toast.error(error.response?.data?.message || "Error resending request");
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, "Error resending request"));
     },
   });
 };
@@ -101,21 +171,13 @@ export const useVerifyCertificatePayment = () => {
     mutationFn: verifyCertificatePayment,
     onSuccess: (data) => {
       if (data.success) {
-        queryClient.invalidateQueries({ queryKey: ["certificate-status"] });
+        queryClient.invalidateQueries({ queryKey: CERT_STATUS_KEY });
       }
     },
   });
 };
 
-export const useAllCertRequests = (params: {
-  page: number;
-  limit: number;
-  startDate: string;
-  endDate: string;
-  status?: string | null;
-  paymentStatus?: string | null;
-  search?: string | null;
-}) => {
+export const useAllCertRequests = (params: AdminCertificateParams) => {
   return useQuery({
     queryKey: ["all-cert-requests", params],
     queryFn: () => getAllRequests(params),
@@ -140,8 +202,8 @@ export const useBulkApproveCert = () => {
         queryClient.invalidateQueries({ queryKey: ["all-cert-requests"] });
       }
     },
-    onError: (error: { response?: { data?: { message?: string } } }) => {
-      toast.error(error.response?.data?.message || "Error approving requests");
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, "Error approving requests"));
     },
   });
 };
@@ -156,8 +218,8 @@ export const useBulkRejectCert = () => {
         queryClient.invalidateQueries({ queryKey: ["all-cert-requests"] });
       }
     },
-    onError: (error: { response?: { data?: { message?: string } } }) => {
-      toast.error(error.response?.data?.message || "Error rejecting requests");
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, "Error rejecting requests"));
     },
   });
 };
@@ -172,15 +234,20 @@ export const useCertFinancialStats = () => {
 export const useRegenerateRRR = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (rrr: string) => regenerateRRR(rrr),
+    mutationFn: (rrr: string) =>
+      regenerateRRR(rrr) as Promise<{
+        success: boolean;
+        message?: string;
+        data: RRRData;
+      }>,
     onSuccess: (data) => {
       if (data.success) {
-        queryClient.invalidateQueries({ queryKey: ["certificate-status"] });
+        queryClient.invalidateQueries({ queryKey: CERT_STATUS_KEY });
         queryClient.invalidateQueries({ queryKey: ["all-cert-requests"] });
       }
     },
-    onError: (error: { response?: { data?: { message?: string } } }) => {
-      toast.error(error.response?.data?.message || "Error regenerating RRR");
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, "Error regenerating RRR"));
     },
   });
 };

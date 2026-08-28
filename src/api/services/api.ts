@@ -25,8 +25,19 @@ export function dispatchSessionExpired() {
   window.dispatchEvent(new CustomEvent("siwes:session-expired"));
 }
 
-// ─── Axios Instance ────────────────────────────────────────────────────────────
+// ─── Axios Instances ───────────────────────────────────────────────────────────
 export const api = axios.create({
+  baseURL: API_URL,
+});
+
+/**
+ * Bare instance for endpoints the backend serves without authentication —
+ * the Remita `verify-payment` callbacks and public certificate verification.
+ * Those routes take no `Authorization` header by design, and routing them
+ * through `api` would also drag an expired token into the refresh/session-
+ * expired flow on pages a signed-out visitor is allowed to open.
+ */
+export const publicApi = axios.create({
   baseURL: API_URL,
 });
 
@@ -135,3 +146,17 @@ export const getApiErrorMessage = (
   }
   return fallback;
 };
+
+/** HTTP status of a failed request, or `undefined` if it never reached the server. */
+export const getApiErrorStatus = (error: unknown): number | undefined =>
+  axios.isAxiosError(error) ? error.response?.status : undefined;
+
+/**
+ * Response body of a failed request. The payment endpoints lean on this — a 400
+ * from `POST /certificates/request` carries the `rrr` of the unpaid order so the
+ * student can be sent straight back to it instead of starting over.
+ */
+export const getApiErrorData = <T = Record<string, unknown>>(
+  error: unknown,
+): T | undefined =>
+  axios.isAxiosError(error) ? (error.response?.data as T | undefined) : undefined;

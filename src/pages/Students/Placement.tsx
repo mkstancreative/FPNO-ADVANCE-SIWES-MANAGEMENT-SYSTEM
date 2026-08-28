@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Briefcase,
   Building2,
@@ -7,17 +7,25 @@ import {
   Clock,
   BookCheck,
   Plus,
+  Wallet,
 } from "lucide-react";
 import type { PlacementStatusData } from "../../api/types/itstudent";
 import {
   useStudentWeeklyProgress,
   usePlacementStatus,
 } from "../../hooks/useITStudents";
+import {
+  useInitiateInternshipPayment,
+  useInternshipPaymentStatus,
+} from "../../hooks/useInternshipPayment";
 import ConfirmPlacementForm from "../../components/student/forms/ConfirmPlacementForm";
+import { PaymentVerificationModal } from "../../components/student/view/PaymentVerificationModal";
 import "./Placement.css";
 import AddButton from "../../components/ui/AddButton/AddButton";
 import StatusBadge from "../../components/ui/StatusBadge/StatusBadge";
+import Spinner from "../../components/ui/Spinner/Spinner";
 import { useInternship } from "../../context/useInternship";
+import { useModal } from "../../context/ModalContext";
 
 // ── SVG circle constants ──────────────────────────────────────────────────────
 const RADIUS = 70;
@@ -37,18 +45,76 @@ export default function Placement() {
       ? selectedInternship.batch._id
       : selectedInternship?.batch;
 
-  const scopeParams = {
-    internshipId: selectedInternshipId ?? undefined,
-    batchId: batchId ?? undefined,
-  };
+  const scopeParams = useMemo(
+    () => ({
+      internshipId: selectedInternshipId ?? undefined,
+      batchId: batchId ?? undefined,
+    }),
+    [selectedInternshipId, batchId],
+  );
 
   const { data: progressData, isLoading: loadingProgress } =
     useStudentWeeklyProgress(scopeParams);
   const { data: placementData, isLoading: loadingPlacement } =
     usePlacementStatus(scopeParams);
+  const { data: paymentData, isLoading: loadingPayment } =
+    useInternshipPaymentStatus(scopeParams);
+
+  const { openModal, closeModal } = useModal();
+  const { mutate: initiatePayment, isPending: startingPayment } =
+    useInitiateInternshipPayment();
 
   const progress = progressData?.data;
   const placement = placementData?.data;
+  const payment = paymentData?.data;
+
+  // The fee gates submission, so check it before rendering the form rather
+  // than letting the student fill it in and collect a 402 on submit.
+  const feeBlocksPlacement = !!payment && !payment.canSubmitPlacement;
+
+  const openPayment = useCallback(
+    (rrr: string, amount?: number, orderId?: string, merchantId?: string) =>
+      openModal(
+        <PaymentVerificationModal
+          isOpen
+          flow="internship"
+          scope={scopeParams}
+          onClose={closeModal}
+          data={{
+            rrr: rrr || "Pending",
+            amount: amount ?? 0,
+            orderId: orderId ?? "",
+            merchantId,
+            internshipId: payment?.internshipId,
+          }}
+        />,
+      ),
+    [openModal, closeModal, payment, scopeParams],
+  );
+
+  const handlePayFee = useCallback(() => {
+    if (payment?.rrr && payment.nextAction !== "regenerate_rrr") {
+      openPayment(
+        payment.rrr,
+        payment.amount,
+        payment.orderId,
+        payment.merchantId,
+      );
+      return;
+    }
+    initiatePayment(scopeParams, {
+      onSuccess: (res) => {
+        if (res.success && res.data) {
+          openPayment(
+            res.data.rrr,
+            res.data.amount,
+            res.data.orderId,
+            res.data.merchantId,
+          );
+        }
+      },
+    });
+  }, [payment, initiatePayment, scopeParams, openPayment]);
 
   // Stroke dash
   const pct = progress?.progressPercent ?? 0;
@@ -77,12 +143,24 @@ export default function Placement() {
             </div>
           </div>
           <div className="page-header-right">
-
-            <AddButton text="Confirm Placement" onClick={openCreate} />
-
-            {/* {showPlacementActions && (
+            {feeBlocksPlacement ? (
+              <button
+                className="pl-btn"
+                onClick={handlePayFee}
+                disabled={startingPayment}
+              >
+                {startingPayment ? (
+                  <Spinner size={14} color="#fff" text="Please wait..." />
+                ) : (
+                  <>
+                    <Wallet size={16} />
+                    Pay Internship Fee
+                  </>
+                )}
+              </button>
+            ) : (
               <AddButton text="Confirm Placement" onClick={openCreate} />
-            )} */}
+            )}
           </div>
         </div>
 
@@ -201,6 +279,38 @@ export default function Placement() {
               <div className="pl-loading">Loading placement…</div>
             ) : placement?.placement ? (
               <PlacementInfo data={placement} />
+            ) : loadingPayment ? (
+              <div className="pl-loading">Loading placement…</div>
+            ) : feeBlocksPlacement ? (
+              <div className="pl-cta-wrap">
+                <div className="pl-cta-icon">
+                  <Wallet size={28} />
+                </div>
+                <h2 className="pl-cta-title">Internship Fee Outstanding</h2>
+                <p className="pl-cta-sub">
+                  Your placement form unlocks once your internship fee
+                  {payment?.amount
+                    ? ` of ₦${payment.amount.toLocaleString()}`
+                    : ""}{" "}
+                  is confirmed.
+                </p>
+                <button
+                  className="pl-btn"
+                  onClick={handlePayFee}
+                  disabled={startingPayment}
+                >
+                  {startingPayment ? (
+                    <Spinner size={14} color="#fff" text="Please wait..." />
+                  ) : (
+                    <>
+                      <Wallet size={16} />
+                      {payment?.nextAction === "regenerate_rrr"
+                        ? "Get New RRR"
+                        : "Pay Internship Fee"}
+                    </>
+                  )}
+                </button>
+              </div>
             ) : (
               <div className="pl-cta-wrap">
                 <div className="pl-cta-icon">

@@ -2,44 +2,37 @@ import React from "react";
 import { GraduationCap } from "lucide-react";
 import Spinner from "../../ui/Spinner/Spinner";
 import type {
+  CertificateNextAction,
   CertificateStatus,
-  RRRData,
 } from "../../../api/types/certificate";
+import {
+  approvalLabel,
+  nextActionDescription,
+  nextActionLabel,
+  resolveNextAction,
+} from "../../../helpers/certificateFlow";
 
 interface CertificateStatusBannerProps {
   certificate: CertificateStatus | null;
   loadingCert: boolean;
-  downloadingCert: boolean;
-  onOpenRejection: (id: string, reason: string) => void;
-  onOpenPayment: (data: RRRData, showVerify: boolean) => void;
-  onOpenRequest: (requestId?: string) => void;
-  onDownload: () => void;
-  onOpenPending: (data: {
-    requestId?: string;
-    paymentStatus?: string;
-    requestDate?: string;
-  }) => void;
+  busy: boolean;
+  /** Single entry point — the dashboard maps the action to the right screen. */
+  onAction: (action: CertificateNextAction) => void;
 }
 
 export const CertificateStatusBanner: React.FC<
   CertificateStatusBannerProps
-> = ({
-  certificate,
-  loadingCert,
-  downloadingCert,
-  onOpenRejection,
-  onOpenPayment,
-  onOpenRequest,
-  onDownload,
-  onOpenPending,
-}) => {
-  if (
-    loadingCert ||
-    !certificate ||
-    (!certificate.rrr && !certificate.requestId)
-  ) {
-    return null;
-  }
+> = ({ certificate, loadingCert, busy, onAction }) => {
+  if (loadingCert || !certificate) return null;
+
+  // A student with no order and no request yet has nothing to act on, unless
+  // the backend explicitly named the next step.
+  const hasSomethingToShow =
+    !!certificate.nextAction || !!certificate.rrr || !!certificate.requestId;
+  if (!hasSomethingToShow) return null;
+
+  const action = resolveNextAction(certificate);
+  if (!action) return null;
 
   return (
     <div
@@ -73,72 +66,30 @@ export const CertificateStatusBanner: React.FC<
               IT Certificate Status:{" "}
             </span>
             <span style={{ color: "var(--color-accent)" }}>
-              {certificate.approvalStatus === "approved"
-                ? "Approved"
-                : certificate.approvalStatus === "rejected"
-                  ? "Rejected"
-                  : "Processing"}
+              {approvalLabel(certificate)}
             </span>
           </div>
-          <div style={{ fontSize: "12px", color: "var(--color-text-muted)" }}>
-            {certificate.approvalStatus === "rejected" ? (
-              <span style={{ color: "#ef4444" }}>
-                Reason:{" "}
-                {certificate.rejectionReason || "Please contact CIMS unit"}
-              </span>
-            ) : certificate.paymentStatus !== "successful" ? (
-              "Pending Payment Verification"
-            ) : certificate.approvalStatus !== "approved" ? (
-              "Awaiting Administrative Review"
-            ) : (
-              "Your certificate is ready for download"
-            )}
+          <div
+            style={{
+              fontSize: "12px",
+              color:
+                action === "resubmit" ? "#ef4444" : "var(--color-text-muted)",
+            }}
+          >
+            {nextActionDescription(certificate)}
           </div>
         </div>
       </div>
       <button
         className="dash-btn dash-btn--sm dash-btn--primary"
-        onClick={() => {
-          if (certificate.approvalStatus === "rejected") {
-            onOpenRejection(
-              certificate.requestId || "",
-              certificate.rejectionReason || "No reason provided",
-            );
-          } else if (
-            certificate.rrr &&
-            certificate.rrr !== "Pending" &&
-            certificate.paymentStatus !== "successful"
-          ) {
-            onOpenPayment(certificate as RRRData, false);
-          } else if (
-            !certificate.rrr ||
-            certificate.rrr === "Pending" ||
-            certificate.paymentStatus === "failed"
-          ) {
-            onOpenRequest();
-          } else if (certificate.canDownload) {
-            onDownload();
-          } else if (certificate.approvalStatus === "pending") {
-            onOpenPending(certificate);
-          }
-        }}
+        onClick={() => onAction(action)}
         style={{ color: "#fff" }}
-        disabled={downloadingCert}
+        disabled={busy}
       >
-        {downloadingCert ? (
-          <>
-            <Spinner size={14} color="#fff" text="Please wait..." />
-          </>
-        ) : certificate.approvalStatus === "rejected" ? (
-          "View Rejection"
-        ) : certificate.paymentStatus === "failed" ? (
-          "Verify Payment"
-        ) : certificate.paymentStatus !== "successful" ? (
-          "Complete Payment"
-        ) : certificate.canDownload ? (
-          "Download Now"
+        {busy ? (
+          <Spinner size={14} color="#fff" text="Please wait..." />
         ) : (
-          "View Details"
+          nextActionLabel(action)
         )}
       </button>
     </div>

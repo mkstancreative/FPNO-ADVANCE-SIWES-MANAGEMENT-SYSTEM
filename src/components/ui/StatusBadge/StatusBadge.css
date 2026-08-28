@@ -184,3 +184,15 @@
   background: #fff8e1;
   color: #f9a825;
 }
+/* Certificate — fee settled without a direct payment (waiver, or covered by
+   the student's internship fee). */
+.status-badge.covered {
+  background: #ecfeff;
+  color: #0e7490;
+}
+
+/* Certificate — documents uploaded, not yet reviewed. */
+.status-badge.submitted {
+  background: #e3f2fd;
+  color: #1565c0;
+}
