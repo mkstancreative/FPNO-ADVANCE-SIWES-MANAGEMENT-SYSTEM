@@ -14,6 +14,8 @@ import ChangePassword from "./components/shared/forms/ChangePassword";
 import SiteMeta from "./components/layout/SiteMeta";
 import { useAuth } from "./context/useAuth";
 
+import ErrorBoundary from "./components/ui/ErrorBoundary/ErrorBoundary";
+
 // Lazy-load role layouts so each bundle stays small
 const AdminLayout = lazy(() => import("./layout/AdminLayout"));
 const StudentLayout = lazy(() => import("./layout/StudentLayout"));
@@ -89,8 +91,9 @@ function App() {
           <NotificationsProvider>
             <NotificationPopupContainer />
             <ModalProvider>
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
+              <ErrorBoundary>
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
                   {/* ── Public ───────────────────────────────────────────── */}
                   <Route path="/" element={<Login />} />
                   <Route path="/register" element={<Register />} />
@@ -152,7 +155,8 @@ function App() {
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
-            </ModalProvider>
+            </ErrorBoundary>
+          </ModalProvider>
           </NotificationsProvider>
         </InternshipProvider>
       </AuthProvider>

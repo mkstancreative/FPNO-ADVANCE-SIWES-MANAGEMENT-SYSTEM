@@ -1,6 +1,7 @@
 import { api, publicApi } from "./api";
 import type {
   AdminCertificateParams,
+  CertificateFeeResponse,
   CertificateStatusResponse,
   RRRData,
 } from "../types/certificate";
@@ -100,6 +101,16 @@ export const resendRequest = async (id: string, payload: FormData) => {
   const response = await api.put(`/certificates/re-request/${id}`, payload, {
     headers: { "Content-Type": "multipart/form-data" },
   });
+  return response.data;
+};
+
+/**
+ * What this student owes for their certificate and what to do next. Unlike
+ * `/certificates/status` this answers before any request exists, so it is the
+ * safe entry point for a student who has not started yet.
+ */
+export const getCertificateFee = async (): Promise<CertificateFeeResponse> => {
+  const response = await api.get("/certificates/fee");
   return response.data;
 };
 

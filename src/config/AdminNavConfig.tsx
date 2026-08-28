@@ -7,6 +7,7 @@ import {
   Bell,
   FileText,
   Settings2,
+  UsersRound,
 } from "lucide-react";
 
 export const ADMIN_NAV = [
@@ -110,6 +111,11 @@ export const ADMIN_NAV = [
   {
     section: "Settings",
     items: [
+      {
+        label: "User Accounts",
+        icon: <UsersRound size={18} />,
+        path: "/admin/user-accounts",
+      },
       {
         label: "System Settings",
         icon: <Settings2 size={18} />,

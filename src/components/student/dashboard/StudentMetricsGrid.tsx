@@ -17,10 +17,14 @@ import type {
   StudentDashNotifications,
 } from "../../../api/types/dashboard";
 import type {
+  CertificateFeeData,
   CertificateNextAction,
   CertificateStatus,
 } from "../../../api/types/certificate";
-import { resolveNextAction } from "../../../helpers/certificateFlow";
+import {
+  feeNextAction,
+  resolveNextAction,
+} from "../../../helpers/certificateFlow";
 
 interface StudentMetricsGridProps {
   progress: StudentDashProgress;
@@ -29,6 +33,8 @@ interface StudentMetricsGridProps {
   report: StudentDashReport;
   notifications: StudentDashNotifications;
   certificate: CertificateStatus | null;
+  /** Fallback for students with no request yet — see the status banner. */
+  fee: CertificateFeeData | null;
   downloadingCert: boolean;
   downloadingReq: boolean;
   onDownloadReq: () => void;
@@ -39,6 +45,7 @@ interface StudentMetricsGridProps {
 /** Wording for the certificate KPI's clickable sub-line. */
 const CERT_CARD_LINK: Record<CertificateNextAction, string> = {
   pay: "Pay Certificate Fee",
+  request_internship_certificate: "Request Certificate",
   upload_documents: "Upload Documents",
   await_approval: "Awaiting Approval",
   resubmit: "View Rejection",
@@ -52,12 +59,17 @@ export const StudentMetricsGrid: React.FC<StudentMetricsGridProps> = ({
   report,
   notifications,
   certificate,
+  fee,
   downloadingCert,
   downloadingReq,
   onDownloadReq,
   onCertificateAction,
 }) => {
-  const certAction = resolveNextAction(certificate);
+  // Mirrors the status banner exactly, so the card and the banner can never
+  // offer the student two different next steps.
+  const certAction = certificate
+    ? (resolveNextAction(certificate) ?? feeNextAction(fee))
+    : feeNextAction(fee);
 
   return (
     <div className="db-kpi-grid db-kpi-grid--wide" style={{ marginTop: 16 }}>

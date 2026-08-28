@@ -2,11 +2,13 @@ import React from "react";
 import { GraduationCap } from "lucide-react";
 import Spinner from "../../ui/Spinner/Spinner";
 import type {
+  CertificateFeeData,
   CertificateNextAction,
   CertificateStatus,
 } from "../../../api/types/certificate";
 import {
   approvalLabel,
+  feeNextAction,
   nextActionDescription,
   nextActionLabel,
   resolveNextAction,
@@ -14,25 +16,46 @@ import {
 
 interface CertificateStatusBannerProps {
   certificate: CertificateStatus | null;
+  /**
+   * `/certificates/fee`, which answers even when no request exists. Without it
+   * a student who has never started gets no banner at all, because
+   * `/certificates/status` 404s and leaves `certificate` null.
+   */
+  fee: CertificateFeeData | null;
   loadingCert: boolean;
   busy: boolean;
   /** Single entry point — the dashboard maps the action to the right screen. */
   onAction: (action: CertificateNextAction) => void;
 }
 
+/** Description when there is no request yet and only the fee is known. */
+function feeDescription(fee: CertificateFeeData | null): string {
+  if (!fee) return "Processing";
+  if (fee.nextAction === "pay") {
+    return `Certificate fee: ₦${fee.amount.toLocaleString()}`;
+  }
+  if (fee.nextAction === "request_internship_certificate") {
+    return "Your internship fee covers this — request your certificate";
+  }
+  return "Processing";
+}
+
 export const CertificateStatusBanner: React.FC<
   CertificateStatusBannerProps
-> = ({ certificate, loadingCert, busy, onAction }) => {
-  if (loadingCert || !certificate) return null;
+> = ({ certificate, fee, loadingCert, busy, onAction }) => {
+  if (loadingCert) return null;
 
-  // A student with no order and no request yet has nothing to act on, unless
-  // the backend explicitly named the next step.
-  const hasSomethingToShow =
-    !!certificate.nextAction || !!certificate.rrr || !!certificate.requestId;
-  if (!hasSomethingToShow) return null;
-
-  const action = resolveNextAction(certificate);
+  // An existing request is the richer source; fall back to the fee endpoint for
+  // students who have not started one yet.
+  const action = certificate
+    ? (resolveNextAction(certificate) ?? feeNextAction(fee))
+    : feeNextAction(fee);
   if (!action) return null;
+
+  const heading = certificate ? approvalLabel(certificate) : "Not Requested";
+  const description = certificate
+    ? nextActionDescription(certificate)
+    : feeDescription(fee);
 
   return (
     <div
@@ -65,9 +88,7 @@ export const CertificateStatusBanner: React.FC<
             <span style={{ color: "var(--color-text-primary)" }}>
               IT Certificate Status:{" "}
             </span>
-            <span style={{ color: "var(--color-accent)" }}>
-              {approvalLabel(certificate)}
-            </span>
+            <span style={{ color: "var(--color-accent)" }}>{heading}</span>
           </div>
           <div
             style={{
@@ -76,7 +97,7 @@ export const CertificateStatusBanner: React.FC<
                 action === "resubmit" ? "#ef4444" : "var(--color-text-muted)",
             }}
           >
-            {nextActionDescription(certificate)}
+            {description}
           </div>
         </div>
       </div>

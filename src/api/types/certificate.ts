@@ -4,8 +4,13 @@
  * `covered` means the fee was settled some other way — a waiver, or a platform
  * student whose internship fee already paid for the certificate. Treat it
  * exactly like `successful` when deciding what a student may do next.
+ *
+ * `unpaid` is what `GET /certificates/fee` reports before any order exists;
+ * `pending` is an order raised but not yet confirmed by Remita. Both mean the
+ * student still owes money, but only `pending` has an RRR to resume from.
  */
 export type CertificatePaymentStatus =
+  | "unpaid"
   | "pending"
   | "successful"
   | "failed"
@@ -29,6 +34,7 @@ export type CertificateDocumentStatus =
  */
 export type CertificateNextAction =
   | "pay"
+  | "request_internship_certificate"
   | "upload_documents"
   | "await_approval"
   | "resubmit"
@@ -133,4 +139,44 @@ export interface AdminCertificateParams {
   paymentStatus?: string | null;
   documentStatus?: string | null;
   search?: string | null;
+}
+
+// ─── Certificate fee ──────────────────────────────────────────────────────────
+
+/**
+ * `GET /certificates/fee` — the only certificate endpoint that answers for a
+ * student with no request yet (`/certificates/status` 404s with "No certificate
+ * request found"). It reports what this student owes and what they should do
+ * next, for both tracks:
+ *
+ *   platform student   → paymentStatus "covered", paid true,  amount 0,
+ *                        nextAction "request_internship_certificate"
+ *   self-registered    → paymentStatus "unpaid",  paid false, amount = the fee,
+ *                        nextAction "pay"
+ *
+ * Fields beyond the core four are optional — only the self-registered response
+ * has been observed directly.
+ */
+export interface CertificateFeeData {
+  amount: number;
+  paid: boolean;
+  paymentStatus: CertificatePaymentStatus;
+  nextAction: CertificateNextAction;
+  currency?: string;
+  /** False once the fee is covered or waived. */
+  feeRequired?: boolean;
+  /** Why this amount — e.g. "certificate_fee". */
+  reason?: string;
+  discountApplied?: boolean;
+  discountAmount?: number | null;
+  /** Null until a request exists. */
+  certificateId?: string | null;
+  approvalStatus?: CertificateApprovalStatus | null;
+  documentStatus?: CertificateDocumentStatus | null;
+}
+
+export interface CertificateFeeResponse {
+  success: boolean;
+  message?: string;
+  data: CertificateFeeData;
 }

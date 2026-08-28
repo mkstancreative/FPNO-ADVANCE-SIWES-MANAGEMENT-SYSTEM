@@ -18,6 +18,7 @@ import {
   useInitiateInternshipPayment,
   useInternshipPaymentStatus,
 } from "../../hooks/useInternshipPayment";
+import { useStudentFeeTrack } from "../../hooks/useStudentFeeTrack";
 import ConfirmPlacementForm from "../../components/student/forms/ConfirmPlacementForm";
 import { PaymentVerificationModal } from "../../components/student/view/PaymentVerificationModal";
 import "./Placement.css";
@@ -57,8 +58,12 @@ export default function Placement() {
     useStudentWeeklyProgress(scopeParams);
   const { data: placementData, isLoading: loadingPlacement } =
     usePlacementStatus(scopeParams);
+  // Only platform students owe an internship fee — asking this endpoint on
+  // behalf of a self-registered student is rejected outright.
+  const { paysInternshipFee, isLoading: loadingFeeTrack } =
+    useStudentFeeTrack();
   const { data: paymentData, isLoading: loadingPayment } =
-    useInternshipPaymentStatus(scopeParams);
+    useInternshipPaymentStatus(scopeParams, { enabled: paysInternshipFee });
 
   const { openModal, closeModal } = useModal();
   const { mutate: initiatePayment, isPending: startingPayment } =
@@ -66,7 +71,7 @@ export default function Placement() {
 
   const progress = progressData?.data;
   const placement = placementData?.data;
-  const payment = paymentData?.data;
+  const payment = paysInternshipFee ? paymentData?.data : undefined;
 
   // The fee gates submission, so check it before rendering the form rather
   // than letting the student fill it in and collect a 402 on submit.
@@ -93,6 +98,8 @@ export default function Placement() {
   );
 
   const handlePayFee = useCallback(() => {
+    if (!paysInternshipFee) return;
+
     if (payment?.rrr && payment.nextAction !== "regenerate_rrr") {
       openPayment(
         payment.rrr,
@@ -114,7 +121,7 @@ export default function Placement() {
         }
       },
     });
-  }, [payment, initiatePayment, scopeParams, openPayment]);
+  }, [paysInternshipFee, payment, initiatePayment, scopeParams, openPayment]);
 
   // Stroke dash
   const pct = progress?.progressPercent ?? 0;
@@ -279,7 +286,7 @@ export default function Placement() {
               <div className="pl-loading">Loading placement…</div>
             ) : placement?.placement ? (
               <PlacementInfo data={placement} />
-            ) : loadingPayment ? (
+            ) : paysInternshipFee && (loadingFeeTrack || loadingPayment) ? (
               <div className="pl-loading">Loading placement…</div>
             ) : feeBlocksPlacement ? (
               <div className="pl-cta-wrap">

@@ -1,4 +1,5 @@
 import type {
+  CertificateFeeData,
   CertificateNextAction,
   CertificatePaymentStatus,
   CertificateStatus,
@@ -11,6 +12,14 @@ import type {
  */
 export const isFeeSettled = (status?: CertificatePaymentStatus): boolean =>
   status === "successful" || status === "covered";
+
+/**
+ * The fee endpoint answers for students with no request yet, so it — not
+ * `/certificates/status` — decides whether there is anything to offer.
+ */
+export const feeNextAction = (
+  fee?: CertificateFeeData | null,
+): CertificateNextAction | null => fee?.nextAction ?? null;
 
 /**
  * The backend now hands us `nextAction`, which is the only field that should
@@ -38,6 +47,8 @@ export const nextActionLabel = (
   switch (action) {
     case "pay":
       return "Complete Payment";
+    case "request_internship_certificate":
+      return "Request Certificate";
     case "upload_documents":
       return "Upload Documents";
     case "await_approval":
@@ -58,6 +69,8 @@ export const nextActionDescription = (
   switch (resolveNextAction(certificate)) {
     case "pay":
       return "Pay the certificate fee to continue";
+    case "request_internship_certificate":
+      return "Your internship fee covers this — request your certificate";
     case "upload_documents":
       return "Payment received — upload your supporting documents";
     case "await_approval":

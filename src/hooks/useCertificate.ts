@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+  getCertificateFee,
   getCertificateStatus,
   initiateCertificatePayment,
   requestCertificate,
@@ -47,11 +48,29 @@ export const isPaymentNotStarted = (error: unknown): boolean =>
 export const isPaymentRequired = (error: unknown): boolean =>
   getApiErrorStatus(error) === 402;
 
+export const CERT_FEE_KEY = ["certificate-fee"];
+
+/**
+ * Drives the certificate screens for every student, including one who has not
+ * requested anything yet — `/certificates/status` 404s in that case, so this is
+ * what the dashboard leans on to know whether to offer "pay" at all.
+ */
+export const useCertificateFee = (options?: { enabled?: boolean }) => {
+  return useQuery({
+    queryKey: CERT_FEE_KEY,
+    queryFn: getCertificateFee,
+    enabled: options?.enabled ?? true,
+  });
+};
+
 export const useCertificateStatus = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: CERT_STATUS_KEY,
     queryFn: getCertificateStatus,
     enabled: options?.enabled ?? true,
+    // A student with no request yet gets a 404 here; that is a normal state,
+    // not a transient failure, so do not burn retries on it.
+    retry: false,
   });
 };
 
@@ -66,6 +85,7 @@ export const useInitiateCertificatePayment = () => {
     onSuccess: (data) => {
       if (data.success) {
         queryClient.invalidateQueries({ queryKey: CERT_STATUS_KEY });
+        queryClient.invalidateQueries({ queryKey: CERT_FEE_KEY });
       } else {
         toast.error(data.message || "Could not start the certificate payment");
       }
@@ -94,6 +114,7 @@ export const useRequestCertificate = () => {
       if (data.success) {
         toast.success("Documents submitted. Your request is now under review.");
         queryClient.invalidateQueries({ queryKey: CERT_STATUS_KEY });
+        queryClient.invalidateQueries({ queryKey: CERT_FEE_KEY });
       } else {
         toast.error(data.message || "Failed to submit certificate request");
       }
@@ -130,6 +151,7 @@ export const useRequestInternshipCertificate = () => {
           "Certificate requested. Your request is now under review.",
         );
         queryClient.invalidateQueries({ queryKey: CERT_STATUS_KEY });
+        queryClient.invalidateQueries({ queryKey: CERT_FEE_KEY });
       } else {
         toast.error(data.message || "Failed to request certificate");
       }
@@ -155,6 +177,7 @@ export const useResendCertificateRequest = () => {
       if (data.success) {
         toast.success("Request resent successfully!");
         queryClient.invalidateQueries({ queryKey: CERT_STATUS_KEY });
+        queryClient.invalidateQueries({ queryKey: CERT_FEE_KEY });
       } else {
         toast.error(data.message || "Failed to resend request");
       }
@@ -172,6 +195,7 @@ export const useVerifyCertificatePayment = () => {
     onSuccess: (data) => {
       if (data.success) {
         queryClient.invalidateQueries({ queryKey: CERT_STATUS_KEY });
+        queryClient.invalidateQueries({ queryKey: CERT_FEE_KEY });
       }
     },
   });
@@ -243,6 +267,7 @@ export const useRegenerateRRR = () => {
     onSuccess: (data) => {
       if (data.success) {
         queryClient.invalidateQueries({ queryKey: CERT_STATUS_KEY });
+        queryClient.invalidateQueries({ queryKey: CERT_FEE_KEY });
         queryClient.invalidateQueries({ queryKey: ["all-cert-requests"] });
       }
     },

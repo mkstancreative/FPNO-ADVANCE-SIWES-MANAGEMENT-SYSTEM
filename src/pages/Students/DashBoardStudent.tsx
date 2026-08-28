@@ -3,6 +3,7 @@ import { useCallback, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useStudentDashboard } from "../../hooks/useDashboard";
 import {
+  useCertificateFee,
   useCertificateStatus,
   useInitiateCertificatePayment,
   useVerifyCertificatePayment,
@@ -39,6 +40,7 @@ import type {
   RRRData,
 } from "../../api/types/certificate";
 import { isFeeSettled } from "../../helpers/certificateFlow";
+import { useStudentFeeTrack } from "../../hooks/useStudentFeeTrack";
 import { fmt, ago } from "../../helpers/utilities";
 import { useInternship } from "../../context/useInternship";
 import { useAuth } from "../../context/useAuth";
@@ -56,12 +58,23 @@ export default function DashBoardStudent() {
   const { data: certStatus, isLoading: loadingCert } = useCertificateStatus({
     enabled: canFetch,
   });
+  // Answers even when no request exists, where `/certificates/status` 404s —
+  // this is what gives a fresh external student a way in.
+  const { data: certFee, isLoading: loadingCertFee } = useCertificateFee({
+    enabled: canFetch,
+  });
   const internshipScope = useMemo(
     () => ({ internshipId: selectedInternshipId ?? undefined }),
     [selectedInternshipId],
   );
+  // Self-registered students owe a certificate fee, not an internship fee, and
+  // the internship endpoints reject them outright — so this gates the query as
+  // well as the button. Shares the dashboard's cache entry, no extra request.
+  const { paysInternshipFee } = useStudentFeeTrack();
   const { data: internshipPayment, isLoading: loadingInternshipPayment } =
-    useInternshipPaymentStatus(internshipScope, { enabled: canFetch });
+    useInternshipPaymentStatus(internshipScope, {
+      enabled: canFetch && paysInternshipFee,
+    });
   const { openModal, closeModal } = useModal();
   const { mutate: verify } = useVerifyCertificatePayment();
   const { mutate: initiateCertPayment, isPending: startingCertPayment } =
@@ -140,6 +153,8 @@ export default function DashBoardStudent() {
 
   /** Raise a fresh internship order, then hand the RRR to the payment widget. */
   const startInternshipPayment = useCallback(() => {
+    if (!paysInternshipFee) return;
+
     const existing = internshipPayment?.data;
 
     // A live reference is reusable — only mint a new order when there is none.
@@ -163,6 +178,7 @@ export default function DashBoardStudent() {
       },
     });
   }, [
+    paysInternshipFee,
     internshipPayment,
     internshipScope,
     initiateInternshipPayment,
@@ -175,7 +191,7 @@ export default function DashBoardStudent() {
    * internship fee instead.
    */
   const startCertificatePayment = useCallback(() => {
-    if (!selfRegistered) {
+    if (paysInternshipFee) {
       startInternshipPayment();
       return;
     }
@@ -201,7 +217,7 @@ export default function DashBoardStudent() {
       },
     });
   }, [
-    selfRegistered,
+    paysInternshipFee,
     startInternshipPayment,
     certStatus,
     initiateCertPayment,
@@ -234,86 +250,88 @@ export default function DashBoardStudent() {
       paymentStatus?: string;
       requestDate?: string;
     }) => {
-        openModal(
-          <CustomConfirm
-            isOpen={true}
-            onClose={closeModal}
-            title="Request Pending Review"
-            message={
-              <div style={{ textAlign: "left", marginTop: "10px" }}>
-                <p>
-                  Your certificate request has been received and is currently
-                  awaiting administrative review.
-                </p>
+      openModal(
+        <CustomConfirm
+          isOpen={true}
+          onClose={closeModal}
+          title="Request Pending Review"
+          message={
+            <div style={{ textAlign: "left", marginTop: "10px" }}>
+              <p>
+                Your certificate request has been received and is currently
+                awaiting administrative review.
+              </p>
+              <div
+                style={{
+                  marginTop: "15px",
+                  fontSize: "14px",
+                  display: "grid",
+                  gap: "8px",
+                }}
+              >
                 <div
-                  style={{
-                    marginTop: "15px",
-                    fontSize: "14px",
-                    display: "grid",
-                    gap: "8px",
-                  }}
+                  style={{ display: "flex", justifyContent: "space-between" }}
                 >
-                  <div
-                    style={{ display: "flex", justifyContent: "space-between" }}
+                  <span style={{ color: "var(--color-text-muted)" }}>
+                    Request ID:
+                  </span>
+                  <span style={{ fontWeight: 600 }}>
+                    #{data.requestId ? data.requestId.slice(-8).toUpperCase() : ""}
+                  </span>
+                </div>
+                <div
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  <span style={{ color: "var(--color-text-muted)" }}>
+                    Payment Status:
+                  </span>
+                  <span
+                    style={{
+                      fontWeight: 600,
+                      color: "#10b981",
+                      textTransform: "capitalize",
+                    }}
                   >
-                    <span style={{ color: "var(--color-text-muted)" }}>
-                      Request ID:
-                    </span>
-                    <span style={{ fontWeight: 600 }}>#{data.requestId}</span>
-                  </div>
-                  <div
-                    style={{ display: "flex", justifyContent: "space-between" }}
-                  >
-                    <span style={{ color: "var(--color-text-muted)" }}>
-                      Payment Status:
-                    </span>
-                    <span
-                      style={{
-                        fontWeight: 600,
-                        color: "#10b981",
-                        textTransform: "capitalize",
-                      }}
-                    >
-                      {data.paymentStatus}
-                    </span>
-                  </div>
-                  <div
-                    style={{ display: "flex", justifyContent: "space-between" }}
-                  >
-                    <span style={{ color: "var(--color-text-muted)" }}>
-                      Request Date:
-                    </span>
-                    <span style={{ fontWeight: 600 }}>
-                      {data.requestDate
-                        ? new Date(data.requestDate).toLocaleDateString(
-                            "en-GB",
-                            {
-                              day: "numeric",
-                              month: "long",
-                              year: "numeric",
-                            },
-                          )
-                        : "Pending"}
-                    </span>
-                  </div>
-                  <div
-                    style={{ display: "flex", justifyContent: "space-between" }}
-                  >
-                    <span style={{ color: "var(--color-text-muted)" }}>
-                      Current Status:
-                    </span>
-                    <span style={{ fontWeight: 600, color: "#f59e0b" }}>
-                      Awaiting Approval
-                    </span>
-                  </div>
+                    {data.paymentStatus}
+                  </span>
+                </div>
+                <div
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  <span style={{ color: "var(--color-text-muted)" }}>
+                    Request Date:
+                  </span>
+                  <span style={{ fontWeight: 600 }}>
+                    {data.requestDate
+                      ? new Date(data.requestDate).toLocaleDateString(
+                        "en-GB",
+                        {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        },
+                      )
+                      : "Pending"}
+                  </span>
+                </div>
+                <div
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  <span style={{ color: "var(--color-text-muted)" }}>
+                    Current Status:
+                  </span>
+                  <span style={{ fontWeight: 600, color: "#f59e0b" }}>
+                    Awaiting Approval
+                  </span>
                 </div>
               </div>
-            }
-            confirmText="Got it"
-            variant="info"
-            onConfirm={closeModal}
-          />,
-        );
+            </div>
+          }
+          confirmText="Got it"
+          variant="info"
+          onConfirm={closeModal}
+        />,
+      );
     },
     [openModal, closeModal],
   );
@@ -330,6 +348,7 @@ export default function DashBoardStudent() {
           startCertificatePayment();
           break;
         case "upload_documents":
+        case "request_internship_certificate":
           openRequestModal();
           break;
         case "resubmit":
@@ -486,7 +505,7 @@ export default function DashBoardStudent() {
         />
 
         <InternshipFeeBanner
-          payment={internshipPayment?.data ?? null}
+          payment={paysInternshipFee ? (internshipPayment?.data ?? null) : null}
           loading={loadingInternshipPayment}
           busy={startingInternshipPayment}
           onPay={startInternshipPayment}
@@ -494,7 +513,8 @@ export default function DashBoardStudent() {
 
         <CertificateStatusBanner
           certificate={certificate || null}
-          loadingCert={loadingCert}
+          fee={certFee?.data ?? null}
+          loadingCert={loadingCert || loadingCertFee}
           busy={downloadingCert || startingCertPayment}
           onAction={handleCertificateAction}
         />
@@ -513,6 +533,7 @@ export default function DashBoardStudent() {
             report={report}
             notifications={notifications}
             certificate={certificate || null}
+            fee={certFee?.data ?? null}
             downloadingCert={downloadingCert}
             downloadingReq={downloadingReq}
             onDownloadReq={handleDownloadReq}
