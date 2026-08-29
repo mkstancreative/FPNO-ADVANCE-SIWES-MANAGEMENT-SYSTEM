@@ -365,9 +365,9 @@ export const PaymentVerificationModal: React.FC<
           flex-direction: column;
           gap: 16px;
           padding: 16px;
-          background: linear-gradient(135deg, #fffbeb, #fef3c7);
-          border: 1px solid #fde68a;
-          border-left: 4px solid #d97706;
+          background: rgba(245, 158, 11, 0.08);
+          border: 1px solid rgba(245, 158, 11, 0.2);
+          border-left: 4px solid var(--color-warning, #d97706);
           border-radius: 12px;
         }
         .instruction-step {
@@ -398,7 +398,7 @@ export const PaymentVerificationModal: React.FC<
         .step-content p {
           margin: 0;
           font-size: 13px;
-          color: var(--color-text-muted);
+          color: var(--color-text-secondary);
           line-height: 1.4;
         }
       `}</style>

@@ -134,8 +134,8 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(
               </div>
 
               <p className="cert-para">
-                Holy Rosary Hospital College of Nursing Sciences, Emekuku has undergone a
-                mandatory Company Training in our organization under
+                Federal Polytechnic Nekede, Owerri has undergone a
+                mandatory Industrial Training in our organization, under
               </p>
 
               <div className="cert-line-wrapper">

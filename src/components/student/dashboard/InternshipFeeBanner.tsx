@@ -67,8 +67,8 @@ export const InternshipFeeBanner: React.FC<InternshipFeeBannerProps> = ({
       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
         <div
           style={{
-            background: "#fef3c7",
-            color: "#b45309",
+            background: "rgba(245, 158, 11, 0.15)",
+            color: "var(--color-warning, #d97706)",
             padding: "8px",
             borderRadius: "8px",
             display: "flex",

@@ -75,7 +75,7 @@ export const CompletionForm = ({
 
           <div className="cert-header-center">
             <p className="cert-school-name">
-              Holy Rosary Hospital College of Nursing Sciences
+              Federal Polytechnic Nekede, Owerri
             </p>
             <p className="cert-school-sub">
               PMB 1036 Owerri – Imo State, Nigeria
@@ -133,8 +133,8 @@ export const CompletionForm = ({
               </span>
             </p>
             <p className="cert-para">
-              Holy Rosary Hospital College of Nursing Sciences has undergone a
-              mandatory Company Training in our organisation under{" "}
+              Federal Polytechnic Nekede, Owerri has undergone a mandatory
+              Industrial Training in our organisation, under{" "}
               <span className="cert-fill cert-fill--md">
                 {placement.position || ""}
               </span>{" "}
@@ -206,8 +206,7 @@ export const CompletionForm = ({
 
         {/* ── Official stamp band ───────────────────────────────── */}
         <div className="cert-stamp-band">
-          OFFICIAL DOCUMENT — Holy Rosary Hospital College of Nursing Sciences
-          SIWES Directorate
+          OFFICIAL DOCUMENT — Federal Polytechnic Nekede, Owerri
         </div>
 
         {/* ── Footer ───────────────────────────────────────────── */}

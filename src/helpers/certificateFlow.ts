@@ -21,6 +21,36 @@ export const feeNextAction = (
   fee?: CertificateFeeData | null,
 ): CertificateNextAction | null => fee?.nextAction ?? null;
 
+/** The IT status that unlocks the internship certificate. */
+export const IT_COMPLETED: string = "completed";
+
+/**
+ * Platform students are offered `request_internship_certificate` as soon as
+ * their internship fee is settled, which can be long before they have actually
+ * finished the placement. Withhold that CTA until the IT itself is completed —
+ * requesting a certificate for unfinished training is not a real option, and
+ * offering it only produces a request an admin has to reject.
+ *
+ * Scoped to that one action on purpose: it is the only one the backend emits
+ * for platform students, so self-registered flows (`pay`, `upload_documents`)
+ * are untouched.
+ */
+export const isActionUnlocked = (
+  action: CertificateNextAction | null,
+  itStatus?: string,
+): boolean =>
+  action !== "request_internship_certificate" || itStatus === IT_COMPLETED;
+
+/**
+ * `resolveNextAction`/`feeNextAction` filtered through the IT-completion gate.
+ * Returns `null` when the only available action is still locked.
+ */
+export const availableNextAction = (
+  action: CertificateNextAction | null,
+  itStatus?: string,
+): CertificateNextAction | null =>
+  isActionUnlocked(action, itStatus) ? action : null;
+
 /**
  * The backend now hands us `nextAction`, which is the only field that should
  * decide which certificate screen a student sees. The fallback below keeps the

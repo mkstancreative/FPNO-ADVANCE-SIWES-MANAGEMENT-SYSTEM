@@ -39,7 +39,10 @@ import type {
   CertificateNextAction,
   RRRData,
 } from "../../api/types/certificate";
-import { isFeeSettled } from "../../helpers/certificateFlow";
+import {
+  isActionUnlocked,
+  isFeeSettled,
+} from "../../helpers/certificateFlow";
 import { useStudentFeeTrack } from "../../hooks/useStudentFeeTrack";
 import { fmt, ago } from "../../helpers/utilities";
 import { useInternship } from "../../context/useInternship";
@@ -343,6 +346,10 @@ export default function DashBoardStudent() {
   const handleCertificateAction = useCallback(
     (action: CertificateNextAction) => {
       const cert = certStatus?.data;
+      // Belt-and-braces: the banner and KPI card already withhold this action
+      // before the IT is completed, so reaching here means something slipped.
+      if (!isActionUnlocked(action, resp?.data?.student?.itStatus)) return;
+
       switch (action) {
         case "pay":
           startCertificatePayment();
@@ -368,6 +375,7 @@ export default function DashBoardStudent() {
     },
     [
       certStatus,
+      resp,
       startCertificatePayment,
       openRequestModal,
       openRejectionDetails,
@@ -514,6 +522,7 @@ export default function DashBoardStudent() {
         <CertificateStatusBanner
           certificate={certificate || null}
           fee={certFee?.data ?? null}
+          itStatus={student.itStatus}
           loadingCert={loadingCert || loadingCertFee}
           busy={downloadingCert || startingCertPayment}
           onAction={handleCertificateAction}
@@ -534,6 +543,7 @@ export default function DashBoardStudent() {
             notifications={notifications}
             certificate={certificate || null}
             fee={certFee?.data ?? null}
+            itStatus={student.itStatus}
             downloadingCert={downloadingCert}
             downloadingReq={downloadingReq}
             onDownloadReq={handleDownloadReq}

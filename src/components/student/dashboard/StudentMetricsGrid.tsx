@@ -22,7 +22,9 @@ import type {
   CertificateStatus,
 } from "../../../api/types/certificate";
 import {
+  availableNextAction,
   feeNextAction,
+  isActionUnlocked,
   resolveNextAction,
 } from "../../../helpers/certificateFlow";
 
@@ -35,6 +37,8 @@ interface StudentMetricsGridProps {
   certificate: CertificateStatus | null;
   /** Fallback for students with no request yet — see the status banner. */
   fee: CertificateFeeData | null;
+  /** Gates the certificate request until the IT is completed. */
+  itStatus?: string;
   downloadingCert: boolean;
   downloadingReq: boolean;
   onDownloadReq: () => void;
@@ -60,6 +64,7 @@ export const StudentMetricsGrid: React.FC<StudentMetricsGridProps> = ({
   notifications,
   certificate,
   fee,
+  itStatus,
   downloadingCert,
   downloadingReq,
   onDownloadReq,
@@ -67,9 +72,13 @@ export const StudentMetricsGrid: React.FC<StudentMetricsGridProps> = ({
 }) => {
   // Mirrors the status banner exactly, so the card and the banner can never
   // offer the student two different next steps.
-  const certAction = certificate
+  const rawCertAction = certificate
     ? (resolveNextAction(certificate) ?? feeNextAction(fee))
     : feeNextAction(fee);
+  // Matches the status banner's gate exactly — a platform student cannot
+  // request the certificate before their IT is completed.
+  const certLocked = !isActionUnlocked(rawCertAction, itStatus);
+  const certAction = availableNextAction(rawCertAction, itStatus);
 
   return (
     <div className="db-kpi-grid db-kpi-grid--wide" style={{ marginTop: 16 }}>
@@ -182,7 +191,9 @@ export const StudentMetricsGrid: React.FC<StudentMetricsGridProps> = ({
               ? "Generating PDF..."
               : certAction
                 ? CERT_CARD_LINK[certAction]
-                : "Not yet available"}
+                : certLocked
+                  ? "Available after IT completion"
+                  : "Not yet available"}
           </span>
         }
         icon={<Download size={18} />}

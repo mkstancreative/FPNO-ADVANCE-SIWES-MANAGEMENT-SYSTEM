@@ -115,8 +115,8 @@ export default function DiscountStudents() {
 
       {/* ── Filters ── */}
       <div
-        className="filter-wrapper"
-        style={{ display: "flex", gap: "10px", alignItems: "center" }}
+        className="filter-wrapper ua-filter-wrapper"
+        // style={{ display: "flex", gap: "10px", alignItems: "center" }}
       >
         <SearchInput
           value={filters.search}

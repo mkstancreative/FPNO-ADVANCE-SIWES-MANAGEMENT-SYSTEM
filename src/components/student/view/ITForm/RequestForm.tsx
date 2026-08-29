@@ -103,7 +103,7 @@ export const RequestForm = () => {
 
           <div className="req-header-center">
             <p className="cert-school-name">
-              Holy Rosary Hospital College of Nursing Sciences
+              Federal Polytechnic Nekede, Owerri
             </p>
             <p className="cert-school-sub">
               PMB 1036 Emekuku – Owerri, Imo State, Nigeria
@@ -276,8 +276,8 @@ export const RequestForm = () => {
             Ref: <span className="req-footer-id">{ref}</span>
           </span>
           <span>
-            Holy Rosary Hospital College of Nursing Sciences, Emekuku — SIWES
-            Directorate. All rights reserved.
+            Federal Polytechnic Nekede, Owerri — SIWES Directorate. All rights
+            reserved.
           </span>
           <span>portal.fpno.edu.ng/siwes-verify</span>
         </div>

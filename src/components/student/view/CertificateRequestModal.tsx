@@ -390,8 +390,7 @@ export const CertificateRequestModal: React.FC<
 
             <div className="form-group col-4">
               <label className="modal-label">
-                Did you do your ND in Holy Rosary Hospital College of Nursing
-                Sciences?
+                Did you do your ND in the Federal Polytechnic Nekede, Owerri?
               </label>
               <div style={{ display: "flex", gap: "24px", marginTop: "8px" }}>
                 <label
@@ -410,7 +409,7 @@ export const CertificateRequestModal: React.FC<
                     checked={schooledInPoly === true}
                     onChange={() => setSchooledInPoly(true)}
                   />
-                  Yes, I attended Holy Rosary Hospital College of Nursing Sciences
+                  Yes, I attended the Federal Polytechnic Nekede, Owerri
                 </label>
                 <label
                   style={{

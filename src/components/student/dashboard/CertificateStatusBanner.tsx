@@ -8,7 +8,9 @@ import type {
 } from "../../../api/types/certificate";
 import {
   approvalLabel,
+  availableNextAction,
   feeNextAction,
+  isActionUnlocked,
   nextActionDescription,
   nextActionLabel,
   resolveNextAction,
@@ -22,6 +24,11 @@ interface CertificateStatusBannerProps {
    * `/certificates/status` 404s and leaves `certificate` null.
    */
   fee: CertificateFeeData | null;
+  /**
+   * The student's IT status. A platform student is not offered the certificate
+   * request until this reads "completed".
+   */
+  itStatus?: string;
   loadingCert: boolean;
   busy: boolean;
   /** Single entry point — the dashboard maps the action to the right screen. */
@@ -42,20 +49,31 @@ function feeDescription(fee: CertificateFeeData | null): string {
 
 export const CertificateStatusBanner: React.FC<
   CertificateStatusBannerProps
-> = ({ certificate, fee, loadingCert, busy, onAction }) => {
+> = ({ certificate, fee, itStatus, loadingCert, busy, onAction }) => {
   if (loadingCert) return null;
 
   // An existing request is the richer source; fall back to the fee endpoint for
   // students who have not started one yet.
-  const action = certificate
+  const rawAction = certificate
     ? (resolveNextAction(certificate) ?? feeNextAction(fee))
     : feeNextAction(fee);
-  if (!action) return null;
 
-  const heading = certificate ? approvalLabel(certificate) : "Not Requested";
-  const description = certificate
-    ? nextActionDescription(certificate)
-    : feeDescription(fee);
+  // Locked rather than absent: tell the student the certificate is coming and
+  // what unlocks it, instead of showing nothing at all.
+  const locked = !isActionUnlocked(rawAction, itStatus);
+  const action = availableNextAction(rawAction, itStatus);
+  if (!action && !locked) return null;
+
+  const heading = locked
+    ? "Available After IT"
+    : certificate
+      ? approvalLabel(certificate)
+      : "Not Requested";
+  const description = locked
+    ? "You can request your certificate once your IT is marked completed"
+    : certificate
+      ? nextActionDescription(certificate)
+      : feeDescription(fee);
 
   return (
     <div
@@ -101,6 +119,7 @@ export const CertificateStatusBanner: React.FC<
           </div>
         </div>
       </div>
+      {action && (
       <button
         className="dash-btn dash-btn--sm dash-btn--primary"
         onClick={() => onAction(action)}
@@ -113,6 +132,7 @@ export const CertificateStatusBanner: React.FC<
           nextActionLabel(action)
         )}
       </button>
+      )}
     </div>
   );
 };

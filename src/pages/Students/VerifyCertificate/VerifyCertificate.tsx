@@ -62,7 +62,7 @@ const VerifyCertificate = () => {
             />
             <div>
               <span className="vc-logo-name">
-                Holy Rosary Hospital College of Nursing Sciences
+                Federal Polytechnic Nekede, Owerri
               </span>
               <span className="vc-logo-sub">Certificate Authority</span>
             </div>
@@ -151,7 +151,7 @@ const VerifyCertificate = () => {
           />
           <div>
             <span className="vc-logo-name">
-              Holy Rosary Hospital College of Nursing Sciences
+              Federal Polytechnic Nekede, Owerri
             </span>
             <span className="vc-logo-sub">
               Owerri, Imo State · SIWES Directorate
@@ -170,8 +170,8 @@ const VerifyCertificate = () => {
           </h2>
           <p className="vc-hero-sub">
             This document has been authenticated against the official SIWES
-            records of Holy Rosary Hospital College of Nursing Sciences,
-            Emekuku. Issued under the authority of the SIWES Directorate.
+            records of the Federal Polytechnic Nekede, Owerri. Issued under the
+            authority of the SIWES Directorate.
           </p>
           <div className="vc-cert-number-box">
             <span className="vc-cert-number-label">Certificate Number</span>
