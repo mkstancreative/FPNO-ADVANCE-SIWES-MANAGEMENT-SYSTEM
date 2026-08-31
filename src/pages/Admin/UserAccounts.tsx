@@ -7,6 +7,8 @@ import StatusBadge from "../../components/ui/StatusBadge/StatusBadge";
 import Spinner from "../../components/ui/Spinner/Spinner";
 import AdminResetUserPassword from "../../components/admin/forms/AdminResetUserPassword";
 import AdminVerifyRRR from "../../components/admin/forms/AdminVerifyRRR";
+import RRRFlowPicker from "../../components/admin/forms/RRRFlowPicker";
+import type { VerifyRRRFlow } from "../../components/admin/forms/AdminVerifyRRR";
 import { useModal } from "../../context/ModalContext";
 import { useAdminUserLookup } from "../../hooks/useAdminUsers";
 import type { AdminUserLookupItem } from "../../api/types/adminUser";
@@ -19,6 +21,18 @@ const MIN_QUERY = 2;
 
 export default function UserAccounts() {
   const { openModal, closeModal } = useModal();
+
+  const openVerifyRRR = () => {
+    openModal(
+      <RRRFlowPicker
+        isOpen
+        onClose={closeModal}
+        onSelect={(flow: VerifyRRRFlow) =>
+          openModal(<AdminVerifyRRR isOpen onClose={closeModal} flow={flow} />)
+        }
+      />,
+    );
+  };
 
   const [search, setSearch] = useState("");
   const [query, setQuery] = useState("");
@@ -114,7 +128,7 @@ export default function UserAccounts() {
         </div>
 
         <div className="page-header-right">
-          <AddButton text="Verify RRR" onClick={() => openModal(<AdminVerifyRRR isOpen onClose={closeModal} />)} />
+          <AddButton text="Verify RRR" onClick={openVerifyRRR} />
         </div>
       </div>
 
