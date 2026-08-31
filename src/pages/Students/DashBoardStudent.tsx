@@ -27,6 +27,7 @@ import "../../components/shared/dashboard/dashboard.css";
 import { RequestForm } from "../../components/student/view/ITForm/RequestForm";
 import { CertificateRequestModal } from "../../components/student/view/CertificateRequestModal";
 import { PaymentVerificationModal } from "../../components/student/view/PaymentVerificationModal";
+import VerifyRRRModal from "../../components/student/view/VerifyRRRModal";
 import CustomConfirm from "../../components/ui/CustomConfirm";
 import Certificate from "../../components/student/view/Certificate/Certificate";
 import { CertificateStatusBanner } from "../../components/student/dashboard/CertificateStatusBanner";
@@ -154,11 +155,26 @@ export default function DashBoardStudent() {
     [openModal, closeModal, resp, selectedInternshipId, selfRegistered],
   );
 
+  /** Opens the student's own RRR check, on whichever flow they belong to. */
+  const openVerifyRRR = useCallback(
+    (defaultRRR?: string) => {
+      openModal(<VerifyRRRModal defaultRRR={defaultRRR} onClose={closeModal} />);
+    },
+    [openModal, closeModal],
+  );
+
   /** Raise a fresh internship order, then hand the RRR to the payment widget. */
   const startInternshipPayment = useCallback(() => {
     if (!paysInternshipFee) return;
 
     const existing = internshipPayment?.data;
+
+    // The backend is telling us the money may already be in — send the student
+    // to the check, not back to a payment screen they do not need.
+    if (existing?.nextAction === "verify") {
+      openVerifyRRR(existing.rrr);
+      return;
+    }
 
     // A live reference is reusable — only mint a new order when there is none.
     if (existing?.rrr && existing.nextAction !== "regenerate_rrr") {
@@ -186,6 +202,7 @@ export default function DashBoardStudent() {
     internshipScope,
     initiateInternshipPayment,
     openPaymentModal,
+    openVerifyRRR,
   ]);
 
   /**

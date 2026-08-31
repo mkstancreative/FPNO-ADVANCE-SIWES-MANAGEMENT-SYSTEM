@@ -9,6 +9,8 @@ import {
   useInternshipPaymentStatus,
 } from "../../../hooks/useInternshipPayment";
 import { toast } from "react-toastify";
+import { useModal } from "../../../context/ModalContext";
+import VerifyRRRModal from "./VerifyRRRModal";
 import CustomModal from "../../ui/CustomModal/CustomModal";
 import Spinner from "../../ui/Spinner/Spinner";
 import type { RRRData } from "../../../api/types/certificate";
@@ -101,6 +103,19 @@ export const PaymentVerificationModal: React.FC<
   );
 
   const [isPayLoading, setIsPayLoading] = React.useState(false);
+  const { openModal, closeModal: closeOuterModal } = useModal();
+
+  /**
+   * A student who paid by transfer or at a bank never comes back through the
+   * Remita callback, so their status can sit stale with the money already gone.
+   * This gives them a way to force the check themselves, prefilled with the RRR
+   * they are looking at.
+   */
+  const openVerify = React.useCallback(() => {
+    openModal(
+      <VerifyRRRModal defaultRRR={data.rrr} onClose={closeOuterModal} />,
+    );
+  }, [openModal, closeOuterModal, data.rrr]);
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -309,7 +324,29 @@ export const PaymentVerificationModal: React.FC<
         </div>
       </div>
 
+      {data.rrr !== "Pending" && (
+        <button type="button" className="pvm-verify-link" onClick={openVerify}>
+          Already paid? Verify this RRR
+        </button>
+      )}
+
       <style>{`
+        .pvm-verify-link {
+          display: block;
+          width: 100%;
+          margin-top: 14px;
+          padding: 10px;
+          font-size: 13px;
+          font-weight: 600;
+          border-radius: 9px;
+          cursor: pointer;
+          color: var(--color-accent);
+          background: transparent;
+          border: 1px dashed var(--color-accent);
+        }
+        .pvm-verify-link:hover {
+          background: var(--color-accent-soft);
+        }
         .payment-display {
           display: flex;
           flex-direction: column;
