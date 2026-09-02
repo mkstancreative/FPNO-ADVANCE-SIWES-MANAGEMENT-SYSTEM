@@ -76,8 +76,9 @@ export default function UnAssignedStudents() {
     navigate(`/admin/students/${student._id}/progress`);
 
   const openViewReport = (student: Student) => {
+    const fullName = [student.user?.firstName, student.user?.lastName].filter(Boolean).join(" ");
     const name = encodeURIComponent(
-      `${student.user.firstName} ${student.user.lastName}`,
+      fullName || student.registrationNumber || "Student",
     );
     navigate(`/admin/students/${student._id}/report?name=${name}`);
   };

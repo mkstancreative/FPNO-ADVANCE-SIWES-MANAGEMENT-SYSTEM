@@ -175,7 +175,7 @@ export default function AssignedStudentLogBookView() {
               <div className="lbv2-sc-row">
                 <span className="lbv2-sc-label">Student</span>
                 <span className="lbv2-sc-value">
-                  {student.user.firstName} {student.user.lastName}
+                  {[student.user?.firstName, student.user?.lastName].filter(Boolean).join(" ") || student.registrationNumber || "Student"}
                 </span>
               </div>
               <div className="lbv2-sc-row">

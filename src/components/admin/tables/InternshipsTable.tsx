@@ -51,18 +51,19 @@ export default function InternshipsTable({
       render: (row) => {
         const s = row.student;
         if (typeof s === "string") return s;
+        const fullName = [s.user?.firstName, s.user?.lastName].filter(Boolean).join(" ");
         return (
           <div className="cell-stack">
             <span
               className="cell-primary"
               style={{ fontSize: "0.8rem", fontWeight: 500 }}
             >
-              {s.user.firstName} {s.user.lastName}
+              {fullName || s.registrationNumber || "Student"}
             </span>
             <br />
             <span className="cell-sub" style={{ fontSize: "0.8rem" }}>
               {s.registrationNumber}
-            </span> 
+            </span>
           </div>
         );
       },

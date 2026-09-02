@@ -110,9 +110,9 @@ export default function AdminStudentView() {
     );
   }
 
-  const fullName = `${s.user.firstName} ${s.user.lastName}`;
+  const fullName = [s.user?.firstName, s.user?.lastName].filter(Boolean).join(" ") || s.registrationNumber;
   const initials =
-    `${s.user.firstName?.charAt(0) || ""}${s.user.lastName?.charAt(0) || ""}`.toUpperCase() ||
+    `${s.user?.firstName?.charAt(0) || ""}${s.user?.lastName?.charAt(0) || ""}`.toUpperCase() ||
     "??";
   const batchName = typeof s.batch === "object" ? s.batch.name : s.batch;
 
@@ -141,10 +141,10 @@ export default function AdminStudentView() {
           <p className="sv-reg">{s.registrationNumber}</p>
           <div className="sv-meta-row">
             <span className="sv-meta">
-              <Mail size={12} /> {s.user.email}
+              <Mail size={12} /> {s.user?.email || "—"}
             </span>
             <span className="sv-meta">
-              <Phone size={12} /> {s.user.phone}
+              <Phone size={12} /> {s.user?.phone || "—"}
             </span>
           </div>
         </div>
@@ -270,10 +270,10 @@ export default function AdminStudentView() {
           <Section title="Academic Supervisor" icon={<User size={15} />}>
             <InfoRow
               label="Name"
-              value={`${s.supervisors.school.user.firstName} ${s.supervisors.school.user.lastName}`}
+              value={[s.supervisors.school.user?.firstName, s.supervisors.school.user?.lastName].filter(Boolean).join(" ") || "—"}
             />
-            <InfoRow label="Email" value={s.supervisors.school.user.email} />
-            <InfoRow label="Phone" value={s.supervisors.school.user.phone} />
+            <InfoRow label="Email" value={s.supervisors.school.user?.email} />
+            <InfoRow label="Phone" value={s.supervisors.school.user?.phone} />
             <InfoRow label="Staff ID" value={s.supervisors.school.staffId} />
             <InfoRow
               label="Departments"

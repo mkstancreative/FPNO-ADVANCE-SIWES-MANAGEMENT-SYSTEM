@@ -101,18 +101,21 @@ const AdminCertTable: React.FC<AdminCertTableProps> = ({
     },
     {
       header: "Student",
-      render: (req) => (
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <span style={{ fontWeight: 600 }}>
-            {req.user.firstName} {req.user.lastName}
-          </span>
-          <span
-            style={{ fontSize: 11.5, color: "var(--color-text-secondary)" }}
-          >
-            {req.student.registrationNumber}
-          </span>
-        </div>
-      ),
+      render: (req) => {
+        const fullName = [req.user?.firstName, req.user?.lastName].filter(Boolean).join(" ");
+        return (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <span style={{ fontWeight: 600 }}>
+              {fullName || req.student?.registrationNumber || "Student"}
+            </span>
+            <span
+              style={{ fontSize: 11.5, color: "var(--color-text-secondary)" }}
+            >
+              {req.student.registrationNumber}
+            </span>
+          </div>
+        );
+      },
     },
     {
       header: "Department",

@@ -25,7 +25,7 @@ export default function AssignedStudentTable({
   const columns: Column<StudentSummary>[] = [
     {
       header: "Name",
-      render: (row) => `${row.user.firstName} ${row.user.lastName}`,
+      render: (row) => [row.user?.firstName, row.user?.lastName].filter(Boolean).join(" ") || row.registrationNumber || "Student",
     },
     {
       header: "Reg. Number",

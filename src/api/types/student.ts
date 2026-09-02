@@ -37,7 +37,7 @@ export interface StudentProgram {
 // ── List item (GET /admin/students) ──────────────────────────────────────────
 export interface Student {
   _id: string;
-  user: StudentUser;
+  user?: StudentUser | null;
   registrationNumber: string;
   batch: string | StudentBatchRef;
   session: string;

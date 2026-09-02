@@ -126,9 +126,9 @@ export default function AssignedStudentView({
     "",
   );
 
-  const fullName = s ? `${s.user.firstName} ${s.user.lastName}` : "";
+  const fullName = s ? [s.user?.firstName, s.user?.lastName].filter(Boolean).join(" ") || s.registrationNumber : "";
   const initials = s
-    ? `${s.user.firstName[0]}${s.user.lastName[0]}`.toUpperCase()
+    ? `${s.user?.firstName?.[0] || ""}${s.user?.lastName?.[0] || ""}`.toUpperCase() || "?"
     : "?";
 
   return (
@@ -169,10 +169,10 @@ export default function AssignedStudentView({
               <p className="asv-reg">{s.registrationNumber}</p>
               <div className="asv-meta-row">
                 <span className="asv-meta">
-                  <Mail size={12} /> {s.user.email}
+                  <Mail size={12} /> {s.user?.email || "—"}
                 </span>
                 <span className="asv-meta">
-                  <Phone size={12} /> {s.user.phone}
+                  <Phone size={12} /> {s.user?.phone || "—"}
                 </span>
               </div>
             </div>

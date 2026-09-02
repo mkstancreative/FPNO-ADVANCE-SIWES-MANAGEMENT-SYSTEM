@@ -69,7 +69,7 @@ export default function EditSupervisorDepartments({
       isOpen={isOpen}
       onClose={handleClose}
       title="Edit Departments"
-      subtitle={`${supervisor.user.firstName} ${supervisor.user.lastName} — owned departments`}
+      subtitle={`${[supervisor.user?.firstName, supervisor.user?.lastName].filter(Boolean).join(" ") || supervisor.staffId || "Supervisor"} — owned departments`}
       icon={<UserRoundCog size={16} />}
       size="medium"
       footer={footer}

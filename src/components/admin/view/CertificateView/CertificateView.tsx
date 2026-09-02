@@ -50,7 +50,7 @@ const CertificateView: React.FC<CertificateViewProps> = ({ id, onClose }) => {
               <div className="section-item">
                 <span className="item-label">Full Name</span>
                 <span className="item-value">
-                  {req.user.firstName} {req.user.lastName}
+                  {[req.user?.firstName, req.user?.lastName].filter(Boolean).join(" ") || req.student?.registrationNumber || "Student"}
                 </span>
               </div>
               <div className="section-item">

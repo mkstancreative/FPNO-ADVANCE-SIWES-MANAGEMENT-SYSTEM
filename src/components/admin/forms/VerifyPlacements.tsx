@@ -140,7 +140,7 @@ export default function VerifyPlacements({
                         }}
                       >
                         {p
-                          ? `${p.student.user.firstName} ${p.student.user.lastName}`
+                          ? [p.student?.user?.firstName, p.student?.user?.lastName].filter(Boolean).join(" ") || p.student?.registrationNumber || err.placementId
                           : err.placementId}
                       </span>
                       <span style={{ color: "#ef4444" }}>{err.error}</span>
@@ -207,7 +207,7 @@ export default function VerifyPlacements({
       subtitle={
         isBulk
           ? `Processing ${placements.length} selected placements`
-          : `Reviewing placement for ${placement?.student.user.firstName} ${placement?.student.user.lastName}`
+          : `Reviewing placement for ${[placement?.student?.user?.firstName, placement?.student?.user?.lastName].filter(Boolean).join(" ") || placement?.student?.registrationNumber || "student"}`
       }
       size="medium"
       footer={footer}

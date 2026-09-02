@@ -66,18 +66,21 @@ export default function PlacementsTable({
     },
     {
       header: "Student",
-      render: (row) => (
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <span style={{ fontWeight: 600 }}>
-            {row.student.user.firstName} {row.student.user.lastName}
-          </span>
-          <span
-            style={{ fontSize: 11.5, color: "var(--color-text-secondary)" }}
-          >
-            {row.student.registrationNumber}
-          </span>
-        </div>
-      ),
+      render: (row) => {
+        const fullName = [row.student?.user?.firstName, row.student?.user?.lastName].filter(Boolean).join(" ");
+        return (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <span style={{ fontWeight: 600 }}>
+              {fullName || row.student?.registrationNumber || "Student"}
+            </span>
+            <span
+              style={{ fontSize: 11.5, color: "var(--color-text-secondary)" }}
+            >
+              {row.student?.registrationNumber}
+            </span>
+          </div>
+        );
+      },
     },
     {
       header: "Company",

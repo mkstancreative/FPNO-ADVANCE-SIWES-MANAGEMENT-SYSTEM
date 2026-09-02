@@ -175,12 +175,15 @@ export default function AdminStudentsTable({
     },
     {
       header: "Student",
-      render: (row) => (
-        <Avatar
-          src={row.passportPhoto}
-          name={`${row.user.firstName} ${row.user.lastName}`}
-        />
-      ),
+      render: (row) => {
+        const fullName = [row.user?.firstName, row.user?.lastName].filter(Boolean).join(" ");
+        return (
+          <Avatar
+            src={row.passportPhoto}
+            name={fullName || row.registrationNumber || "Student"}
+          />
+        );
+      },
     },
     { header: "Reg. Number", accessor: "registrationNumber" },
     {

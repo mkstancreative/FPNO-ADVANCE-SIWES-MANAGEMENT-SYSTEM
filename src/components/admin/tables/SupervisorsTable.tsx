@@ -53,23 +53,26 @@ export default function SupervisorsTable({
   const columns: Column<Supervisor>[] = [
     {
       header: "Name",
-      render: (sv) => (
-        <div className="cell-stack">
-          <span
-            className="cell-primary"
-            style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}
-          >
-            {sv.user.firstName} {sv.user.lastName}
-          </span>
-          <span className="cell-sub"
-           style={{ fontSize: 13, color: "var(--color-text-muted)"}}
-          >{sv.user.email}</span>
-        </div>
-      ),
+      render: (sv) => {
+        const fullName = [sv.user?.firstName, sv.user?.lastName].filter(Boolean).join(" ");
+        return (
+          <div className="cell-stack">
+            <span
+              className="cell-primary"
+              style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}
+            >
+              {fullName || sv.staffId || "Supervisor"}
+            </span>
+            <span className="cell-sub"
+             style={{ fontSize: 13, color: "var(--color-text-muted)"}}
+            >{sv.user?.email ?? "—"}</span>
+          </div>
+        );
+      },
     },
     {
       header: "Phone",
-      render: (sv) => sv.user.phone || "—",
+      render: (sv) => sv.user?.phone || "—",
     },
     {
       header: "Staff ID",

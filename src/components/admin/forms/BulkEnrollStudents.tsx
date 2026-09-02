@@ -44,10 +44,15 @@ export default function BulkEnrollStudents({
   const batches = batchesData?.data ?? [];
   const students = studentsData?.data ?? [];
 
-  const studentOptions = students.map((s) => ({
-    id: s._id,
-    name: `${s.user.firstName} ${s.user.lastName} (${s.registrationNumber})`,
-  }));
+  const studentOptions = students.map((s) => {
+    const fullName = [s.user?.firstName, s.user?.lastName].filter(Boolean).join(" ");
+    return {
+      id: s._id,
+      name: fullName
+        ? `${fullName} (${s.registrationNumber})`
+        : `${s.registrationNumber || s._id}`,
+    };
+  });
 
   const handleClose = () => {
     setBatchId(targetBatch?._id ?? "");

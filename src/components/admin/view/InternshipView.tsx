@@ -117,8 +117,9 @@ export default function InternshipView() {
 
   const handleViewReport = () => {
     if (!student) return;
+    const fullName = [student.user?.firstName, student.user?.lastName].filter(Boolean).join(" ");
     const name = encodeURIComponent(
-      `${student.user.firstName} ${student.user.lastName}`,
+      fullName || student.registrationNumber || "Student",
     );
     navigate(
       `/admin/students/${student._id}/report?internshipId=${internship._id}&batchId=${batchId}&name=${name}`,
@@ -155,7 +156,7 @@ export default function InternshipView() {
         <div className="sv-hero-info">
           <h2 className="sv-name">
             {student
-              ? `${student.user.firstName} ${student.user.lastName}`
+              ? [student.user?.firstName, student.user?.lastName].filter(Boolean).join(" ") || student.registrationNumber || "—"
               : "—"}
           </h2>
           <p className="sv-reg">{student?.registrationNumber}</p>
@@ -278,7 +279,7 @@ export default function InternshipView() {
           <Section title="School Supervisor" icon={<User size={15} />}>
             <InfoRow
               label="Name"
-              value={`${internship.supervisors.school.user.firstName} ${internship.supervisors.school.user.lastName}`}
+              value={[internship.supervisors.school.user?.firstName, internship.supervisors.school.user?.lastName].filter(Boolean).join(" ") || "—"}
             />
             <InfoRow
               label="Departments"
