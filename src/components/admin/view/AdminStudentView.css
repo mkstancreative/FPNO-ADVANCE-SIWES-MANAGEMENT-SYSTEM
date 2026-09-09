@@ -95,6 +95,30 @@
 .sv-hero-badge {
   margin-left: auto;
   align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sv-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-accent);
+  background: var(--color-accent-muted);
+  border: 1px solid var(--color-accent);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sv-edit-btn:hover {
+  background: var(--color-accent);
+  color: #fff;
 }
 
 /* ── Stat Cards ─────────────────────────────────────────────────────────── */

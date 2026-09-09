@@ -11,8 +11,11 @@ import {
   FileText,
   Download,
   ClipboardCheck,
+  Pencil,
 } from "lucide-react";
 import { useStudentById } from "../../../hooks/useStudents";
+import { useModal } from "../../../context/ModalContext";
+import EditStudent from "../forms/EditStudent";
 import { useStudentEvaluations } from "../../../hooks/useEvaluations";
 import type { StudentDetail } from "../../../api/types/student";
 import "./AdminStudentView.css";
@@ -76,6 +79,7 @@ function StatCard({
 export default function AdminStudentView() {
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { openModal, closeModal } = useModal();
   const { data: student, isLoading } = useStudentById(id);
   const { data: evaluationsResp } = useStudentEvaluations(id);
 
@@ -150,6 +154,16 @@ export default function AdminStudentView() {
         </div>
         <div className="sv-hero-badge">
           <StatusBadge status={s.itStatus} />
+          <button
+            className="sv-edit-btn"
+            onClick={() =>
+              openModal(
+                <EditStudent isOpen onClose={closeModal} student={s} />,
+              )
+            }
+          >
+            <Pencil size={13} /> Update Profile
+          </button>
         </div>
       </div>
 

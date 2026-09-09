@@ -119,6 +119,24 @@ export interface StudentDetailResponse {
   data: StudentDetail;
 }
 
+// ── Record Update (PUT /students/:studentId) ─────────────────────────────────
+export interface UpdateStudentRecordPayload {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  registrationNumber: string;
+  department: StudentDepartment;
+  program: StudentProgram;
+  guarantor: Guarantor;
+}
+
+export interface UpdateStudentRecordResponse {
+  success: boolean;
+  message: string;
+  data: StudentDetail;
+}
+
 // ── Report Params ────────────────────────────────────────────────────────────
 export interface StudentReportParams {
   internshipId?: string;

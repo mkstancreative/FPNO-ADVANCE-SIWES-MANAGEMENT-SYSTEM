@@ -7,6 +7,8 @@ import type {
   UploadStudentsPayload,
   UpdateStudentStatusPayload,
   UpdateStatusApiResult,
+  UpdateStudentRecordPayload,
+  UpdateStudentRecordResponse,
 } from "../types/student";
 
 export const getStudents = async (
@@ -52,6 +54,14 @@ export const updateStudentStatus = async (
   payload: UpdateStudentStatusPayload,
 ): Promise<UpdateStatusApiResult> => {
   const response = await api.put("/admin/students/status", payload);
+  return response.data;
+};
+
+export const updateStudentRecord = async (
+  studentId: string,
+  payload: UpdateStudentRecordPayload,
+): Promise<UpdateStudentRecordResponse> => {
+  const response = await api.put(`/admin/students/${studentId}`, payload);
   return response.data;
 };
 

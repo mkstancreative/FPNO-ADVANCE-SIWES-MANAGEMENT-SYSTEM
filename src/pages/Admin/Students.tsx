@@ -6,6 +6,7 @@ import ResetButton from "../../components/ui/ResetButton/ResetButton";
 import AdminStudentsTable from "../../components/admin/tables/AdminStudentsTable";
 import UploadStudents from "../../components/admin/forms/UploadStudents";
 import UpdateStudentStatus from "../../components/admin/forms/UpdateStudentStatus";
+import EditStudent from "../../components/admin/forms/EditStudent";
 import { useModal } from "../../context/ModalContext";
 import type { Student, ITStatus } from "../../api/types/student";
 import type { TableMeta } from "../../components/ui/GeneralTable/GeneralTable";
@@ -86,6 +87,10 @@ export default function Students() {
       />,
     );
   };
+
+  /** Edit a single student's records (PUT /students/:studentId) */
+  const openEditStudent = (student: Student) =>
+    openModal(<EditStudent isOpen onClose={closeModal} student={student} />);
 
   const handleView = (student: Student) =>
     navigate(`/admin/students/${student._id}`);
@@ -203,6 +208,7 @@ export default function Students() {
           onLimitChange={(l) => setField("limit", l)}
           onView={handleView}
           onProgress={handleProgress}
+          onEdit={openEditStudent}
           onViewReport={openViewReport}
           selectedIds={selectedIds}
           onSelectionChange={setSelectedIds}

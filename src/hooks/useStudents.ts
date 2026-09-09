@@ -6,6 +6,7 @@ import {
   getStudentProgress,
   uploadStudents,
   updateStudentStatus,
+  updateStudentRecord,
   downloadStudentTemplate,
   getStudentReport,
   getAiScoreBreakDown,
@@ -19,6 +20,7 @@ import type {
   UploadStudentsPayload,
   UpdateStudentStatusPayload,
   StudentProgressResponse,
+  UpdateStudentRecordPayload,
 } from "../api/types/student";
 
 export const useUnassignedStudents = (params?: StudentParams) => {
@@ -82,6 +84,28 @@ export const useUpdateStudentStatus = () => {
     },
     onError: (err: unknown) =>
       toast.error(getErrMsg(err, "Failed to update student status.")),
+  });
+};
+
+export const useUpdateStudentRecord = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: UpdateStudentRecordPayload;
+    }) => updateStudentRecord(id, payload),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["students"] });
+      queryClient.invalidateQueries({
+        queryKey: ["students", variables.id],
+      });
+      toast.success("Student record updated.");
+    },
+    onError: (err: unknown) =>
+      toast.error(getErrMsg(err, "Failed to update student record.")),
   });
 };
 
