@@ -7,6 +7,11 @@ import {
   useUpdateStudentRecord,
 } from "../../../hooks/useStudents";
 import { useDepartments } from "../../../hooks/useBatches";
+import {
+  DEPARTMENTS_BY_SCHOOL,
+  OTHER_DEPARTMENTS_GROUP,
+  findDepartment,
+} from "../../../config/departments";
 import type {
   Student,
   StudentDetail,
@@ -113,11 +118,18 @@ function EditStudentForm({
     value: UpdateStudentRecordPayload[K],
   ) => setForm((prev) => ({ ...prev, [field]: value }));
 
-  const setDepartment = (key: "name" | "code", value: string) =>
+  const setDepartmentName = (name: string) =>
     setForm((prev) => ({
       ...prev,
-      department: { ...prev.department, [key]: value },
+      department: {
+        name,
+        // The catalogue owns the code; only keep a typed one for off-list names.
+        code: findDepartment(name)?.code ?? (name ? prev.department.code : ""),
+      },
     }));
+
+  const setDepartmentCode = (code: string) =>
+    setForm((prev) => ({ ...prev, department: { ...prev.department, code } }));
 
   const setProgram = (key: "type" | "level", value: string) =>
     setForm((prev) => {
@@ -138,12 +150,36 @@ function EditStudentForm({
       guarantor: { ...prev.guarantor, [key]: value },
     }));
 
-  const departmentOptions = useMemo(() => {
-    const names = departmentsData?.data ?? [];
-    // Keep the student's current department selectable even if it's not listed.
-    return form.department.name && !names.includes(form.department.name)
-      ? [form.department.name, ...names]
-      : names;
+  /**
+   * The institution catalogue grouped by school, plus an "Other" group holding
+   * any department the API reports (or this record already carries) that the
+   * catalogue doesn't know about — so no existing value becomes unselectable.
+   */
+  const departmentGroups = useMemo(() => {
+    const catalogued = new Set(
+      DEPARTMENTS_BY_SCHOOL.flatMap(({ departments }) =>
+        departments.map((d) => d.name),
+      ),
+    );
+    const extras = [
+      ...(departmentsData?.data ?? []),
+      form.department.name,
+    ].filter((name) => name && !catalogued.has(name));
+
+    const groups = DEPARTMENTS_BY_SCHOOL.map(({ school, departments }) => ({
+      label: school.name,
+      names: departments.map((d) => d.name),
+    }));
+
+    return extras.length > 0
+      ? [
+          ...groups,
+          {
+            label: OTHER_DEPARTMENTS_GROUP,
+            names: Array.from(new Set(extras)),
+          },
+        ]
+      : groups;
   }, [departmentsData, form.department.name]);
 
   // Keep whatever the record already holds selectable, even if it's off-list.
@@ -284,44 +320,39 @@ function EditStudentForm({
               />
             </div>
             <div className="form-group col-2">
-              <label className="modal-label">
-                Department <Required />
-              </label>
+              <label className="modal-label">Department</label>
               <select
-                required
                 className="modal-input"
                 value={form.department.name}
-                onChange={(e) => setDepartment("name", e.target.value)}
+                onChange={(e) => setDepartmentName(e.target.value)}
               >
                 <option value="">Select department</option>
-                {departmentOptions.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
+                {departmentGroups.map((group) => (
+                  <optgroup key={group.label} label={group.label}>
+                    {group.names.map((name) => (
+                      <option key={name} value={name}>
+                        {name}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
             </div>
             <div className="form-group col-2">
-              <label className="modal-label">
-                Department Code <Required />
-              </label>
+              <label className="modal-label">Department Code</label>
               <input
-                required
                 type="text"
                 className="modal-input"
                 value={form.department.code}
                 onChange={(e) =>
-                  setDepartment("code", e.target.value.toUpperCase())
+                  setDepartmentCode(e.target.value.toUpperCase())
                 }
                 placeholder="e.g. CST"
               />
             </div>
             <div className="form-group col-2">
-              <label className="modal-label">
-                Program Type <Required />
-              </label>
+              <label className="modal-label">Program Type</label>
               <select
-                required
                 className="modal-input"
                 value={form.program.type}
                 onChange={(e) => setProgram("type", e.target.value)}
@@ -335,11 +366,8 @@ function EditStudentForm({
               </select>
             </div>
             <div className="form-group col-2">
-              <label className="modal-label">
-                Level <Required />
-              </label>
+              <label className="modal-label">Level</label>
               <select
-                required
                 className="modal-input"
                 value={form.program.level}
                 onChange={(e) => setProgram("level", e.target.value)}
@@ -362,11 +390,8 @@ function EditStudentForm({
         <FieldSet label="Guarantor">
           <div className="form-grid">
             <div className="form-group col-2">
-              <label className="modal-label">
-                Full Name <Required />
-              </label>
+              <label className="modal-label">Full Name</label>
               <input
-                required
                 type="text"
                 className="modal-input"
                 value={form.guarantor.name}
@@ -375,11 +400,8 @@ function EditStudentForm({
               />
             </div>
             <div className="form-group col-2">
-              <label className="modal-label">
-                Relationship <Required />
-              </label>
+              <label className="modal-label">Relationship</label>
               <input
-                required
                 type="text"
                 className="modal-input"
                 value={form.guarantor.relationship}
@@ -388,11 +410,8 @@ function EditStudentForm({
               />
             </div>
             <div className="form-group col-2">
-              <label className="modal-label">
-                Phone <Required />
-              </label>
+              <label className="modal-label">Phone</label>
               <input
-                required
                 type="tel"
                 className="modal-input"
                 value={form.guarantor.phone}
@@ -401,11 +420,8 @@ function EditStudentForm({
               />
             </div>
             <div className="form-group col-12">
-              <label className="modal-label">
-                Address <Required />
-              </label>
+              <label className="modal-label">Address</label>
               <textarea
-                required
                 rows={2}
                 className="modal-input"
                 value={form.guarantor.address}

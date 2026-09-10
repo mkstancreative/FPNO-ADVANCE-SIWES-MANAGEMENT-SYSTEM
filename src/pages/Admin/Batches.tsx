@@ -1,6 +1,7 @@
 import { useState } from "react"; // already there
 import { useModal } from "../../context/ModalContext";
 import { useDeleteBatch, useDepartments } from "../../hooks/useBatches";
+import { departmentOptions } from "../../config/departments";
 import type { Batch, BatchStatus, Level, Program } from "../../api/types/batch";
 import BatchForm from "../../components/admin/forms/BatchForm";
 import AutoAssignSupervisors from "../../components/admin/forms/AutoAssignSuperviors";
@@ -142,7 +143,7 @@ export default function Batches() {
             label="Department"
             options={[
               { value: "", label: "All Departments" },
-              ...(departments?.map((d) => ({ value: d, label: d })) || []),
+              ...departmentOptions(departments),
             ]}
             value={filter.department}
             onChange={(value) => setField("department", value)}

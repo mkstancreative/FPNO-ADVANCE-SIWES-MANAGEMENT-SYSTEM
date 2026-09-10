@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { useStudents } from "../../hooks/useStudents";
 import { useBatches, useDepartments } from "../../hooks/useBatches";
 import SelectFilter from "../../components/ui/SelectFilter/SelectFilter";
+import { departmentOptions } from "../../config/departments";
 
 interface FiterStates {
   batchId: string;
@@ -177,7 +178,7 @@ export default function Students() {
           label="Department"
           options={[
             { value: "", label: "All Departments" },
-            ...(departments?.data.map((d) => ({ value: d, label: d })) || []),
+            ...departmentOptions(departments?.data),
           ]}
           value={filters.department}
           onChange={(value) => setField("department", value)}

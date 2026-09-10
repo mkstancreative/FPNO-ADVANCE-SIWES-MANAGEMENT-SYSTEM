@@ -13,7 +13,8 @@ import {
   autoAssignSupervisors,
   getDepartments,
 } from "../api/services/batch";
-import type { BatchParams } from "../api/types/batch";
+import type { BatchParams, DepartmentsResponse } from "../api/types/batch";
+import { mergeDepartmentNames } from "../config/departments";
 
 function getErrMsg(err: unknown, fallback: string) {
   const e = err as { response?: { data?: { message?: string } } };
@@ -133,9 +134,24 @@ export const useAutoAssignSupervisors = () => {
   });
 };
 
+/**
+ * Departments for admin pickers and filters.
+ *
+ * The institution catalogue (src/config/departments.ts, extracted from the
+ * schools-and-departments spreadsheet) is the source of truth; whatever
+ * /admin/all-departments reports is merged in so departments already attached
+ * to records stay selectable even if they predate the catalogue.
+ */
 export const useDepartments = () => {
   return useQuery({
     queryKey: ["departments"],
     queryFn: getDepartments,
+    select: (response): DepartmentsResponse => ({
+      ...response,
+      data: mergeDepartmentNames(response.data),
+    }),
+    placeholderData: (): DepartmentsResponse => ({
+      data: mergeDepartmentNames(),
+    }),
   });
 };

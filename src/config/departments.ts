@@ -606,3 +606,36 @@ export function findDepartment(name: string): DepartmentEntry | undefined {
   const needle = name.trim().toLowerCase();
   return DEPARTMENTS.find((d) => d.name.toLowerCase() === needle);
 }
+
+/** A department name the API reports that is not in the institution catalogue. */
+export const OTHER_DEPARTMENTS_GROUP = "Other";
+
+/**
+ * Merge the institution catalogue with department names the API reports.
+ * Catalogue names come first in institution order; anything the API knows about
+ * that the catalogue doesn't (legacy or renamed departments) is appended, so a
+ * department already attached to real records never becomes unselectable.
+ */
+export function mergeDepartmentNames(apiNames?: string[]): string[] {
+  const known = new Set(DEPARTMENTS.map((d) => d.name.toLowerCase()));
+  const extras = (apiNames ?? []).filter(
+    (name) => name && !known.has(name.trim().toLowerCase()),
+  );
+  return [...DEPARTMENT_NAMES, ...Array.from(new Set(extras))];
+}
+
+export interface DepartmentOption {
+  value: string;
+  label: string;
+  /** School the department belongs to — rendered as a group heading. */
+  group: string;
+}
+
+/** Catalogue departments as grouped select options, plus any extra API names. */
+export function departmentOptions(apiNames?: string[]): DepartmentOption[] {
+  return mergeDepartmentNames(apiNames).map((name) => ({
+    value: name,
+    label: name,
+    group: findDepartment(name)?.school ?? OTHER_DEPARTMENTS_GROUP,
+  }));
+}

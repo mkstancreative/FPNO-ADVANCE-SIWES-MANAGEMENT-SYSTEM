@@ -7,6 +7,7 @@ import SelectFilter from "../../components/ui/SelectFilter/SelectFilter";
 import { useState } from "react";
 import { useModal } from "../../context/ModalContext";
 import { useDepartments } from "../../hooks/useBatches";
+import { departmentOptions as buildDepartmentOptions } from "../../config/departments";
 import UploadSupervisors from "../../components/admin/forms/UploadSupervisors";
 import EditSupervisorDepartments from "../../components/admin/forms/EditSupervisorDepartments";
 import type { Supervisor } from "../../api/types/supervisor";
@@ -56,13 +57,10 @@ export default function SupervisorPage() {
       />,
     );
 
-  // Department options from API
+  // Institution department catalogue, merged with anything the API reports.
   const departmentOptions = [
     { value: "", label: "All Departments" },
-    ...(departmentsData?.data?.map((name: string) => ({
-      value: name,
-      label: name,
-    })) ?? []),
+    ...buildDepartmentOptions(departmentsData?.data),
   ];
 
   return (
