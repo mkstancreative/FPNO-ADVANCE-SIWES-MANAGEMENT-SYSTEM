@@ -16,7 +16,13 @@ interface FilterState {
   limit: number;
 }
 
-export default function AvailableCompanies() {
+interface AvailableCompaniesProps {
+  source?: "public" | "student";
+}
+
+export default function AvailableCompanies({
+  source = "public",
+}: AvailableCompaniesProps) {
   const [filter, setFilter] = useState<FilterState>({
     search: "",
     state: "",
@@ -104,7 +110,7 @@ export default function AvailableCompanies() {
         {/* ── Table ── */}
         <div className="table-wrapper">
           <VerifiedCompaniesTable
-            source="student"
+            source={source}
             search={filter.search}
             state={filter.state}
             city={filter.city}

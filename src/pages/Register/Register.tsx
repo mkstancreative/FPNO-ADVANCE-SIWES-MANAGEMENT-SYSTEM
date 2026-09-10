@@ -5,6 +5,7 @@ import "./Register.css";
 import { useRegisterStudent } from "../../hooks/useAuth";
 import { useSystemSettings } from "../../hooks/useSettings";
 import { resolveLogo, resolveName } from "../../utils/branding";
+import { DEPARTMENTS_BY_SCHOOL } from "../../config/departments";
 
 const Register = () => {
   const { mutate: register, isPending } = useRegisterStudent();
@@ -175,16 +176,25 @@ const Register = () => {
                   Department
                 </label>
                 <div className="form-input-wrap">
-                  <input
+                  <select
                     id="departmentName"
                     name="departmentName"
-                    type="text"
-                    className="form-input"
-                    placeholder="Electrical Engineering"
+                    className="form-input form-select"
                     value={formData.departmentName}
                     onChange={handleChange}
                     required
-                  />
+                  >
+                    <option value="">Select your department</option>
+                    {DEPARTMENTS_BY_SCHOOL.map(({ school, departments }) => (
+                      <optgroup key={school.code} label={school.name}>
+                        {departments.map((d) => (
+                          <option key={d.name} value={d.name}>
+                            {d.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
                 </div>
               </div>
 

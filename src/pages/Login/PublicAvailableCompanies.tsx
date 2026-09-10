@@ -117,7 +117,7 @@ export default function PublicAvailableCompanies() {
             margin: "0 auto",
           }}
         >
-          <AvailableCompanies />
+          <AvailableCompanies source="public" />
         </div>
       </div>
     </div>

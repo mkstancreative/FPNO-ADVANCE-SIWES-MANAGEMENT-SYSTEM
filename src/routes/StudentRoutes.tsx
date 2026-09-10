@@ -39,7 +39,7 @@ export default function StudentRoutes() {
         <Route path="placement" element={<Placement />} />
         <Route path="profile" element={<MyProfile />} />
         <Route path="report" element={<Report />} />
-        <Route path="companies" element={<AvailableCompanies />} />
+        <Route path="companies" element={<AvailableCompanies source="student" />} />
         <Route path="internships" element={<InternshipHistory />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="change-password" element={<ChangePassword />} />
