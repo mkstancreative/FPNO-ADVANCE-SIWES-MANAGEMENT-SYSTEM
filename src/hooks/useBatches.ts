@@ -135,6 +135,20 @@ export const useAutoAssignSupervisors = () => {
 };
 
 /**
+ * Departments exactly as /admin/all-departments reports them — only those
+ * actually attached to records. Use this where the list should reflect the
+ * data on screen (student list filters) rather than the whole institution.
+ *
+ * Shares the "departments" query with useDepartments, so both read one request.
+ */
+export const useRecordedDepartments = () => {
+  return useQuery({
+    queryKey: ["departments"],
+    queryFn: getDepartments,
+  });
+};
+
+/**
  * Departments for admin pickers and filters.
  *
  * The institution catalogue (src/config/departments.ts, extracted from the

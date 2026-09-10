@@ -5,7 +5,13 @@ import "./Register.css";
 import { useRegisterStudent } from "../../hooks/useAuth";
 import { useSystemSettings } from "../../hooks/useSettings";
 import { resolveLogo, resolveName } from "../../utils/branding";
-import { DEPARTMENTS_BY_SCHOOL } from "../../config/departments";
+import { departmentOptions } from "../../config/departments";
+import SelectFilter from "../../components/ui/SelectFilter/SelectFilter";
+
+const DEPARTMENT_OPTIONS = [
+  { value: "", label: "Select your department" },
+  ...departmentOptions(),
+];
 
 const Register = () => {
   const { mutate: register, isPending } = useRegisterStudent();
@@ -25,16 +31,23 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (error) setError("");
   };
 
+  const handleDepartmentChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, departmentName: value }));
+    if (error) setError("");
+  };
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!formData.departmentName) {
+      setError("Please select your department");
+      return;
+    }
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -171,31 +184,14 @@ const Register = () => {
                 </div>
               </div>
 
-              <div className="register-form-group">
-                <label className="form-label" htmlFor="departmentName">
-                  Department
-                </label>
-                <div className="form-input-wrap">
-                  <select
-                    id="departmentName"
-                    name="departmentName"
-                    className="form-input form-select"
-                    value={formData.departmentName}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">Select your department</option>
-                    {DEPARTMENTS_BY_SCHOOL.map(({ school, departments }) => (
-                      <optgroup key={school.code} label={school.name}>
-                        {departments.map((d) => (
-                          <option key={d.name} value={d.name}>
-                            {d.name}
-                          </option>
-                        ))}
-                      </optgroup>
-                    ))}
-                  </select>
-                </div>
+              <div className="register-form-group register-select-group">
+                <SelectFilter
+                  label="Department"
+                  name="departmentName"
+                  options={DEPARTMENT_OPTIONS}
+                  value={formData.departmentName}
+                  onChange={handleDepartmentChange}
+                />
               </div>
 
               <div className="register-form-group">

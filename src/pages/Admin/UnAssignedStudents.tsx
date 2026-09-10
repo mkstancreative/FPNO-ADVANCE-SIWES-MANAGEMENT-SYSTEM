@@ -10,8 +10,7 @@ import type { Student, ITStatus } from "../../api/types/student";
 import type { TableMeta } from "../../components/ui/GeneralTable/GeneralTable";
 import { useNavigate } from "react-router-dom";
 import { useUnassignedStudents } from "../../hooks/useStudents";
-import { useBatches, useDepartments } from "../../hooks/useBatches";
-import { departmentOptions } from "../../config/departments";
+import { useBatches, useRecordedDepartments } from "../../hooks/useBatches";
 import SelectFilter from "../../components/ui/SelectFilter/SelectFilter";
 
 interface FilterStates {
@@ -45,7 +44,8 @@ export default function UnAssignedStudents() {
   };
 
   const { data: batches } = useBatches();
-  const { data: departments } = useDepartments();
+  // Only the departments the API reports for unassigned students.
+  const { data: departments } = useRecordedDepartments();
 
   // ── Data ──────────────────────────────────────────────────────────────────
   const { data, isLoading } = useUnassignedStudents(filters);
@@ -145,7 +145,7 @@ export default function UnAssignedStudents() {
           label="Department"
           options={[
             { value: "", label: "All Departments" },
-            ...departmentOptions(departments?.data),
+            ...(departments?.data.map((d) => ({ value: d, label: d })) ?? []),
           ]}
           value={filters.department}
           onChange={(value) => setField("department", value)}
