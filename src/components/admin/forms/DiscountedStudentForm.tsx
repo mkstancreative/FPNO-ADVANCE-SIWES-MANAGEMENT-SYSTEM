@@ -10,6 +10,9 @@ import {
 import CustomModal from "../../ui/CustomModal/CustomModal";
 import Spinner from "../../ui/Spinner/Spinner";
 import { useUploadDiscountedStudents } from "../../../hooks/useStudents";
+import { useRepriceCertificates } from "../../../hooks/useCertificate";
+import RepriceReportSummary from "../certificates/RepriceReportSummary";
+import type { RepriceReport } from "../../../api/types/certificate";
 import * as XLSX from "xlsx";
 
 interface DiscountedStudentFormProps {
@@ -42,7 +45,7 @@ interface DiscountUploadResponse {
       duplicateOf?: string;
     }[];
     discountAmount: number;
-  };
+  } & Partial<RepriceReport>;
 }
 
 export default function DiscountedStudentForm({
@@ -55,6 +58,26 @@ export default function DiscountedStudentForm({
 
   const { mutate: upload, isPending } = useUploadDiscountedStudents();
   const [result, setResult] = useState<DiscountUploadResponse | null>(null);
+
+  // `repriceFailed` rows are safe to retry — Remita simply refused once.
+  const { mutate: reprice } = useRepriceCertificates();
+  const [retryingFor, setRetryingFor] = useState<string | null>(null);
+
+  const retryReprice = (registrationNumber: string) => {
+    setRetryingFor(registrationNumber);
+    reprice(
+      { registrationNumber },
+      {
+        onSuccess: (res) =>
+          setResult((prev) =>
+            prev
+              ? { ...prev, data: { ...prev.data, ...res.data } }
+              : prev,
+          ),
+        onSettled: () => setRetryingFor(null),
+      },
+    );
+  };
 
   const handleFile = (f: File) => {
     const allowed = [
@@ -346,6 +369,27 @@ export default function DiscountedStudentForm({
                 {result.data.skippedByReason?.["no-registration-number"] || 0}
               </span>
             </div>
+          </div>
+
+          {/* Invoice re-pricing — the upload corrects outstanding invoices
+              for anyone whose fee just changed. */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                color: "var(--color-text-secondary)",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+              }}
+            >
+              Invoice Re-pricing
+            </span>
+            <RepriceReportSummary
+              report={result.data}
+              onRetry={retryReprice}
+              retryingFor={retryingFor}
+            />
           </div>
 
           {/* Skipped preview */}

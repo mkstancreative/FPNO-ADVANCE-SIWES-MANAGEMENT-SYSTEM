@@ -1,3 +1,4 @@
+import { Trash2 } from "lucide-react";
 import GeneralTable from "../../ui/GeneralTable/GeneralTable";
 import type { Column, TableMeta } from "../../ui/GeneralTable/GeneralTable";
 
@@ -19,6 +20,11 @@ interface DiscountedStudentsTableProps {
   loading: boolean;
   onPageChange: (page: number) => void;
   onLimitChange: (limit: number) => void;
+  /**
+   * Removing a discount re-prices the student's outstanding invoice **upward**
+   * to the full fee, so the page that passes this must confirm first.
+   */
+  onRemove?: (student: DiscountedStudent) => void;
 }
 
 export default function DiscountedStudentsTable({
@@ -27,6 +33,7 @@ export default function DiscountedStudentsTable({
   loading,
   onPageChange,
   onLimitChange,
+  onRemove,
 }: DiscountedStudentsTableProps) {
   const columns: Column<DiscountedStudent>[] = [
     {
@@ -82,16 +89,56 @@ export default function DiscountedStudentsTable({
         </span>
       ),
     },
+    ...(onRemove
+      ? [
+          {
+            header: "",
+            render: (row: DiscountedStudent) => (
+              <button
+                type="button"
+                className="ds-remove"
+                onClick={() => onRemove(row)}
+                title="Remove this discount — re-prices their invoice upward"
+              >
+                <Trash2 size={12} /> Remove
+              </button>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
-    <GeneralTable<DiscountedStudent>
-      columns={columns}
-      data={data}
-      loading={loading}
-      meta={meta}
-      onPageChange={onPageChange}
-      onLimitChange={onLimitChange}
-    />
+    <>
+      <GeneralTable<DiscountedStudent>
+        columns={columns}
+        data={data}
+        loading={loading}
+        meta={meta}
+        onPageChange={onPageChange}
+        onLimitChange={onLimitChange}
+      />
+      <style>{`
+        .ds-remove {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 5px 10px;
+          font-size: 12px;
+          font-weight: 600;
+          white-space: nowrap;
+          border-radius: 6px;
+          cursor: pointer;
+          color: #dc2626;
+          background: transparent;
+          border: 1px solid rgba(220, 38, 38, 0.4);
+        }
+        .ds-remove:hover {
+          background: #dc2626;
+          color: #fff;
+          border-color: #dc2626;
+        }
+      `}</style>
+    </>
   );
 }

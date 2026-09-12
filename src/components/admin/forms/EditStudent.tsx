@@ -12,11 +12,23 @@ import {
   OTHER_DEPARTMENTS_GROUP,
   findDepartment,
 } from "../../../config/departments";
+import {
+  getApiErrorMessage,
+  getApiErrorStatus,
+} from "../../../api/services/api";
 import type {
   Student,
   StudentDetail,
   UpdateStudentRecordPayload,
+  UpdateStudentRecordResponse,
 } from "../../../api/types/student";
+
+/**
+ * The PUT payload is partial (send only what changed), but the form needs a
+ * value for every control. This is the complete shape the inputs bind to; the
+ * patch is derived from it at submit time.
+ */
+type StudentRecordForm = Required<UpdateStudentRecordPayload>;
 
 interface EditStudentProps {
   isOpen: boolean;
@@ -31,8 +43,8 @@ const LEVELS_BY_TYPE: Record<string, string[]> = {
   HND: ["HND1", "HND2"],
 };
 
-/** Flatten a student record into the shape the PUT endpoint expects. */
-function toPayload(student: StudentDetail): UpdateStudentRecordPayload {
+/** Flatten a student record into the form's complete shape. */
+function toForm(student: StudentDetail): StudentRecordForm {
   const { guarantor } = student;
   return {
     firstName: student.user?.firstName ?? "",
@@ -108,14 +120,16 @@ function EditStudentForm({
   const { data: departmentsData } = useDepartments();
   const { mutate: updateStudent, isPending } = useUpdateStudentRecord();
 
-  const [initial] = useState<UpdateStudentRecordPayload>(() =>
-    toPayload(student),
+  const [initial] = useState<StudentRecordForm>(() => toForm(student));
+  const [form, setForm] = useState<StudentRecordForm>(initial);
+  const [conflict, setConflict] = useState("");
+  const [result, setResult] = useState<UpdateStudentRecordResponse | null>(
+    null,
   );
-  const [form, setForm] = useState<UpdateStudentRecordPayload>(initial);
 
-  const setField = <K extends keyof UpdateStudentRecordPayload>(
+  const setField = <K extends keyof StudentRecordForm>(
     field: K,
-    value: UpdateStudentRecordPayload[K],
+    value: StudentRecordForm[K],
   ) => setForm((prev) => ({ ...prev, [field]: value }));
 
   const setDepartmentName = (name: string) =>
@@ -142,7 +156,7 @@ function EditStudentForm({
     });
 
   const setGuarantor = (
-    key: keyof UpdateStudentRecordPayload["guarantor"],
+    key: keyof StudentRecordForm["guarantor"],
     value: string,
   ) =>
     setForm((prev) => ({
@@ -193,13 +207,70 @@ function EditStudentForm({
       ? [form.program.level, ...knownLevels]
       : knownLevels;
 
-  const isDirty = JSON.stringify(form) !== JSON.stringify(initial);
+  /**
+   * The endpoint is a partial update, so send only what actually moved —
+   * that keeps the backend's `changes` diff honest and avoids tripping the
+   * uniqueness check on an email or registration number the admin never
+   * touched.
+   */
+  const patch = useMemo<UpdateStudentRecordPayload>(() => {
+    const next: UpdateStudentRecordPayload = {};
+    const scalars = [
+      "firstName",
+      "lastName",
+      "email",
+      "phone",
+      "registrationNumber",
+    ] as const;
+    scalars.forEach((key) => {
+      if (form[key] !== initial[key]) next[key] = form[key];
+    });
+    const objects = ["department", "program", "guarantor"] as const;
+    objects.forEach((key) => {
+      if (JSON.stringify(form[key]) !== JSON.stringify(initial[key])) {
+        // Nested groups go whole — the backend merges them field by field.
+        next[key] = form[key] as never;
+      }
+    });
+    return next;
+  }, [form, initial]);
+
+  const isDirty = Object.keys(patch).length > 0;
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!isDirty) return;
-    updateStudent({ id: student._id, payload: form }, { onSuccess: onClose });
+    setConflict("");
+    updateStudent(
+      { id: student._id, payload: patch },
+      {
+        onSuccess: (data) => setResult(data),
+        onError: (error) => {
+          // 409 means the email or registration number belongs to someone
+          // else. Keep the admin in the form so they can correct it.
+          if (getApiErrorStatus(error) === 409) {
+            setConflict(
+              getApiErrorMessage(
+                error,
+                "That email or registration number already belongs to another account.",
+              ),
+            );
+          }
+        },
+      },
+    );
   };
+
+  if (result) {
+    return (
+      <UpdateResult
+        isOpen={isOpen}
+        onClose={onClose}
+        result={result}
+        name={[form.firstName, form.lastName].filter(Boolean).join(" ")}
+      />
+    );
+  }
 
   const footer = (
     <>
@@ -245,6 +316,22 @@ function EditStudentForm({
         onSubmit={handleSubmit}
         style={{ display: "flex", flexDirection: "column", gap: 20 }}
       >
+        {conflict && (
+          <div
+            style={{
+              padding: "10px 14px",
+              borderRadius: 8,
+              fontSize: 13,
+              lineHeight: 1.5,
+              color: "#b91c1c",
+              background: "rgba(239,68,68,0.08)",
+              border: "1px solid rgba(239,68,68,0.25)",
+              borderLeft: "4px solid #ef4444",
+            }}
+          >
+            {conflict}
+          </div>
+        )}
         {/* ── Personal ── */}
         <FieldSet label="Personal Details">
           <div className="form-grid">
@@ -464,5 +551,128 @@ function FieldSet({
       </div>
       {children}
     </div>
+  );
+}
+
+/**
+ * What the backend actually changed. Worth showing rather than closing
+ * silently: a department edit re-assigns the school supervisor as a side
+ * effect, and the admin should see that happen.
+ */
+function UpdateResult({
+  isOpen,
+  onClose,
+  result,
+  name,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  result: UpdateStudentRecordResponse;
+  name: string;
+}) {
+  const changes = result.data?.changes ?? [];
+  const reassignment = result.data?.supervisorReassignment;
+
+  const render = (value: unknown) => {
+    if (value === null || value === undefined || value === "") return "—";
+    if (typeof value === "object") return JSON.stringify(value);
+    return String(value);
+  };
+
+  return (
+    <CustomModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Record Updated"
+      subtitle={name || "Student record saved"}
+      icon={<UserRoundPen size={16} />}
+      size="medium"
+      footer={
+        <button className="modal-submit" type="button" onClick={onClose}>
+          Done
+        </button>
+      }
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <p
+          style={{
+            margin: 0,
+            fontSize: 13,
+            lineHeight: 1.6,
+            color: "var(--color-text-secondary)",
+          }}
+        >
+          {result.message ||
+            (changes.length > 0
+              ? `${changes.length} field${changes.length === 1 ? "" : "s"} updated.`
+              : "No fields needed changing.")}
+        </p>
+
+        {changes.length > 0 && (
+          <div
+            style={{
+              border: "1px solid var(--color-border)",
+              borderRadius: 10,
+              overflow: "hidden",
+            }}
+          >
+            {changes.map((change, i) => (
+              <div
+                key={change.field}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "minmax(110px, 1fr) 2fr",
+                  gap: 10,
+                  padding: "10px 14px",
+                  fontSize: 12.5,
+                  borderTop: i === 0 ? "none" : "1px solid var(--color-border)",
+                }}
+              >
+                <span
+                  style={{
+                    fontWeight: 600,
+                    color: "var(--color-text-secondary)",
+                  }}
+                >
+                  {change.field}
+                </span>
+                <span style={{ color: "var(--color-text-primary)" }}>
+                  <span
+                    style={{
+                      textDecoration: "line-through",
+                      color: "var(--color-text-muted)",
+                    }}
+                  >
+                    {render(change.from)}
+                  </span>{" "}
+                  → <strong>{render(change.to)}</strong>
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {reassignment && (
+          <div
+            style={{
+              padding: "12px 14px",
+              borderRadius: 10,
+              fontSize: 12.5,
+              lineHeight: 1.6,
+              color: "var(--color-text-primary)",
+              background: "rgba(59,130,246,0.08)",
+              border: "1px solid rgba(59,130,246,0.25)",
+              borderLeft: "4px solid #3b82f6",
+            }}
+          >
+            <strong style={{ display: "block", marginBottom: 2 }}>
+              School supervisor re-assigned
+            </strong>
+            {reassignment.message ||
+              `${render(reassignment.from)} → ${render(reassignment.to)}`}
+          </div>
+        )}
+      </div>
+    </CustomModal>
   );
 }

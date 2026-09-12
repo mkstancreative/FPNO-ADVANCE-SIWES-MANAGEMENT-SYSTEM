@@ -15,6 +15,12 @@ import {
   regenerateRRR,
   getMyCertificate,
   certificateQRCode,
+  getMispricedInvoices,
+  repriceCertificates,
+  getCertificateDiscrepancies,
+  resolveCertificateDiscrepancy,
+  addCertificateDiscount,
+  removeCertificateDiscount,
 } from "../api/services/certificate";
 import {
   getApiErrorData,
@@ -24,6 +30,8 @@ import {
 import { toast } from "react-toastify";
 import type {
   AdminCertificateParams,
+  AddCertificateDiscountPayload,
+  RepricePayload,
   RRRData,
 } from "../api/types/certificate";
 
@@ -44,6 +52,23 @@ export const getUnpaidRRRFromError = (error: unknown): string | undefined => {
 export const isPaymentNotStarted = (error: unknown): boolean =>
   getApiErrorStatus(error) === 404;
 
+/**
+ * A 400 from `verify-payment` means one of two very different things:
+ *
+ *   - the payment genuinely did not go through ("Payment not successful"), or
+ *   - the money **was** received and recorded, but against a superseded
+ *     cheaper invoice, so a balance remains.
+ *
+ * The second is not a failure the student caused, and rendering it as
+ * "payment failed" would tell them their money vanished. The backend's own
+ * message explains the balance, so surface that verbatim.
+ */
+export const isOutstandingBalance = (error: unknown): boolean => {
+  if (getApiErrorStatus(error) !== 400) return false;
+  const message = getApiErrorData<{ message?: string }>(error)?.message ?? "";
+  return /balance|owed|received/i.test(message);
+};
+
 /** True when the request failed because a fee is still outstanding (402). */
 export const isPaymentRequired = (error: unknown): boolean =>
   getApiErrorStatus(error) === 402;
@@ -63,11 +88,20 @@ export const useCertificateFee = (options?: { enabled?: boolean }) => {
   });
 };
 
-export const useCertificateStatus = (options?: { enabled?: boolean }) => {
+export const useCertificateStatus = (options?: {
+  enabled?: boolean;
+  /**
+   * Pass "always" from the payment screen. An invoice can be re-priced
+   * server-side between visits, so whatever is in the cache may name an RRR
+   * and an amount that have both been superseded.
+   */
+  refetchOnMount?: boolean | "always";
+}) => {
   return useQuery({
     queryKey: CERT_STATUS_KEY,
     queryFn: getCertificateStatus,
     enabled: options?.enabled ?? true,
+    refetchOnMount: options?.refetchOnMount,
     // A student with no request yet gets a 404 here; that is a normal state,
     // not a transient failure, so do not burn retries on it.
     retry: false,
@@ -289,5 +323,98 @@ export const useVerifyCertificateQRCode = (certNumber: string | null) => {
     queryFn: () => certificateQRCode(certNumber!),
     enabled: !!certNumber,
     retry: false,
+  });
+};
+
+// ─── Re-pricing ───────────────────────────────────────────────────────────────
+
+export const MISPRICED_KEY = ["mispriced-invoices"];
+export const DISCREPANCIES_KEY = ["certificate-discrepancies"];
+
+/**
+ * Everything a re-price touches, in one place. A correction changes the
+ * mispriced backlog, can create a discrepancy, moves invoice amounts on the
+ * requests table, and may change a student's discount row.
+ */
+const invalidateRepriceSurfaces = (queryClient: {
+  invalidateQueries: (filters: { queryKey: unknown[] }) => void;
+}) => {
+  queryClient.invalidateQueries({ queryKey: MISPRICED_KEY });
+  queryClient.invalidateQueries({ queryKey: DISCREPANCIES_KEY });
+  queryClient.invalidateQueries({ queryKey: ["all-cert-requests"] });
+  queryClient.invalidateQueries({ queryKey: ["discounted-students"] });
+  queryClient.invalidateQueries({ queryKey: ["cert-financial-stats"] });
+};
+
+/** Dry run — changes nothing, so it is safe to poll and safe to refetch. */
+export const useMispricedInvoices = (params?: { includePaid?: boolean }) => {
+  return useQuery({
+    queryKey: [...MISPRICED_KEY, params ?? {}],
+    queryFn: () => getMispricedInvoices(params),
+  });
+};
+
+export const useRepriceCertificates = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: RepricePayload) => repriceCertificates(payload),
+    onSuccess: () => invalidateRepriceSurfaces(queryClient),
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, "Could not re-price."));
+    },
+  });
+};
+
+export const useCertificateDiscrepancies = (params?: {
+  includeResolved?: boolean;
+}) => {
+  return useQuery({
+    queryKey: [...DISCREPANCIES_KEY, params ?? {}],
+    queryFn: () => getCertificateDiscrepancies(params),
+  });
+};
+
+export const useResolveDiscrepancy = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      certificateId,
+      note,
+    }: {
+      certificateId: string;
+      note: string;
+    }) => resolveCertificateDiscrepancy(certificateId, { note }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: DISCREPANCIES_KEY });
+      toast.success("Discrepancy marked as settled.");
+    },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, "Could not resolve discrepancy."));
+    },
+  });
+};
+
+export const useAddCertificateDiscount = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: AddCertificateDiscountPayload) =>
+      addCertificateDiscount(payload),
+    onSuccess: () => invalidateRepriceSurfaces(queryClient),
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, "Could not add the discount."));
+    },
+  });
+};
+
+/** ⚠ Re-prices the student's outstanding invoice upward. Confirm first. */
+export const useRemoveCertificateDiscount = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (registrationNumber: string) =>
+      removeCertificateDiscount(registrationNumber),
+    onSuccess: () => invalidateRepriceSurfaces(queryClient),
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, "Could not remove the discount."));
+    },
   });
 };

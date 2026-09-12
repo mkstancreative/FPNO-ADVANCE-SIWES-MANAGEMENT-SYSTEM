@@ -57,6 +57,12 @@ export const updateStudentStatus = async (
   return response.data;
 };
 
+/**
+ * Admin correction of a student record. **Partial** — pass only the fields
+ * that changed. Responds 409 when an email or registration number collides
+ * with another account, and reports any automatic school-supervisor
+ * re-assignment (departments are owned by supervisors) in the body.
+ */
 export const updateStudentRecord = async (
   studentId: string,
   payload: UpdateStudentRecordPayload,

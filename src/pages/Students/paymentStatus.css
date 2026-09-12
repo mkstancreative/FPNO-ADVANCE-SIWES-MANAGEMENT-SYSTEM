@@ -50,6 +50,36 @@
   color: var(--color-error, #ef4444);
 }
 
+/* Money received, but short of a re-priced fee — neither success nor failure. */
+.warning .status-icon-wrapper {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+}
+
+/* Explanatory note under the headline: a refund due, or a balance owed. */
+.ps-note {
+  margin: 4px 0 18px;
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.55;
+  border-radius: 10px;
+  color: var(--color-text-secondary);
+  background: rgba(var(--color-error-rgb, 239, 68, 68), 0.06);
+  border: 1px solid rgba(var(--color-error-rgb, 239, 68, 68), 0.2);
+  border-left: 4px solid var(--color-error, #ef4444);
+}
+
+.ps-note--warn {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-left: 4px solid #d97706;
+}
+
+.ps-note strong {
+  color: var(--color-text-primary);
+}
+
 .payment-status-card h1 {
   font-size: 28px;
   font-weight: 800;

@@ -1,8 +1,16 @@
 import { api, publicApi } from "./api";
 import type {
   AdminCertificateParams,
+  AddCertificateDiscountPayload,
+  AddCertificateDiscountResponse,
+  CertificateDiscrepanciesResponse,
   CertificateFeeResponse,
   CertificateStatusResponse,
+  CertificateVerifyPaymentResponse,
+  MispricedInvoicesResponse,
+  RepricePayload,
+  RepriceReportResponse,
+  ResolveDiscrepancyResponse,
   RRRData,
 } from "../types/certificate";
 
@@ -32,7 +40,7 @@ export const initiateCertificatePayment =
 export const verifyCertificatePayment = async (params: {
   orderId: string;
   rrr?: string;
-}) => {
+}): Promise<CertificateVerifyPaymentResponse> => {
   const value = params.rrr || params.orderId;
   const key = params.rrr ? "rrr" : "orderId";
 
@@ -161,6 +169,86 @@ export const financialStats = async () => {
 export const certificateQRCode = async (id: string) => {
   const response = await publicApi.get(
     `/certificates/verify?certificateNumber=${encodeURIComponent(id)}`,
+  );
+  return response.data;
+};
+
+// ─── Admin: re-pricing ────────────────────────────────────────────────────────
+
+/**
+ * Dry run. Lists every invoice priced differently from what the student owes
+ * and changes nothing — run it before an upload, or to inspect the backlog.
+ *
+ * `includePaid` also returns already-paid records priced differently, i.e. the
+ * refund queue.
+ */
+export const getMispricedInvoices = async (params?: {
+  includePaid?: boolean;
+}): Promise<MispricedInvoicesResponse> => {
+  const response = await api.get("/admin/certificate-discounts/mismatched", {
+    params,
+  });
+  return response.data;
+};
+
+/**
+ * Apply the correction — for one student, or for everything the dry run found.
+ * `all: true` is deliberately explicit; never send it as a default.
+ */
+export const repriceCertificates = async (
+  payload: RepricePayload,
+): Promise<RepriceReportResponse> => {
+  const response = await api.post(
+    "/admin/certificate-discounts/reprice",
+    payload,
+  );
+  return response.data;
+};
+
+/** Students who paid an amount other than what they owed. A call list. */
+export const getCertificateDiscrepancies = async (params?: {
+  includeResolved?: boolean;
+}): Promise<CertificateDiscrepanciesResponse> => {
+  const response = await api.get("/admin/certificates/discrepancies", {
+    params,
+  });
+  return response.data;
+};
+
+/** Settle one discrepancy once the refund is paid or the balance collected. */
+export const resolveCertificateDiscrepancy = async (
+  certificateId: string,
+  payload: { note: string },
+): Promise<ResolveDiscrepancyResponse> => {
+  const response = await api.put(
+    `/admin/certificates/${certificateId}/discrepancy/resolve`,
+    payload,
+  );
+  return response.data;
+};
+
+// ─── Admin: discount eligibility ──────────────────────────────────────────────
+
+/** Add one student to the pre-paid list. Re-prices their invoice downward. */
+export const addCertificateDiscount = async (
+  payload: AddCertificateDiscountPayload,
+): Promise<AddCertificateDiscountResponse> => {
+  const response = await api.post("/admin/certificate-discounts", payload);
+  return response.data;
+};
+
+/**
+ * Remove one student from the pre-paid list.
+ *
+ * ⚠ This has side effects: it re-prices their outstanding invoice **upward**
+ * to the full fee and replaces a reference they may already be holding. Always
+ * confirm with the admin first.
+ */
+export const removeCertificateDiscount = async (
+  registrationNumber: string,
+): Promise<RepriceReportResponse> => {
+  const response = await api.delete(
+    `/admin/certificate-discounts/${encodeURIComponent(registrationNumber)}`,
   );
   return response.data;
 };

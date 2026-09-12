@@ -119,22 +119,49 @@ export interface StudentDetailResponse {
   data: StudentDetail;
 }
 
-// ── Record Update (PUT /students/:studentId) ─────────────────────────────────
+// ── Record Update (PUT /admin/students/:studentId) ───────────────────────────
+
+/**
+ * Admin correction of a student record. **Partial** — send only the fields
+ * that actually changed; anything omitted is left alone.
+ */
 export interface UpdateStudentRecordPayload {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  registrationNumber: string;
-  department: StudentDepartment;
-  program: StudentProgram;
-  guarantor: Guarantor;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  registrationNumber?: string;
+  department?: StudentDepartment;
+  program?: StudentProgram;
+  guarantor?: Guarantor;
+}
+
+/** One field the backend actually changed, as it reports it back. */
+export interface StudentRecordChange {
+  field: string;
+  from: unknown;
+  to: unknown;
+}
+
+/**
+ * Changing a student's department re-assigns their school supervisor, because
+ * supervisors own whole departments. The backend does it automatically and
+ * reports the outcome here so the admin is not left guessing.
+ */
+export interface SupervisorReassignment {
+  from?: string | null;
+  to?: string | null;
+  message?: string;
+  [key: string]: unknown;
 }
 
 export interface UpdateStudentRecordResponse {
   success: boolean;
   message: string;
-  data: StudentDetail;
+  data: StudentDetail & {
+    changes?: StudentRecordChange[];
+    supervisorReassignment?: SupervisorReassignment;
+  };
 }
 
 // ── Report Params ────────────────────────────────────────────────────────────

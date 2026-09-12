@@ -1,5 +1,5 @@
 import React from "react";
-import { CreditCard, Copy, RefreshCcw } from "lucide-react";
+import { CreditCard, Copy, RefreshCcw, AlertTriangle } from "lucide-react";
 import {
   useRegenerateRRR,
   useCertificateStatus,
@@ -72,6 +72,9 @@ export const PaymentVerificationModal: React.FC<
   // internship modal never fires a certificate-status request and vice versa.
   const { data: certResponse } = useCertificateStatus({
     enabled: isOpen && !isInternship,
+    // A certificate invoice can be re-priced server-side between visits, so
+    // never open this screen on a cached RRR without checking.
+    refetchOnMount: "always",
   });
   const { data: internshipResponse } = useInternshipPaymentStatus(scope, {
     enabled: isOpen && isInternship,
@@ -83,12 +86,35 @@ export const PaymentVerificationModal: React.FC<
     ? internshipResponse?.data
     : certResponse?.data;
 
+  /**
+   * A re-price the student has not been told about yet. Seeded from the
+   * response that opened this screen, and replaced if a regenerate re-prices
+   * again while they are looking at it.
+   *
+   * This matters because a Remita RRR cannot be cancelled: the superseded
+   * reference stays payable at any bank. Swapping the number silently is how
+   * students end up paying the old invoice and needing a manual refund.
+   */
+  const [regenerated, setRegenerated] = React.useState<RRRData | null>(null);
+
+  const repriceNotice = React.useMemo(() => {
+    const source =
+      regenerated?.repriced === true
+        ? regenerated
+        : initialData.repriced === true
+          ? initialData
+          : null;
+    if (!source || source.previousAmount == null) return null;
+    return { from: source.previousAmount, to: source.amount };
+  }, [regenerated, initialData]);
+
   const data = React.useMemo<RRRData>(
     () =>
       latestData
         ? {
-            rrr: latestData.rrr || initialData.rrr,
-            amount: latestData.amount ?? initialData.amount,
+            rrr: regenerated?.rrr || latestData.rrr || initialData.rrr,
+            amount:
+              regenerated?.amount ?? latestData.amount ?? initialData.amount,
             orderId: latestData.orderId || initialData.orderId,
             merchantId: latestData.merchantId || initialData.merchantId,
             certificateId:
@@ -98,8 +124,8 @@ export const PaymentVerificationModal: React.FC<
               (latestData as { internshipId?: string }).internshipId ||
               initialData.internshipId,
           }
-        : initialData,
-    [latestData, initialData],
+        : { ...initialData, ...(regenerated ?? {}) },
+    [latestData, initialData, regenerated],
   );
 
   const [isPayLoading, setIsPayLoading] = React.useState(false);
@@ -127,10 +153,18 @@ export const PaymentVerificationModal: React.FC<
 
     regenerate(data.rrr, {
       onSuccess: (res) => {
-        if (res.success) {
-          toast.success("RRR regenerated successfully!");
-        } else {
+        if (!res.success) {
           toast.error(res.message || "Failed to regenerate RRR");
+          return;
+        }
+        const next = res.data as RRRData | undefined;
+        if (next) setRegenerated(next);
+        // A re-price comes back through this same call; surface the backend's
+        // own wording rather than the generic "regenerated" line.
+        if (next?.repriced) {
+          toast.info(res.message || "Your certificate fee changed.");
+        } else {
+          toast.success("RRR regenerated successfully!");
         }
       },
       onError: () => {
@@ -201,7 +235,8 @@ export const PaymentVerificationModal: React.FC<
   }, [data, onClose, buildReturnUrl]);
 
   const heading =
-    title ?? (isInternship ? "Internship Fee Payment" : "Certificate Fee Payment");
+    title ??
+    (isInternship ? "Internship Fee Payment" : "Certificate Fee Payment");
   const subheading =
     subtitle ??
     (isInternship
@@ -254,6 +289,28 @@ export const PaymentVerificationModal: React.FC<
         </>
       }
     >
+      {repriceNotice && (
+        <div className="pvm-reprice" role="alert">
+          <AlertTriangle size={18} className="pvm-reprice-icon" />
+          <div>
+            <strong>
+              Your certificate fee{" "}
+              {repriceNotice.to < repriceNotice.from
+                ? "has been reduced"
+                : "has changed"}
+            </strong>
+            <p>
+              It is now <strong>₦{repriceNotice.to.toLocaleString()}</strong>{" "}
+              (was ₦{repriceNotice.from.toLocaleString()}). A new payment
+              reference has been issued below —{" "}
+              <strong>discard any previous invoice</strong>. The old reference
+              still works at the bank, and paying it means waiting on a manual
+              refund.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="payment-display">
         <div className="rrr-box">
           <label>Remita Retrieval Reference (RRR)</label>
@@ -314,7 +371,9 @@ export const PaymentVerificationModal: React.FC<
         <div className="instruction-step">
           <div className="step-number">3</div>
           <div className="step-content">
-            <h5>{isInternship ? "Submit Your Placement" : "Upload Documents"}</h5>
+            <h5>
+              {isInternship ? "Submit Your Placement" : "Upload Documents"}
+            </h5>
             <p>
               {isInternship
                 ? "Once confirmed, your placement form unlocks automatically."
@@ -331,6 +390,36 @@ export const PaymentVerificationModal: React.FC<
       )}
 
       <style>{`
+        .pvm-reprice {
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+          margin-bottom: 16px;
+          padding: 14px;
+          border-radius: 12px;
+          background: rgba(245, 158, 11, 0.1);
+          border: 1px solid rgba(245, 158, 11, 0.35);
+          border-left: 4px solid #d97706;
+        }
+        .pvm-reprice-icon {
+          flex-shrink: 0;
+          margin-top: 1px;
+          color: #d97706;
+        }
+        .pvm-reprice strong {
+          color: var(--color-text-primary);
+        }
+        .pvm-reprice > div > strong {
+          display: block;
+          font-size: 13.5px;
+          margin-bottom: 3px;
+        }
+        .pvm-reprice p {
+          margin: 0;
+          font-size: 12.5px;
+          line-height: 1.55;
+          color: var(--color-text-secondary);
+        }
         .pvm-verify-link {
           display: block;
           width: 100%;

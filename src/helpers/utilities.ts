@@ -59,3 +59,7 @@ export const ago = (d: string) => {
   if (hrs < 24) return `${hrs}h ago`;
   return `${Math.floor(hrs / 24)}d ago`;
 };
+
+/** Naira amounts, with an em dash for "not applicable" rather than ₦0. */
+export const naira = (amount?: number | null) =>
+  amount == null ? "—" : `₦${amount.toLocaleString()}`;

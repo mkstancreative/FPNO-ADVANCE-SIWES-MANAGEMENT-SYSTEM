@@ -104,8 +104,14 @@ export const useUpdateStudentRecord = () => {
       });
       toast.success("Student record updated.");
     },
-    onError: (err: unknown) =>
-      toast.error(getErrMsg(err, "Failed to update student record.")),
+    onError: (err: unknown) => {
+      // A 409 is a field-level collision (email / registration number). The
+      // form surfaces that inline, so don't also shout it as a toast.
+      const status = (err as { response?: { status?: number } })?.response
+        ?.status;
+      if (status === 409) return;
+      toast.error(getErrMsg(err, "Failed to update student record."));
+    },
   });
 };
 

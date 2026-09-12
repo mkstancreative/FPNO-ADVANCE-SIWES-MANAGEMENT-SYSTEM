@@ -1,10 +1,13 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import { CheckCircle, ArrowRight } from "lucide-react";
-import { useVerifyCertificatePayment } from "../../hooks/useCertificate";
+import { AlertTriangle, ArrowRight, CheckCircle, XCircle } from "lucide-react";
+import {
+  useVerifyCertificatePayment,
+  isOutstandingBalance,
+} from "../../hooks/useCertificate";
 import { useVerifyInternshipPayment } from "../../hooks/useInternshipPayment";
+import { getApiErrorMessage } from "../../api/services/api";
 import Spinner from "../../components/ui/Spinner/Spinner";
-import { toast } from "react-toastify";
 import "./paymentStatus.css";
 
 const PLACEHOLDERS = new Set(["undefined", "null", "Pending", ""]);
@@ -22,6 +25,20 @@ const COPY = {
   },
 } as const;
 
+/**
+ * What the verification actually said.
+ *
+ * "balance" is its own outcome on purpose. A certificate invoice can be
+ * re-priced after its RRR was issued, and the superseded reference stays
+ * payable at any bank — so a student can pay a real, cheaper invoice and come
+ * back here with money received but a balance still owed. That is not a failed
+ * payment and must never be shown as one.
+ */
+type Outcome =
+  | { kind: "ok"; message?: string; overpaid?: number }
+  | { kind: "balance"; message: string }
+  | { kind: "failed"; message: string };
+
 const PaymentSuccess: React.FC = () => {
   const [searchParams] = useSearchParams();
 
@@ -36,6 +53,7 @@ const PaymentSuccess: React.FC = () => {
     useVerifyInternshipPayment();
 
   const isPending = verifyingCertificate || verifyingInternship;
+  const [outcome, setOutcome] = useState<Outcome | null>(null);
   // Remita can bounce the browser back here more than once; verify only once.
   const verified = useRef(false);
 
@@ -50,19 +68,49 @@ const PaymentSuccess: React.FC = () => {
     if (!verifyId || PLACEHOLDERS.has(verifyId)) return;
     verified.current = true;
 
-    const onSuccess = (res: { success: boolean }) => {
-      if (res.success) toast.success("Payment verified successfully!");
-    };
-    const onError = () => {
-      toast.error("Verification failed. Please contact support.");
+    const onError = (error: unknown) => {
+      setOutcome({
+        // The backend explains the shortfall far better than fixed copy can.
+        kind: isOutstandingBalance(error) ? "balance" : "failed",
+        message: getApiErrorMessage(
+          error,
+          "We could not confirm this payment. Please contact the SIWES office.",
+        ),
+      });
     };
 
     if (flow === "internship") {
-      verifyInternship(verifyId, { onSuccess, onError });
+      verifyInternship(verifyId, {
+        onSuccess: (res: { success?: boolean; message?: string }) =>
+          setOutcome(
+            res?.success
+              ? { kind: "ok", message: res.message }
+              : {
+                  kind: "failed",
+                  message: res?.message || "Payment not successful",
+                },
+          ),
+        onError,
+      });
     } else {
       verifyCertificate(
         { orderId: verifyId, rrr: verifyId },
-        { onSuccess, onError },
+        {
+          onSuccess: (res) =>
+            setOutcome(
+              res?.success
+                ? {
+                    kind: "ok",
+                    message: res.message,
+                    overpaid: res.data?.overpaid,
+                  }
+                : {
+                    kind: "failed",
+                    message: res?.message || "Payment not successful",
+                  },
+            ),
+          onError,
+        },
       );
     }
   }, [searchParams, flow, verifyCertificate, verifyInternship]);
@@ -71,6 +119,75 @@ const PaymentSuccess: React.FC = () => {
   const destination =
     flow === "internship" ? "/student/placement" : "/student/dashboard";
 
+  // ── Still checking ─────────────────────────────────────────────────────────
+  if (isPending || !outcome) {
+    return (
+      <div className="payment-status-container">
+        <div className="payment-status-card success">
+          <div className="status-icon-wrapper">
+            <CheckCircle size={48} />
+          </div>
+          <h1>Payment Received</h1>
+          <p>{copy.body}</p>
+          <div className="verifying-status">
+            <Spinner size={24} color="var(--color-accent)" />
+            <span>{copy.pending}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Money in, but short of the current fee ─────────────────────────────────
+  if (outcome.kind === "balance") {
+    return (
+      <div className="payment-status-container">
+        <div className="payment-status-card warning">
+          <div className="status-icon-wrapper">
+            <AlertTriangle size={48} />
+          </div>
+          <h1>Balance Outstanding</h1>
+          <p>{outcome.message}</p>
+          <div className="ps-note ps-note--warn">
+            Your payment has been received and recorded. Your certificate
+            request stays open until the balance is settled — contact the SIWES
+            office rather than paying the same reference again.
+          </div>
+          <div className="status-action-footer">
+            <Link to={destination} className="btn-status-primary">
+              Back to Dashboard <ArrowRight size={18} />
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Genuinely unsuccessful ─────────────────────────────────────────────────
+  if (outcome.kind === "failed") {
+    return (
+      <div className="payment-status-container">
+        <div className="payment-status-card failed">
+          <div className="status-icon-wrapper">
+            <XCircle size={48} />
+          </div>
+          <h1>Payment Not Confirmed</h1>
+          <p>{outcome.message}</p>
+          <div className="ps-note">
+            Bank transfers can take a few minutes to reflect. If you have been
+            debited, contact the SIWES office with your payment reference.
+          </div>
+          <div className="status-action-footer">
+            <Link to={destination} className="btn-status-primary">
+              Back to Dashboard <ArrowRight size={18} />
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Confirmed ──────────────────────────────────────────────────────────────
   return (
     <div className="payment-status-container">
       <div className="payment-status-card success">
@@ -78,20 +195,22 @@ const PaymentSuccess: React.FC = () => {
           <CheckCircle size={48} />
         </div>
         <h1>Payment Successful!</h1>
-        <p>{copy.body}</p>
+        <p>{outcome.message || copy.body}</p>
 
-        {isPending ? (
-          <div className="verifying-status">
-            <Spinner size={24} color="var(--color-accent)" />
-            <span>{copy.pending}</span>
-          </div>
-        ) : (
-          <div className="status-action-footer">
-            <Link to={destination} className="btn-status-primary">
-              {copy.cta} <ArrowRight size={18} />
-            </Link>
+        {outcome.overpaid != null && outcome.overpaid > 0 && (
+          <div className="ps-note ps-note--warn">
+            You paid an invoice that had since been re-priced, so you are due a
+            refund of <strong>₦{outcome.overpaid.toLocaleString()}</strong>.
+            Your request is paid and continues normally — the SIWES office will
+            contact you about the difference.
           </div>
         )}
+
+        <div className="status-action-footer">
+          <Link to={destination} className="btn-status-primary">
+            {copy.cta} <ArrowRight size={18} />
+          </Link>
+        </div>
       </div>
     </div>
   );

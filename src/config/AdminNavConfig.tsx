@@ -7,6 +7,8 @@ import {
   Bell,
   FileText,
   Percent,
+  ReceiptText,
+  Scale,
   Settings2,
   UsersRound,
 } from "lucide-react";
@@ -111,6 +113,16 @@ export const ADMIN_NAV = [
         label: "Discounted Students",
         icon: <Percent size={18} />,
         path: "/admin/discounted-students",
+      },
+      {
+        label: "Mispriced Invoices",
+        icon: <ReceiptText size={18} />,
+        path: "/admin/mispriced-invoices",
+      },
+      {
+        label: "Refunds & Balances",
+        icon: <Scale size={18} />,
+        path: "/admin/refunds-and-balances",
       },
     ],
   },
