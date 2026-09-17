@@ -134,6 +134,12 @@ export interface UpdateStudentRecordPayload {
   department?: StudentDepartment;
   program?: StudentProgram;
   guarantor?: Guarantor;
+  /**
+   * Control flag, not a student field — opt-in, and never reported back in
+   * `changes`. When true the backend issues the student a fresh invoice, so a
+   * request carrying only this flag is a deliberate action, not an empty PUT.
+   */
+  reissueInvoice?: boolean;
 }
 
 /** One field the backend actually changed, as it reports it back. */

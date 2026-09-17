@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { UserRoundPen } from "lucide-react";
 import CustomModal from "../../ui/CustomModal/CustomModal";
 import Spinner from "../../ui/Spinner/Spinner";
+import Toggler from "../../ui/Toggler/Toggler";
 import {
   useStudentById,
   useUpdateStudentRecord,
@@ -26,9 +27,13 @@ import type {
 /**
  * The PUT payload is partial (send only what changed), but the form needs a
  * value for every control. This is the complete shape the inputs bind to; the
- * patch is derived from it at submit time.
+ * patch is derived from it at submit time. `reissueInvoice` is left out on
+ * purpose — it is a control flag, not a record field, so it never takes part
+ * in the diff and is tracked as its own piece of state.
  */
-type StudentRecordForm = Required<UpdateStudentRecordPayload>;
+type StudentRecordForm = Required<
+  Omit<UpdateStudentRecordPayload, "reissueInvoice">
+>;
 
 interface EditStudentProps {
   isOpen: boolean;
@@ -123,6 +128,9 @@ function EditStudentForm({
   const [initial] = useState<StudentRecordForm>(() => toForm(student));
   const [form, setForm] = useState<StudentRecordForm>(initial);
   const [conflict, setConflict] = useState("");
+  // Opt-in and off by default: reissuing bills the student again, so it only
+  // ever happens because the admin deliberately asked for it.
+  const [reissueInvoice, setReissueInvoice] = useState(false);
   const [result, setResult] = useState<UpdateStudentRecordResponse | null>(
     null,
   );
@@ -236,13 +244,21 @@ function EditStudentForm({
   }, [form, initial]);
 
   const isDirty = Object.keys(patch).length > 0;
+  // Reissuing is a real action on its own — the admin may want a fresh
+  // invoice without correcting a single field — so it unlocks submit too.
+  const canSubmit = isDirty || reissueInvoice;
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!isDirty) return;
+    if (!canSubmit) return;
     setConflict("");
     updateStudent(
-      { id: student._id, payload: patch },
+      {
+        id: student._id,
+        // Send the flag only when it is on; an unchecked toggle should look
+        // exactly like a request that never knew about it.
+        payload: reissueInvoice ? { ...patch, reissueInvoice: true } : patch,
+      },
       {
         onSuccess: (data) => setResult(data),
         onError: (error) => {
@@ -267,6 +283,7 @@ function EditStudentForm({
         isOpen={isOpen}
         onClose={onClose}
         result={result}
+        reissued={reissueInvoice}
         name={[form.firstName, form.lastName].filter(Boolean).join(" ")}
       />
     );
@@ -286,10 +303,12 @@ function EditStudentForm({
         className="modal-submit"
         form="edit-student-form"
         type="submit"
-        disabled={isPending || !isDirty}
+        disabled={isPending || !canSubmit}
       >
         {isPending ? (
           <Spinner size={14} color="#fff" text="" />
+        ) : !isDirty && reissueInvoice ? (
+          "Reissue Invoice"
         ) : (
           "Save Changes"
         )}
@@ -518,6 +537,46 @@ function EditStudentForm({
             </div>
           </div>
         </FieldSet>
+
+        {/* ── Billing ── */}
+        <FieldSet label="Billing">
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 12,
+              padding: "12px 14px",
+              borderRadius: 10,
+              border: "1px solid var(--color-border)",
+            }}
+          >
+            <div style={{ paddingTop: 2 }}>
+              <Toggler
+                checked={reissueInvoice}
+                onChange={(e) => setReissueInvoice(e.target.checked)}
+                disabled={isPending}
+              />
+            </div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600 }}>
+                Reissue this student&rsquo;s invoice
+              </div>
+              <div
+                style={{
+                  marginTop: 2,
+                  fontSize: 12,
+                  lineHeight: 1.5,
+                  color: "var(--color-text-secondary)",
+                }}
+              >
+                Off by default. Turn it on to have a fresh invoice generated
+                when you save — useful after a correction that changes what the
+                student owes. You can also reissue on its own, without editing
+                any field.
+              </div>
+            </div>
+          </div>
+        </FieldSet>
       </form>
     </CustomModal>
   );
@@ -563,11 +622,14 @@ function UpdateResult({
   isOpen,
   onClose,
   result,
+  reissued,
   name,
 }: {
   isOpen: boolean;
   onClose: () => void;
   result: UpdateStudentRecordResponse;
+  /** Whether this save asked for a fresh invoice. */
+  reissued: boolean;
   name: string;
 }) {
   const changes = result.data?.changes ?? [];
@@ -605,7 +667,9 @@ function UpdateResult({
           {result.message ||
             (changes.length > 0
               ? `${changes.length} field${changes.length === 1 ? "" : "s"} updated.`
-              : "No fields needed changing.")}
+              : reissued
+                ? "No record fields needed changing."
+                : "No fields needed changing.")}
         </p>
 
         {changes.length > 0 && (
@@ -649,6 +713,26 @@ function UpdateResult({
                 </span>
               </div>
             ))}
+          </div>
+        )}
+
+        {reissued && (
+          <div
+            style={{
+              padding: "12px 14px",
+              borderRadius: 10,
+              fontSize: 12.5,
+              lineHeight: 1.6,
+              color: "var(--color-text-primary)",
+              background: "rgba(16,185,129,0.08)",
+              border: "1px solid rgba(16,185,129,0.25)",
+              borderLeft: "4px solid #10b981",
+            }}
+          >
+            <strong style={{ display: "block", marginBottom: 2 }}>
+              Invoice reissued
+            </strong>
+            A fresh invoice was requested for this student.
           </div>
         )}
 
