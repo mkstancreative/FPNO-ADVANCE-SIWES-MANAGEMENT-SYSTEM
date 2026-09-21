@@ -64,9 +64,30 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       });
       navigate("/", { replace: true });
     };
+    // A deactivated account is not an expired session — say so, or the user is
+    // dropped at the login screen with no idea why their password stopped
+    // working.
+    const handleDeactivated = (event: Event) => {
+      const message =
+        (event as CustomEvent<{ message?: string }>).detail?.message ||
+        "This account has been deactivated.";
+      clearAuth();
+      toast.error(`${message} Contact the SIWES administrator.`, {
+        toastId: "account-deactivated",
+        autoClose: false,
+      });
+      navigate("/", { replace: true });
+    };
+
     window.addEventListener("siwes:session-expired", handleExpired);
-    return () =>
+    window.addEventListener("siwes:account-deactivated", handleDeactivated);
+    return () => {
       window.removeEventListener("siwes:session-expired", handleExpired);
+      window.removeEventListener(
+        "siwes:account-deactivated",
+        handleDeactivated,
+      );
+    };
   }, [clearAuth, navigate]);
 
   return (

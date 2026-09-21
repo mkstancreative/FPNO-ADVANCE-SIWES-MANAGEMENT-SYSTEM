@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Spinner from "../components/ui/Spinner/Spinner";
 const NotFound = lazy(() => import("../pages/NotFound/NotFound"));
 import DashBoardAdmin from "../pages/Admin/DashBoardAdmin";
+import AdminOnlyRoute from "./AdminOnlyRoute";
+import { usePermissions } from "../hooks/usePermissions";
 import Supervisor from "../pages/Admin/Supervisor";
 import Companies from "../pages/Admin/Companies";
 import VerifiedCompanies from "../pages/Admin/VerifiedCompanies";
@@ -25,9 +27,7 @@ const StudentReportPage = lazy(
 const AdminCertificates = lazy(
   () => import("../pages/Admin/AdminCertificates"),
 );
-const DiscountStudents = lazy(
-  () => import("../pages/Admin/DiscountStudents"),
-);
+const DiscountStudents = lazy(() => import("../pages/Admin/DiscountStudents"));
 const MispricedInvoices = lazy(
   () => import("../pages/Admin/MispricedInvoices"),
 );
@@ -37,12 +37,20 @@ const RefundsAndBalances = lazy(
 const SystemSettings = lazy(() => import("../pages/Admin/SystemSettings"));
 const UserAccounts = lazy(() => import("../pages/Admin/UserAccounts"));
 const Staff = lazy(() => import("../pages/Admin/Staff"));
+const DashBoardCoordinator = lazy(
+  () => import("../pages/Admin/DashBoardCoordinator"),
+);
 const Internships = lazy(() => import("../pages/Admin/Internships"));
 const InternshipView = lazy(
   () => import("../components/admin/view/InternshipView"),
 );
 
 export default function AdminRoutes() {
+  // Admins and coordinators share these screens; the dashboard is the one
+  // place the two roles want genuinely different things on arrival.
+  const { canEdit } = usePermissions();
+  const Dashboard = canEdit ? DashBoardAdmin : DashBoardCoordinator;
+
   return (
     <Suspense
       fallback={
@@ -65,7 +73,7 @@ export default function AdminRoutes() {
       <Routes>
         {/* Default → dashboard */}
         <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<DashBoardAdmin />} />
+        <Route path="dashboard" element={<Dashboard />} />
         {/* ── Setup ── */}
         <Route path="batches" element={<Batches />} />
         <Route path="students" element={<Students />} />
@@ -90,9 +98,30 @@ export default function AdminRoutes() {
         <Route path="refunds-and-balances" element={<RefundsAndBalances />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="change-password" element={<ChangePassword />} />
-        <Route path="user-accounts" element={<UserAccounts />} />
-        <Route path="staff" element={<Staff />} />
-        <Route path="settings" element={<SystemSettings />} />
+        <Route
+          path="user-accounts"
+          element={
+            <AdminOnlyRoute>
+              <UserAccounts />
+            </AdminOnlyRoute>
+          }
+        />
+        <Route
+          path="staff"
+          element={
+            <AdminOnlyRoute>
+              <Staff />
+            </AdminOnlyRoute>
+          }
+        />
+        <Route
+          path="settings"
+          element={
+            <AdminOnlyRoute>
+              <SystemSettings />
+            </AdminOnlyRoute>
+          }
+        />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

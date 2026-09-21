@@ -1,7 +1,12 @@
 import { Edit2, Zap, Archive, Trash2, UserPlus } from "lucide-react";
 import GeneralTable from "../../ui/GeneralTable/GeneralTable";
 import "../forms/BatchForm.css";
-import type { Batch, BatchStatus, Level, Program } from "../../../api/types/batch";
+import type {
+  Batch,
+  BatchStatus,
+  Level,
+  Program,
+} from "../../../api/types/batch";
 import type { Column, TableMeta } from "../../ui/GeneralTable/GeneralTable";
 import ActionDropdown from "../../ui/ActionDropdown/ActionDropDown";
 import { formatDate } from "../../../helpers/utilities";
@@ -11,6 +16,7 @@ import {
   useArchieveBatch,
 } from "../../../hooks/useBatches";
 import StatusBadge from "../../ui/StatusBadge/StatusBadge";
+import { usePermissions } from "../../../hooks/usePermissions";
 
 interface BatchesTableProps {
   search?: string;
@@ -54,6 +60,7 @@ export default function BatchesTable({
     program,
   });
 
+  const { canEdit } = usePermissions();
   const { mutate: activate } = useActivateBatch();
   const { mutate: archive } = useArchieveBatch();
 
@@ -112,18 +119,25 @@ export default function BatchesTable({
       render: (row) => (
         <ActionDropdown
           actions={[
-            {
-              label: "Edit",
-              icon: <Edit2 size={13} />,
-              onClick: () => onEdit(row),
-              disabled: row.status === "archived",
-            },
-            {
-              label: "Auto Assign Supervisors",
-              icon: <Zap size={13} />,
-              onClick: () => onAutoAssignSupervisors(row),
-              disabled: row.status === "archived",
-            },
+            // Editing a batch sets `internshipFee` — what every student in it
+            // pays — and auto-assign rewrites supervisor ownership, so both
+            // are admin-only, as is deleting a session outright.
+            ...(canEdit
+              ? [
+                  {
+                    label: "Edit",
+                    icon: <Edit2 size={13} />,
+                    onClick: () => onEdit(row),
+                    disabled: row.status === "archived",
+                  },
+                  {
+                    label: "Auto Assign Supervisors",
+                    icon: <Zap size={13} />,
+                    onClick: () => onAutoAssignSupervisors(row),
+                    disabled: row.status === "archived",
+                  },
+                ]
+              : []),
             {
               label: "Bulk Enroll Students",
               icon: <UserPlus size={13} />,
@@ -143,12 +157,16 @@ export default function BatchesTable({
               onClick: () => archive(row._id),
               disabled: row.status === "created",
             },
-            {
-              label: "Delete",
-              icon: <Trash2 size={13} />,
-              onClick: () => onDeleteRequest(row),
-              danger: true,
-            },
+            ...(canEdit
+              ? [
+                  {
+                    label: "Delete",
+                    icon: <Trash2 size={13} />,
+                    onClick: () => onDeleteRequest(row),
+                    danger: true,
+                  },
+                ]
+              : []),
           ]}
         />
       ),

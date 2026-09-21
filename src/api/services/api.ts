@@ -25,6 +25,25 @@ export function dispatchSessionExpired() {
   window.dispatchEvent(new CustomEvent("siwes:session-expired"));
 }
 
+/**
+ * An admin can switch a staff account off. Every request then fails with
+ * `401 "Account is deactivated"` — a 401 no refresh token can fix, so it must
+ * not go down the refresh path, and the reason has to reach the user rather
+ * than dropping them at the login screen with no explanation.
+ */
+export function dispatchAccountDeactivated(message: string) {
+  clearTokens();
+  window.dispatchEvent(
+    new CustomEvent("siwes:account-deactivated", { detail: { message } }),
+  );
+}
+
+/** Reads as a deactivation rather than an expired or missing token. */
+const isDeactivatedResponse = (error: AxiosError): boolean =>
+  /deactivat|disabled/i.test(
+    (error.response?.data as { message?: string } | undefined)?.message ?? "",
+  );
+
 // ─── Axios Instances ───────────────────────────────────────────────────────────
 export const api = axios.create({
   baseURL: API_URL,
@@ -75,6 +94,18 @@ api.interceptors.response.use(
     const url = originalRequest.url || "";
     const isLoginOrRefresh =
       url.includes("/auth/login") || url.includes("/auth/refresh-token");
+
+    // A deactivated account is terminal: refreshing would succeed and the next
+    // call would fail the same way, so say why and stop.
+    if (error.response?.status === 401 && isDeactivatedResponse(error)) {
+      if (!isLoginOrRefresh) {
+        dispatchAccountDeactivated(
+          (error.response?.data as { message?: string } | undefined)?.message ||
+            "This account has been deactivated.",
+        );
+      }
+      return Promise.reject(error);
+    }
 
     if (
       error.response?.status === 401 &&
@@ -134,11 +165,34 @@ api.interceptors.response.use(
  * Extracts a human-readable API error message from an unknown error object.
  * Checks for Axios response payloads, standard Errors, and provides a clean fallback.
  */
+/**
+ * What a user is told when their role is the thing standing in the way. The
+ * backend's own wording — "Role 'coordinator' is not authorized to access this
+ * resource" — is diagnostic, and naming the role back at someone reads as an
+ * accusation rather than an explanation.
+ */
+export const PERMISSION_DENIED_MESSAGE =
+  "You do not have permission for this. Contact the SIWES administrator.";
+
+/** True when the request failed because of the caller's role. */
+export const isForbidden = (error: unknown): boolean =>
+  getApiErrorStatus(error) === 403;
+
 export const getApiErrorMessage = (
   error: unknown,
   fallback = "An unexpected error occurred. Please try again.",
 ): string => {
   if (axios.isAxiosError(error) && error.response?.data?.message) {
+    // Swap only the role-authorization wording; a 403 carrying a real business
+    // reason should still say what it says.
+    if (
+      error.response.status === 403 &&
+      /not authorized to access this resource|^Role /i.test(
+        error.response.data.message,
+      )
+    ) {
+      return PERMISSION_DENIED_MESSAGE;
+    }
     return error.response.data.message;
   }
   if (error instanceof Error && error.message) {
@@ -159,4 +213,6 @@ export const getApiErrorStatus = (error: unknown): number | undefined =>
 export const getApiErrorData = <T = Record<string, unknown>>(
   error: unknown,
 ): T | undefined =>
-  axios.isAxiosError(error) ? (error.response?.data as T | undefined) : undefined;
+  axios.isAxiosError(error)
+    ? (error.response?.data as T | undefined)
+    : undefined;

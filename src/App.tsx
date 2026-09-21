@@ -1,5 +1,10 @@
 import "./App.css";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { Suspense, lazy } from "react";
 import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
@@ -94,69 +99,81 @@ function App() {
               <ErrorBoundary>
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
-                  {/* ── Public ───────────────────────────────────────────── */}
-                  <Route path="/" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route
-                    path="/companies"
-                    element={<PublicAvailableCompanies />}
-                  />
-                  <Route
-                    path="/reset-password/:token"
-                    element={<ResetPassword />}
-                  />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route
-                    path="/certificates/verify/*"
-                    element={<VerifyCertificate />}
-                  />
-                  <Route
-                    path="/supervisors/review/:token"
-                    element={<SupervisorReview />}
-                  />
-                  <Route
-                    path="/supervisors/review"
-                    element={<SupervisorReview />}
-                  />
-                  <Route
-                    path="/evaluations/industrial/:token"
-                    element={<SupervisorEvaluate />}
-                  />
-                  <Route
-                    path="/evaluations/industrial"
-                    element={<SupervisorEvaluate />}
-                  />
-
-                  {/* ── Admin ────────────────────────────────────────────── */}
-                  <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
-                    <Route path="/admin/*" element={<AdminLayout />} />
-                  </Route>
-
-                  {/* ── Student ──────────────────────────────────────────── */}
-                  <Route
-                    element={<ProtectedRoute allowedRoles={["student"]} />}
-                  >
-                    <Route path="/student/*" element={<StudentLayout />} />
-                  </Route>
-
-                  {/* ── Supervisor ───────────────────────────────────────── */}
-                  <Route
-                    element={
-                      <ProtectedRoute allowedRoles={["school_supervisor"]} />
-                    }
-                  >
+                    {/* ── Public ───────────────────────────────────────────── */}
+                    <Route path="/" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
                     <Route
-                      path="/supervisor/*"
-                      element={<SupervisorLayout />}
+                      path="/companies"
+                      element={<PublicAvailableCompanies />}
                     />
-                  </Route>
+                    <Route
+                      path="/reset-password/:token"
+                      element={<ResetPassword />}
+                    />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route
+                      path="/certificates/verify/*"
+                      element={<VerifyCertificate />}
+                    />
+                    <Route
+                      path="/supervisors/review/:token"
+                      element={<SupervisorReview />}
+                    />
+                    <Route
+                      path="/supervisors/review"
+                      element={<SupervisorReview />}
+                    />
+                    <Route
+                      path="/evaluations/industrial/:token"
+                      element={<SupervisorEvaluate />}
+                    />
+                    <Route
+                      path="/evaluations/industrial"
+                      element={<SupervisorEvaluate />}
+                    />
 
-                  {/* ── Catch-all ────────────────────────────────────────── */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </ErrorBoundary>
-          </ModalProvider>
+                    {/* ── Admin + Coordinator ──────────────────────────────── */}
+                    <Route
+                      element={
+                        <ProtectedRoute
+                          allowedRoles={["admin", "coordinator"]}
+                        />
+                      }
+                    >
+                      <Route path="/admin/*" element={<AdminLayout />} />
+                    </Route>
+
+                    {/* Anything still pointing at the old coordinator home. */}
+                    <Route
+                      path="/coordinator/*"
+                      element={<Navigate to="/admin/dashboard" replace />}
+                    />
+
+                    {/* ── Student ──────────────────────────────────────────── */}
+                    <Route
+                      element={<ProtectedRoute allowedRoles={["student"]} />}
+                    >
+                      <Route path="/student/*" element={<StudentLayout />} />
+                    </Route>
+
+                    {/* ── Supervisor ───────────────────────────────────────── */}
+                    <Route
+                      element={
+                        <ProtectedRoute allowedRoles={["school_supervisor"]} />
+                      }
+                    >
+                      <Route
+                        path="/supervisor/*"
+                        element={<SupervisorLayout />}
+                      />
+                    </Route>
+
+                    {/* ── Catch-all ────────────────────────────────────────── */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </ErrorBoundary>
+            </ModalProvider>
           </NotificationsProvider>
         </InternshipProvider>
       </AuthProvider>

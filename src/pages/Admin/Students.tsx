@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { useStudents } from "../../hooks/useStudents";
 import { useBatches, useRecordedDepartments } from "../../hooks/useBatches";
 import SelectFilter from "../../components/ui/SelectFilter/SelectFilter";
+import { usePermissions } from "../../hooks/usePermissions";
 
 interface FiterStates {
   batchId: string;
@@ -26,6 +27,7 @@ interface FiterStates {
 
 export default function Students() {
   const { openModal, closeModal } = useModal();
+  const { canEdit } = usePermissions();
   const navigate = useNavigate();
 
   // ── Pagination / search state ──────────────────────────────────────────────
@@ -99,7 +101,9 @@ export default function Students() {
     navigate(`/admin/students/${student._id}/progress`);
 
   const openViewReport = (student: Student) => {
-    const fullName = [student.user?.firstName, student.user?.lastName].filter(Boolean).join(" ");
+    const fullName = [student.user?.firstName, student.user?.lastName]
+      .filter(Boolean)
+      .join(" ");
     const name = encodeURIComponent(
       fullName || student.registrationNumber || "Student",
     );
@@ -133,7 +137,7 @@ export default function Students() {
         </div>
         <div className="page-header-right">
           {/* Bulk update button — visible when ≥1 row selected */}
-          {hasSelection && (
+          {canEdit && hasSelection && (
             <button
               className="modal-submit"
               style={{
@@ -209,7 +213,7 @@ export default function Students() {
           onLimitChange={(l) => setField("limit", l)}
           onView={handleView}
           onProgress={handleProgress}
-          onEdit={openEditStudent}
+          onEdit={canEdit ? openEditStudent : undefined}
           onViewReport={openViewReport}
           selectedIds={selectedIds}
           onSelectionChange={setSelectedIds}

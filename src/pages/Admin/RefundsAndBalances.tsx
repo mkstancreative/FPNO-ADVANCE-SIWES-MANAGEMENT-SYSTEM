@@ -19,6 +19,8 @@ import {
 } from "../../hooks/useCertificate";
 import { formatDate, naira } from "../../helpers/utilities";
 import type { CertificateDiscrepancy } from "../../api/types/certificate";
+import { usePermissions, ADMIN_ONLY_HINT } from "../../hooks/usePermissions";
+import { ReadOnlyNotice } from "../../components/ui/Permission/Permission";
 
 /**
  * ⚠ Sign convention, and it is the opposite of the Mispriced Invoices screen.
@@ -35,6 +37,7 @@ function describeDiscrepancy(row: CertificateDiscrepancy) {
 }
 
 export default function RefundsAndBalances() {
+  const { canEdit } = usePermissions();
   const [includeResolved, setIncludeResolved] = useState(false);
   const [active, setActive] = useState<CertificateDiscrepancy | null>(null);
 
@@ -109,7 +112,12 @@ export default function RefundsAndBalances() {
             <BadgeCheck size={13} /> Settled
           </span>
         ) : (
-          <button className="rb-resolve" onClick={() => setActive(row)}>
+          <button
+            className="rb-resolve"
+            onClick={() => setActive(row)}
+            disabled={!canEdit}
+            title={canEdit ? undefined : ADMIN_ONLY_HINT}
+          >
             Mark settled
           </button>
         ),
@@ -118,6 +126,10 @@ export default function RefundsAndBalances() {
 
   return (
     <div className="page-container">
+      <ReadOnlyNotice>
+        You can review every refund and outstanding balance here. Settling one
+        is limited to administrators.
+      </ReadOnlyNotice>
       {/* ── Header ── */}
       <div className="page-header">
         <div className="page-header-left">
@@ -187,10 +199,7 @@ export default function RefundsAndBalances() {
       </div>
 
       {active && (
-        <ResolveDialog
-          discrepancy={active}
-          onClose={() => setActive(null)}
-        />
+        <ResolveDialog discrepancy={active} onClose={() => setActive(null)} />
       )}
 
       <style>{`

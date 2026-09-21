@@ -56,7 +56,9 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
     // Redirect to the user's home dashboard if they don't have the right role
     const roleHome: Record<UserRole, string> = {
       admin: "/admin/dashboard",
-      coordinator: "/coordinator/dashboard",
+      // Coordinators work inside the admin screens; the dashboard itself
+      // renders their own view, and admin-only controls are gated per screen.
+      coordinator: "/admin/dashboard",
       school_supervisor: "/supervisor/dashboard",
       student: "/student/dashboard",
     };

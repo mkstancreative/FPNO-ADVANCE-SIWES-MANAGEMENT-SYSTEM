@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import "./style.css";
 import TopBar from "./TopBar";
 import SideBar from "./SideBar";
@@ -24,12 +24,32 @@ export default function DashBoardLayout({
   const { user } = useAuth();
 
   // Auto-select nav based on role — no layout needs to pass it manually
-  const nav: NavSection[] =
+  const baseNav: NavSection[] =
     user?.role === "admin" || user?.role === "coordinator"
       ? (ADMIN_NAV as NavSection[])
       : user?.role === "school_supervisor"
         ? (SUPERVISOR_NAV as NavSection[])
         : (STUDENT_NAV as NavSection[]);
+
+  // Coordinators share the admin nav, minus the entries whose screens they
+  // cannot use at all. Sections left empty by the filter drop out too.
+  const isAdmin = user?.role === "admin";
+  const nav: NavSection[] = useMemo(() => {
+    if (isAdmin) return baseNav;
+    return baseNav
+      .map((section) => ({
+        ...section,
+        items: section.items
+          .filter((item) => !item.adminOnly)
+          .map((item) =>
+            item.children
+              ? { ...item, children: item.children.filter((c) => !c.adminOnly) }
+              : item,
+          )
+          .filter((item) => !item.children || item.children.length > 0),
+      }))
+      .filter((section) => section.items.length > 0);
+  }, [baseNav, isAdmin]);
 
   // Sidebar collapsed state — persisted in localStorage
   const [collapsed, setCollapsed] = useState<boolean>(() => {

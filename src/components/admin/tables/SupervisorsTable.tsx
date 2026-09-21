@@ -15,7 +15,8 @@ interface Props {
   limit: number;
   onPageChange: (p: number) => void;
   onLimitChange: (l: number) => void;
-  onEditDepartments: (supervisor: Supervisor) => void;
+  /** Omitted for coordinators — department ownership is admin-only. */
+  onEditDepartments?: (supervisor: Supervisor) => void;
 }
 
 export default function SupervisorsTable({
@@ -54,18 +55,28 @@ export default function SupervisorsTable({
     {
       header: "Name",
       render: (sv) => {
-        const fullName = [sv.user?.firstName, sv.user?.lastName].filter(Boolean).join(" ");
+        const fullName = [sv.user?.firstName, sv.user?.lastName]
+          .filter(Boolean)
+          .join(" ");
         return (
           <div className="cell-stack">
             <span
               className="cell-primary"
-              style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                flexWrap: "wrap",
+              }}
             >
               {fullName || sv.staffId || "Supervisor"}
             </span>
-            <span className="cell-sub"
-             style={{ fontSize: 13, color: "var(--color-text-muted)"}}
-            >{sv.user?.email ?? "—"}</span>
+            <span
+              className="cell-sub"
+              style={{ fontSize: 13, color: "var(--color-text-muted)" }}
+            >
+              {sv.user?.email ?? "—"}
+            </span>
           </div>
         );
       },
@@ -81,7 +92,9 @@ export default function SupervisorsTable({
     {
       header: "Departments",
       render: (sv) => (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 4, maxWidth: 220 }}>
+        <div
+          style={{ display: "flex", flexWrap: "wrap", gap: 4, maxWidth: 220 }}
+        >
           {sv.departments.map((d) => (
             <span key={d} className="badge badge-neutral">
               {d}
@@ -98,7 +111,12 @@ export default function SupervisorsTable({
       header: "Students",
       render: (sv) => (
         <span
-          style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13 }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+            fontSize: 13,
+          }}
         >
           <Users size={12} style={{ color: "var(--color-text-muted)" }} />
           {sv.currentStudentCount}
@@ -109,13 +127,17 @@ export default function SupervisorsTable({
       header: "Actions",
       render: (sv) => (
         <ActionDropdown
-          actions={[
-            {
-              label: "Edit Departments",
-              icon: <UserRoundCog size={13} />,
-              onClick: () => onEditDepartments(sv),
-            },
-          ]}
+          actions={
+            onEditDepartments
+              ? [
+                  {
+                    label: "Edit Departments",
+                    icon: <UserRoundCog size={13} />,
+                    onClick: () => onEditDepartments(sv),
+                  },
+                ]
+              : []
+          }
         />
       ),
     },

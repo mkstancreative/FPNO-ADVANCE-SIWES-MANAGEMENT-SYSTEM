@@ -23,7 +23,9 @@ const ApexULanding = () => {
   if (!isLoading && isAuthenticated && user) {
     const roleHome: Record<UserRole, string> = {
       admin: "/admin/dashboard",
-      coordinator: "/coordinator/dashboard",
+      // Coordinators work inside the admin screens; the dashboard itself
+      // renders their own view, and admin-only controls are gated per screen.
+      coordinator: "/admin/dashboard",
       school_supervisor: "/supervisor/dashboard",
       student: "/student/dashboard",
     };

@@ -16,6 +16,8 @@ import { useRemoveCertificateDiscount } from "../../hooks/useCertificate";
 import { naira } from "../../helpers/utilities";
 import type { RepriceReport } from "../../api/types/certificate";
 import type { TableMeta } from "../../components/ui/GeneralTable/GeneralTable";
+import { usePermissions } from "../../hooks/usePermissions";
+import { ReadOnlyNotice } from "../../components/ui/Permission/Permission";
 
 interface FilterStates {
   search: string;
@@ -25,6 +27,7 @@ interface FilterStates {
 
 export default function DiscountStudents() {
   const { openModal, closeModal } = useModal();
+  const { canEdit } = usePermissions();
 
   // ── Filters State ─────────────────────────────────────────────────────────
   const [filters, setFilters] = useState<FilterStates>({
@@ -129,6 +132,10 @@ export default function DiscountStudents() {
 
   return (
     <div className="page-container">
+      <ReadOnlyNotice>
+        You can review who is on a discount and why. Adding, removing or
+        re-pricing a discount is limited to administrators.
+      </ReadOnlyNotice>
       {/* ── Header ── */}
       <div className="page-header">
         <div className="page-header-left">
@@ -143,8 +150,15 @@ export default function DiscountStudents() {
           </div>
         </div>
         <div className="page-header-right">
-          <AddButton text="Add Student" onClick={openAdd} />
-          <AddButton text="Upload Discounted Students" onClick={openUpload} />
+          {canEdit && (
+            <>
+              <AddButton text="Add Student" onClick={openAdd} />
+              <AddButton
+                text="Upload Discounted Students"
+                onClick={openUpload}
+              />
+            </>
+          )}
         </div>
       </div>
 
@@ -170,7 +184,7 @@ export default function DiscountStudents() {
           meta={meta}
           onPageChange={(p) => setFilters((prev) => ({ ...prev, page: p }))}
           onLimitChange={(l) => setField("limit", l)}
-          onRemove={setPendingRemoval}
+          onRemove={canEdit ? setPendingRemoval : undefined}
         />
       </div>
 

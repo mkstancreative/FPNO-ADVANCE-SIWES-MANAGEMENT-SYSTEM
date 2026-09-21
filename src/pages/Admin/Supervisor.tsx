@@ -11,6 +11,7 @@ import { departmentOptions as buildDepartmentOptions } from "../../config/depart
 import UploadSupervisors from "../../components/admin/forms/UploadSupervisors";
 import EditSupervisorDepartments from "../../components/admin/forms/EditSupervisorDepartments";
 import type { Supervisor } from "../../api/types/supervisor";
+import { usePermissions } from "../../hooks/usePermissions";
 
 interface FilterState {
   search: string;
@@ -21,6 +22,7 @@ interface FilterState {
 
 export default function SupervisorPage() {
   const { openModal, closeModal } = useModal();
+  const { canEdit } = usePermissions();
   const { data: departmentsData } = useDepartments();
 
   const [filter, setFilter] = useState<FilterState>({
@@ -46,7 +48,6 @@ export default function SupervisorPage() {
   // ── Modal openers ──────────────────────────────────────────────────────────
   const openCreate = () =>
     openModal(<UploadSupervisors isOpen onClose={closeModal} />);
-
 
   const openEditDepartments = (supervisor: Supervisor) =>
     openModal(
@@ -79,7 +80,7 @@ export default function SupervisorPage() {
           </div>
         </div>
         <div className="page-header-right">
-          <AddButton text="Add Supervisor" onClick={openCreate} />
+          {canEdit && <AddButton text="Add Supervisor" onClick={openCreate} />}
         </div>
       </div>
 
@@ -116,7 +117,7 @@ export default function SupervisorPage() {
           onLimitChange={(l) =>
             setFilter((prev) => ({ ...prev, limit: l, page: 1 }))
           }
-          onEditDepartments={openEditDepartments}
+          onEditDepartments={canEdit ? openEditDepartments : undefined}
         />
       </div>
     </div>

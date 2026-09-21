@@ -21,6 +21,8 @@ import {
   useRepriceCertificates,
 } from "../../hooks/useCertificate";
 import { formatDate, naira } from "../../helpers/utilities";
+import { usePermissions, ADMIN_ONLY_HINT } from "../../hooks/usePermissions";
+import { ReadOnlyNotice } from "../../components/ui/Permission/Permission";
 import type {
   MispricedInvoice,
   RepriceReport,
@@ -50,6 +52,7 @@ function describeMispricing(row: MispricedInvoice) {
 }
 
 export default function MispricedInvoices() {
+  const { canEdit } = usePermissions();
   const [includePaid, setIncludePaid] = useState(false);
   const [confirmAll, setConfirmAll] = useState(false);
   const [report, setReport] = useState<RepriceReport | null>(null);
@@ -145,11 +148,13 @@ export default function MispricedInvoices() {
           <button
             className="mi-fix"
             onClick={() => fixOne(row.registrationNumber)}
-            disabled={paid || isPending}
+            disabled={!canEdit || paid || isPending}
             title={
-              paid
-                ? "Already paid — settle this in Refunds & Balances"
-                : "Issue a corrected invoice at the right amount"
+              !canEdit
+                ? ADMIN_ONLY_HINT
+                : paid
+                  ? "Already paid — settle this in Refunds & Balances"
+                  : "Issue a corrected invoice at the right amount"
             }
           >
             {fixing === row.registrationNumber ? (
@@ -167,6 +172,10 @@ export default function MispricedInvoices() {
 
   return (
     <div className="page-container">
+      <ReadOnlyNotice>
+        You can review every mispriced invoice here. Issuing a corrected invoice
+        is limited to administrators.
+      </ReadOnlyNotice>
       {/* ── Header ── */}
       <div className="page-header">
         <div className="page-header-left">
@@ -182,15 +191,22 @@ export default function MispricedInvoices() {
           </div>
         </div>
         <div className="page-header-right">
-          <button
-            className="modal-submit"
-            style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13 }}
-            onClick={() => setConfirmAll(true)}
-            disabled={isPending || items.length === 0}
-          >
-            <Wrench size={14} />
-            Fix All ({summary?.count ?? 0})
-          </button>
+          {canEdit && (
+            <button
+              className="modal-submit"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 7,
+                fontSize: 13,
+              }}
+              onClick={() => setConfirmAll(true)}
+              disabled={isPending || items.length === 0}
+            >
+              <Wrench size={14} />
+              Fix All ({summary?.count ?? 0})
+            </button>
+          )}
         </div>
       </div>
 

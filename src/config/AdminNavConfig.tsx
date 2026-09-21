@@ -130,20 +130,26 @@ export const ADMIN_NAV = [
   {
     section: "Settings",
     items: [
+      // Accounts, credentials and settings are admin-only: a coordinator
+      // cannot create an account, reset a password or change system settings,
+      // so these are hidden rather than shown as dead ends.
       {
         label: "Staff",
         icon: <UserRoundCog size={18} />,
         path: "/admin/staff",
+        adminOnly: true,
       },
       {
         label: "User Accounts",
         icon: <UsersRound size={18} />,
         path: "/admin/user-accounts",
+        adminOnly: true,
       },
       {
         label: "System Settings",
         icon: <Settings2 size={18} />,
         path: "/admin/settings",
+        adminOnly: true,
       },
     ],
   },

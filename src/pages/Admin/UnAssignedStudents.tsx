@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { useUnassignedStudents } from "../../hooks/useStudents";
 import { useBatches, useRecordedDepartments } from "../../hooks/useBatches";
 import SelectFilter from "../../components/ui/SelectFilter/SelectFilter";
+import { usePermissions } from "../../hooks/usePermissions";
 
 interface FilterStates {
   batchId: string;
@@ -24,6 +25,7 @@ interface FilterStates {
 
 export default function UnAssignedStudents() {
   const { openModal, closeModal } = useModal();
+  const { canEdit } = usePermissions();
   const navigate = useNavigate();
 
   // ── Pagination / search state ──────────────────────────────────────────────
@@ -77,7 +79,9 @@ export default function UnAssignedStudents() {
     navigate(`/admin/students/${student._id}/progress`);
 
   const openViewReport = (student: Student) => {
-    const fullName = [student.user?.firstName, student.user?.lastName].filter(Boolean).join(" ");
+    const fullName = [student.user?.firstName, student.user?.lastName]
+      .filter(Boolean)
+      .join(" ");
     const name = encodeURIComponent(
       fullName || student.registrationNumber || "Student",
     );
@@ -111,11 +115,13 @@ export default function UnAssignedStudents() {
           </div>
         </div>
         <div className="page-header-right">
-          <AddButton
-            text="Auto-Assign Supervisors"
-            onClick={openAutoAssign}
-            icon={<Zap size={14} />}
-          />
+          {canEdit && (
+            <AddButton
+              text="Auto-Assign Supervisors"
+              onClick={openAutoAssign}
+              icon={<Zap size={14} />}
+            />
+          )}
         </div>
       </div>
 

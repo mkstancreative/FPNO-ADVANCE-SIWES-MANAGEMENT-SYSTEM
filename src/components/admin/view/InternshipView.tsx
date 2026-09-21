@@ -1,3 +1,4 @@
+import { usePermissions } from "../../../hooks/usePermissions";
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -67,6 +68,7 @@ export default function InternshipView() {
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data, isLoading } = useInternshipById(id);
+  const { canEdit } = usePermissions();
   const { mutate: updateStatus, isPending: updatingStatus } =
     useUpdateInternshipStatus();
   const { mutate: setCurrent, isPending: settingCurrent } =
@@ -113,11 +115,14 @@ export default function InternshipView() {
   };
 
   const batchId =
-    batch?._id ?? (typeof internship.batch === "string" ? internship.batch : "");
+    batch?._id ??
+    (typeof internship.batch === "string" ? internship.batch : "");
 
   const handleViewReport = () => {
     if (!student) return;
-    const fullName = [student.user?.firstName, student.user?.lastName].filter(Boolean).join(" ");
+    const fullName = [student.user?.firstName, student.user?.lastName]
+      .filter(Boolean)
+      .join(" ");
     const name = encodeURIComponent(
       fullName || student.registrationNumber || "Student",
     );
@@ -156,7 +161,11 @@ export default function InternshipView() {
         <div className="sv-hero-info">
           <h2 className="sv-name">
             {student
-              ? [student.user?.firstName, student.user?.lastName].filter(Boolean).join(" ") || student.registrationNumber || "—"
+              ? [student.user?.firstName, student.user?.lastName]
+                  .filter(Boolean)
+                  .join(" ") ||
+                student.registrationNumber ||
+                "—"
               : "—"}
           </h2>
           <p className="sv-reg">{student?.registrationNumber}</p>
@@ -174,51 +183,53 @@ export default function InternshipView() {
       </div>
 
       <div className="sv-grid">
-        <Section title="Status Management" icon={<Briefcase size={15} />}>
-          <div className="form-group">
-            <label className="modal-label">Change Status</label>
-            <div style={{ display: "flex", gap: 8 }}>
-              <select
-                className="modal-input"
-                value={statusDraft}
-                onChange={(e) =>
-                  setStatusDraft(e.target.value as InternshipStatus | "")
-                }
-              >
-                <option value="" disabled hidden>
-                  Select status
-                </option>
-                {STATUS_OPTIONS.map((s) => (
-                  <option key={s} value={s}>
-                    {s.replace(/_/g, " ")}
+        {canEdit && (
+          <Section title="Status Management" icon={<Briefcase size={15} />}>
+            <div className="form-group">
+              <label className="modal-label">Change Status</label>
+              <div style={{ display: "flex", gap: 8 }}>
+                <select
+                  className="modal-input"
+                  value={statusDraft}
+                  onChange={(e) =>
+                    setStatusDraft(e.target.value as InternshipStatus | "")
+                  }
+                >
+                  <option value="" disabled hidden>
+                    Select status
                   </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                className="modal-submit"
-                disabled={!statusDraft || updatingStatus}
-                onClick={handleUpdateStatus}
-              >
-                {updatingStatus ? "Saving…" : "Save"}
-              </button>
+                  {STATUS_OPTIONS.map((s) => (
+                    <option key={s} value={s}>
+                      {s.replace(/_/g, " ")}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="modal-submit"
+                  disabled={!statusDraft || updatingStatus}
+                  onClick={handleUpdateStatus}
+                >
+                  {updatingStatus ? "Saving…" : "Save"}
+                </button>
+              </div>
             </div>
-          </div>
-          <button
-            type="button"
-            className="dash-btn dash-btn--ghost"
-            disabled={internship.isCurrent || settingCurrent}
-            onClick={() => setCurrent(internship._id)}
-            style={{ marginTop: 10 }}
-          >
-            <Star size={13} />{" "}
-            {settingCurrent
-              ? "Setting…"
-              : internship.isCurrent
-                ? "Current"
-                : "Set as Current Internship"}
-          </button>
-        </Section>
+            <button
+              type="button"
+              className="dash-btn dash-btn--ghost"
+              disabled={internship.isCurrent || settingCurrent}
+              onClick={() => setCurrent(internship._id)}
+              style={{ marginTop: 10 }}
+            >
+              <Star size={13} />{" "}
+              {settingCurrent
+                ? "Setting…"
+                : internship.isCurrent
+                  ? "Current"
+                  : "Set as Current Internship"}
+            </button>
+          </Section>
+        )}
 
         {internship.itPeriod && (
           <Section title="IT Period" icon={<BookOpen size={15} />}>
@@ -279,7 +290,14 @@ export default function InternshipView() {
           <Section title="School Supervisor" icon={<User size={15} />}>
             <InfoRow
               label="Name"
-              value={[internship.supervisors.school.user?.firstName, internship.supervisors.school.user?.lastName].filter(Boolean).join(" ") || "—"}
+              value={
+                [
+                  internship.supervisors.school.user?.firstName,
+                  internship.supervisors.school.user?.lastName,
+                ]
+                  .filter(Boolean)
+                  .join(" ") || "—"
+              }
             />
             <InfoRow
               label="Departments"

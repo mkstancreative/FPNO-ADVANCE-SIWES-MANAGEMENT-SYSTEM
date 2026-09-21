@@ -1,3 +1,4 @@
+import { usePermissions } from "../../../hooks/usePermissions";
 import { Eye, Star } from "lucide-react";
 import GeneralTable from "../../ui/GeneralTable/GeneralTable";
 import type { Column, TableMeta } from "../../ui/GeneralTable/GeneralTable";
@@ -30,6 +31,7 @@ export default function InternshipsTable({
   onView,
 }: InternshipsTableProps) {
   const { data, isLoading } = useInternships({ ...params, page, limit });
+  const { canEdit } = usePermissions();
   const { mutate: setCurrent } = useSetCurrentInternship();
 
   const internships: Internship[] = data?.data ?? [];
@@ -51,7 +53,9 @@ export default function InternshipsTable({
       render: (row) => {
         const s = row.student;
         if (typeof s === "string") return s;
-        const fullName = [s.user?.firstName, s.user?.lastName].filter(Boolean).join(" ");
+        const fullName = [s.user?.firstName, s.user?.lastName]
+          .filter(Boolean)
+          .join(" ");
         return (
           <div className="cell-stack">
             <span
@@ -112,12 +116,16 @@ export default function InternshipsTable({
               icon: <Eye size={13} />,
               onClick: () => onView(row),
             },
-            {
-              label: "Set as Current",
-              icon: <Star size={13} />,
-              onClick: () => setCurrent(row._id),
-              disabled: row.isCurrent,
-            },
+            ...(canEdit
+              ? [
+                  {
+                    label: "Set as Current",
+                    icon: <Star size={13} />,
+                    onClick: () => setCurrent(row._id),
+                    disabled: row.isCurrent,
+                  },
+                ]
+              : []),
           ]}
         />
       ),
