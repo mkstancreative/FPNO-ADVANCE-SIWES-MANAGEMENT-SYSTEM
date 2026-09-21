@@ -9,6 +9,7 @@ import { useModal } from "../../context/ModalContext";
 import { useDepartments } from "../../hooks/useBatches";
 import { departmentOptions as buildDepartmentOptions } from "../../config/departments";
 import UploadSupervisors from "../../components/admin/forms/UploadSupervisors";
+import EditSupervisor from "../../components/admin/forms/EditSupervisor";
 import EditSupervisorDepartments from "../../components/admin/forms/EditSupervisorDepartments";
 import type { Supervisor } from "../../api/types/supervisor";
 import { usePermissions } from "../../hooks/usePermissions";
@@ -48,6 +49,11 @@ export default function SupervisorPage() {
   // ── Modal openers ──────────────────────────────────────────────────────────
   const openCreate = () =>
     openModal(<UploadSupervisors isOpen onClose={closeModal} />);
+
+  const openEdit = (supervisor: Supervisor) =>
+    openModal(
+      <EditSupervisor isOpen onClose={closeModal} supervisor={supervisor} />,
+    );
 
   const openEditDepartments = (supervisor: Supervisor) =>
     openModal(
@@ -118,6 +124,7 @@ export default function SupervisorPage() {
             setFilter((prev) => ({ ...prev, limit: l, page: 1 }))
           }
           onEditDepartments={canEdit ? openEditDepartments : undefined}
+          onEdit={canEdit ? openEdit : undefined}
         />
       </div>
     </div>

@@ -1,3 +1,8 @@
+import {
+  displayName,
+  middleNameError,
+  MIDDLE_NAME_MAX_LENGTH,
+} from "../../../helpers/names";
 import { useState, type FormEvent } from "react";
 import {
   AlertCircle,
@@ -29,7 +34,12 @@ interface Props {
   onClose: () => void;
 }
 
-const EMPTY_ROW: NewStaffUser = { firstName: "", lastName: "", email: "" };
+const EMPTY_ROW: NewStaffUser = {
+  firstName: "",
+  middleName: "",
+  lastName: "",
+  email: "",
+};
 
 /** Every coordinator account is an institutional address. */
 const isInstitutionalEmail = (email: string) =>
@@ -68,11 +78,20 @@ export default function AddStaff({ isOpen, onClose }: Props) {
   // Trim on the way out — a trailing space in an email is a support ticket.
   const users: NewStaffUser[] = rows.map((row) => ({
     firstName: row.firstName.trim(),
+    // Sending "" and omitting the key behave identically, so an untouched
+    // field needs no stripping.
+    middleName: (row.middleName ?? "").trim(),
     lastName: row.lastName.trim(),
     email: row.email.trim(),
   }));
 
   const isComplete = users.every((u) => u.firstName && u.lastName && u.email);
+
+  // Mirror the server rule so nobody is bounced by a 400 they could have been
+  // warned about while typing.
+  const middleNameProblem = users
+    .map((u) => middleNameError(u.middleName))
+    .find(Boolean);
 
   // Catch the duplicate here rather than letting the backend reject the whole
   // batch over two identical rows the admin can see for themselves.
@@ -89,7 +108,7 @@ export default function AddStaff({ isOpen, onClose }: Props) {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!isComplete || duplicateEmail) return;
+    if (!isComplete || duplicateEmail || middleNameProblem) return;
     setConflict("");
     createStaff(
       { users },
@@ -136,7 +155,12 @@ export default function AddStaff({ isOpen, onClose }: Props) {
         className="modal-submit"
         form="add-staff-form"
         type="submit"
-        disabled={isPending || !isComplete || Boolean(duplicateEmail)}
+        disabled={
+          isPending ||
+          !isComplete ||
+          Boolean(duplicateEmail) ||
+          Boolean(middleNameProblem)
+        }
       >
         {isPending ? (
           <Spinner size={14} color="#fff" text="" />
@@ -167,6 +191,7 @@ export default function AddStaff({ isOpen, onClose }: Props) {
             distinct email address.
           </Banner>
         )}
+        {middleNameProblem && <Banner tone="error">{middleNameProblem}</Banner>}
 
         <Banner tone="info">
           Coordinators sign in with the password the system issues and are asked
@@ -193,6 +218,16 @@ export default function AddStaff({ isOpen, onClose }: Props) {
               />
             </div>
             <div className="form-group">
+              <label className="modal-label">Middle Name</label>
+              <input
+                className="modal-input"
+                value={row.middleName ?? ""}
+                onChange={(e) => setRow(index, "middleName", e.target.value)}
+                placeholder="Optional"
+                maxLength={MIDDLE_NAME_MAX_LENGTH}
+              />
+            </div>
+            <div className="form-group">
               <label className="modal-label">
                 Last Name <Required />
               </label>
@@ -201,7 +236,7 @@ export default function AddStaff({ isOpen, onClose }: Props) {
                 className="modal-input"
                 value={row.lastName}
                 onChange={(e) => setRow(index, "lastName", e.target.value)}
-                placeholder="Faith Oluebube"
+                placeholder="Oluebube"
               />
             </div>
             <div className="form-group staff-cell-email">
@@ -266,12 +301,12 @@ export default function AddStaff({ isOpen, onClose }: Props) {
 
 /**
  * Layout for the coordinator rows. Three breakpoints, because the row carries
- * four columns at full width and none of them survive a phone:
+ * five columns at full width and none of them survive a phone:
  *
- *  ≥ 900px  four columns, the delete button an icon square beside the email
- *  < 900px  names side by side, email full width, delete a labelled full-width
- *           button — an unlabelled icon under a stacked row reads as ambiguous
- *  < 560px  one column per field
+ *  ≥ 1100px  all four fields on one line, delete an icon square beside them
+ *  < 1100px  names two-up, email full width, delete a labelled full-width
+ *            button — an unlabelled icon under a stacked row is ambiguous
+ *  < 560px   one column per field
  */
 function StaffFormStyles() {
   return (
@@ -284,7 +319,8 @@ function StaffFormStyles() {
 
       .staff-row {
         display: grid;
-        grid-template-columns: 1fr 1fr 1.4fr auto;
+        /* first · middle · last · email · delete */
+        grid-template-columns: 1fr 1fr 1fr 1.5fr auto;
         gap: 12px;
         /* Top-aligned: the email field grows a warning line underneath, and
            stretching would drag the delete button down with it. */
@@ -359,7 +395,7 @@ function StaffFormStyles() {
         cursor: not-allowed;
       }
 
-      @media (max-width: 900px) {
+      @media (max-width: 1100px) {
         .staff-row {
           grid-template-columns: 1fr 1fr;
         }
@@ -598,9 +634,7 @@ function CreateStaffResult({
                   >
                     <div className="staff-pw-who">
                       <div style={{ fontWeight: 600 }}>
-                        {[account.firstName, account.lastName]
-                          .filter(Boolean)
-                          .join(" ") || account.email}
+                        {displayName(account, account.email)}
                       </div>
                       <div className="staff-pw-email">{account.email}</div>
                     </div>

@@ -1,3 +1,4 @@
+import { displayName, nameInitials } from "../../helpers/names";
 import { useMemo, useState, type ReactNode } from "react";
 import "./style.css";
 import TopBar from "./TopBar";
@@ -78,10 +79,8 @@ export default function DashBoardLayout({
   const toggleMobile = () => setMobileOpen((o) => !o);
   const closeMobile = () => setMobileOpen(false);
 
-  const userName = user ? `${user.firstName} ${user.lastName}` : "User";
-  const userInitials = user
-    ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
-    : "?";
+  const userName = displayName(user, "User");
+  const userInitials = nameInitials(user);
   const userRole =
     user?.role === "admin"
       ? "Administrator"

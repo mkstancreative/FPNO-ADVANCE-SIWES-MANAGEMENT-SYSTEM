@@ -109,7 +109,9 @@
   outline: none;
   box-sizing: border-box;
   font-family: inherit;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .register-form-group .form-input::placeholder {
@@ -153,7 +155,9 @@
   background: #0d1117;
   border: 1px solid #1f2d3d;
   border-radius: 8px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .register-select-group .custom-select-wrapper:focus .filter-select,
@@ -260,7 +264,9 @@
   font-weight: 700;
   cursor: pointer;
   margin-top: 8px;
-  transition: background 0.2s, opacity 0.2s;
+  transition:
+    background 0.2s,
+    opacity 0.2s;
   font-family: inherit;
   display: block;
 }
@@ -387,3 +393,8 @@
   }
 }
 
+/* Marks a field nobody has to fill in — most people have no middle name. */
+.form-optional {
+  font-weight: 400;
+  color: var(--color-text-muted);
+}

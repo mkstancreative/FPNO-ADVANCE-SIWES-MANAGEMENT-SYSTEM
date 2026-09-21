@@ -1,3 +1,4 @@
+import { displayName } from "../../../helpers/names";
 import { CheckCircle } from "lucide-react";
 import GeneralTable from "../../ui/GeneralTable/GeneralTable";
 import ActionDropDown from "../../ui/ActionDropdown/ActionDropDown";
@@ -67,7 +68,7 @@ export default function PlacementsTable({
     {
       header: "Student",
       render: (row) => {
-        const fullName = [row.student?.user?.firstName, row.student?.user?.lastName].filter(Boolean).join(" ");
+        const fullName = displayName(row.student?.user);
         return (
           <div style={{ display: "flex", flexDirection: "column" }}>
             <span style={{ fontWeight: 600 }}>

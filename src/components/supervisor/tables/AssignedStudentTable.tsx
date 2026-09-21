@@ -1,3 +1,4 @@
+import { displayName } from "../../../helpers/names";
 import { Eye } from "lucide-react";
 import type { StudentSummary } from "../../../api/types/schoolSupervisor";
 import type { Column, TableMeta } from "../../ui/GeneralTable/GeneralTable";
@@ -25,7 +26,8 @@ export default function AssignedStudentTable({
   const columns: Column<StudentSummary>[] = [
     {
       header: "Name",
-      render: (row) => [row.user?.firstName, row.user?.lastName].filter(Boolean).join(" ") || row.registrationNumber || "Student",
+      render: (row) =>
+        displayName(row.user, row.registrationNumber || "Student"),
     },
     {
       header: "Reg. Number",

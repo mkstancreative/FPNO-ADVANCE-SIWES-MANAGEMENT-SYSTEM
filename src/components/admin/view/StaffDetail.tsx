@@ -1,3 +1,4 @@
+import { displayName } from "../../../helpers/names";
 import { IdCard, KeyRound, Mail, UserRoundPen } from "lucide-react";
 import CustomModal from "../../ui/CustomModal/CustomModal";
 import Spinner from "../../ui/Spinner/Spinner";
@@ -27,9 +28,7 @@ export default function StaffDetail({
   // Fall back to the row while the fetch is in flight, so the modal opens with
   // the name and email already on screen rather than an empty frame.
   const record: StaffUser = data?.data ?? staff;
-  const fullName =
-    [record.firstName, record.lastName].filter(Boolean).join(" ") ||
-    record.email;
+  const fullName = displayName(record, record.email);
 
   const rows: { label: string; value: React.ReactNode }[] = [
     { label: "Full Name", value: fullName },

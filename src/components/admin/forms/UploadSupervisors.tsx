@@ -1,3 +1,7 @@
+import {
+  middleNameError,
+  MIDDLE_NAME_MAX_LENGTH,
+} from "../../../helpers/names";
 import { useRef, useState } from "react";
 import { FileSpreadsheet, UploadCloud, X, UserPlus } from "lucide-react";
 import CustomModal from "../../ui/CustomModal/CustomModal";
@@ -24,6 +28,7 @@ type Tab = "upload" | "manual";
 
 const EMPTY_FORM: CreateSupervisorPayload = {
   firstName: "",
+  middleName: "",
   lastName: "",
   email: "",
   phone: "",
@@ -92,9 +97,12 @@ export default function UploadSupervisors({ isOpen, onClose }: Props) {
 
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (form.departments.length === 0) return;
+    if (form.departments.length === 0 || middleNameProblem) return;
     createSupervisor(form, { onSuccess: handleClose });
   };
+
+  // Mirror the server rule so nobody is bounced by a 400 mid-submit.
+  const middleNameProblem = middleNameError(form.middleName);
 
   const setField = <K extends keyof CreateSupervisorPayload>(
     key: K,
@@ -143,7 +151,11 @@ export default function UploadSupervisors({ isOpen, onClose }: Props) {
           className="modal-submit"
           form="create-supervisor-form"
           type="submit"
-          disabled={creating || form.departments.length === 0}
+          disabled={
+            creating ||
+            form.departments.length === 0 ||
+            Boolean(middleNameProblem)
+          }
         >
           {creating ? (
             <Spinner size={14} color="#fff" text="" />
@@ -356,7 +368,9 @@ export default function UploadSupervisors({ isOpen, onClose }: Props) {
           >
             <strong>Note:</strong> The Excel file must follow the template
             format. Each row should contain supervisor details including name,
-            email, staff ID and department.
+            email, staff ID and department. A middle-name column is optional —
+            headers like &ldquo;Middle Name&rdquo; or &ldquo;Other Names&rdquo;
+            are all recognised, and blank cells import exactly as before.
           </p>
         </form>
       )}
@@ -395,6 +409,22 @@ export default function UploadSupervisors({ isOpen, onClose }: Props) {
                 placeholder="Ibe"
               />
             </div>
+          </div>
+
+          <div className="form-group">
+            <label className="modal-label">Middle Name</label>
+            <input
+              className="modal-input"
+              value={form.middleName ?? ""}
+              onChange={(e) => setField("middleName", e.target.value)}
+              placeholder="Optional"
+              maxLength={MIDDLE_NAME_MAX_LENGTH}
+            />
+            {middleNameProblem && (
+              <p style={{ margin: "4px 0 0", fontSize: 11, color: "#b45309" }}>
+                {middleNameProblem}
+              </p>
+            )}
           </div>
 
           <div className="form-group">

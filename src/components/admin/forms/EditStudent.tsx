@@ -1,3 +1,8 @@
+import {
+  displayName,
+  middleNameError,
+  MIDDLE_NAME_MAX_LENGTH,
+} from "../../../helpers/names";
 import { useMemo, useState, type FormEvent } from "react";
 import { UserRoundPen } from "lucide-react";
 import CustomModal from "../../ui/CustomModal/CustomModal";
@@ -53,6 +58,8 @@ function toForm(student: StudentDetail): StudentRecordForm {
   const { guarantor } = student;
   return {
     firstName: student.user?.firstName ?? "",
+    // Absent, null and "" are the same thing — no middle name.
+    middleName: student.user?.middleName ?? "",
     lastName: student.user?.lastName ?? "",
     email: student.user?.email ?? "",
     phone: student.user?.phone ?? "",
@@ -225,6 +232,8 @@ function EditStudentForm({
     const next: UpdateStudentRecordPayload = {};
     const scalars = [
       "firstName",
+      // Clearing one means sending "", which this diff reports as a change.
+      "middleName",
       "lastName",
       "email",
       "phone",
@@ -243,6 +252,7 @@ function EditStudentForm({
     return next;
   }, [form, initial]);
 
+  const middleNameProblem = middleNameError(form.middleName);
   const isDirty = Object.keys(patch).length > 0;
   // Reissuing is a real action on its own — the admin may want a fresh
   // invoice without correcting a single field — so it unlocks submit too.
@@ -250,7 +260,7 @@ function EditStudentForm({
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!canSubmit) return;
+    if (!canSubmit || middleNameProblem) return;
     setConflict("");
     updateStudent(
       {
@@ -284,7 +294,11 @@ function EditStudentForm({
         onClose={onClose}
         result={result}
         reissued={reissueInvoice}
-        name={[form.firstName, form.lastName].filter(Boolean).join(" ")}
+        name={displayName({
+          firstName: form.firstName,
+          middleName: form.middleName,
+          lastName: form.lastName,
+        })}
       />
     );
   }
@@ -303,7 +317,7 @@ function EditStudentForm({
         className="modal-submit"
         form="edit-student-form"
         type="submit"
-        disabled={isPending || !canSubmit}
+        disabled={isPending || !canSubmit || Boolean(middleNameProblem)}
       >
         {isPending ? (
           <Spinner size={14} color="#fff" text="" />
@@ -321,11 +335,14 @@ function EditStudentForm({
       isOpen={isOpen}
       onClose={onClose}
       title="Edit Student"
-      subtitle={
-        [form.firstName, form.lastName].filter(Boolean).join(" ") ||
-        student.registrationNumber ||
-        "Update student records"
-      }
+      subtitle={displayName(
+        {
+          firstName: form.firstName,
+          middleName: form.middleName,
+          lastName: form.lastName,
+        },
+        student.registrationNumber || "Update student records",
+      )}
       icon={<UserRoundPen size={16} />}
       size="wide"
       footer={footer}
@@ -366,6 +383,29 @@ function EditStudentForm({
                 onChange={(e) => setField("firstName", e.target.value)}
                 placeholder="e.g. Chukwuemeka"
               />
+            </div>
+            <div className="form-group col-2">
+              <label className="modal-label">Middle Name</label>
+              <input
+                type="text"
+                className="modal-input"
+                value={form.middleName}
+                onChange={(e) => setField("middleName", e.target.value)}
+                placeholder="Optional"
+                maxLength={MIDDLE_NAME_MAX_LENGTH}
+              />
+              {middleNameProblem && (
+                <p
+                  style={{
+                    margin: "4px 0 0",
+                    fontSize: 11,
+                    lineHeight: 1.45,
+                    color: "#b45309",
+                  }}
+                >
+                  {middleNameProblem}
+                </p>
+              )}
             </div>
             <div className="form-group col-2">
               <label className="modal-label">

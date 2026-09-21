@@ -1,3 +1,4 @@
+import { displayName, nameInitials } from "../../../helpers/names";
 import React, { useState } from "react";
 import CustomModal from "../../ui/CustomModal/CustomModal";
 import Spinner from "../../ui/Spinner/Spinner";
@@ -85,7 +86,7 @@ export default function UpdateStudentStatus({
       subtitle={
         isBulk
           ? "Choose one status to apply to all selected students."
-          : `Change IT status for ${[students[0]?.user?.firstName, students[0]?.user?.lastName].filter(Boolean).join(" ") || students[0]?.registrationNumber || "student"}`
+          : `Change IT status for ${displayName(students[0]?.user, students[0]?.registrationNumber || "student")}`
       }
       size="medium"
       footer={
@@ -127,8 +128,8 @@ export default function UpdateStudentStatus({
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {students.map((s) => {
-              const name = [s.user?.firstName, s.user?.lastName].filter(Boolean).join(" ") || s.registrationNumber || s._id;
-              const initials = `${s.user?.firstName?.[0] || ""}${s.user?.lastName?.[0] || ""}`.toUpperCase() || "??";
+              const name = displayName(s.user, s.registrationNumber || s._id);
+              const initials = nameInitials(s.user, "??");
               return (
                 <div
                   key={s._id}

@@ -1,3 +1,4 @@
+import { displayName } from "../../../helpers/names";
 import React from "react";
 import GeneralTable from "../../ui/GeneralTable/GeneralTable";
 import type { TableMeta, Column } from "../../ui/GeneralTable/GeneralTable";
@@ -102,7 +103,7 @@ const AdminCertTable: React.FC<AdminCertTableProps> = ({
     {
       header: "Student",
       render: (req) => {
-        const fullName = [req.user?.firstName, req.user?.lastName].filter(Boolean).join(" ");
+        const fullName = displayName(req.user);
         return (
           <div style={{ display: "flex", flexDirection: "column" }}>
             <span style={{ fontWeight: 600 }}>

@@ -14,6 +14,10 @@ export interface StudentUser {
   _id: string;
   email: string;
   firstName: string;
+  /** Optional everywhere. Absent, `null` and `""` all mean "no middle name". */
+  middleName?: string;
+  /** Composed by the API — already includes the middle name. */
+  name?: string;
   lastName: string;
   phone: string;
 }
@@ -127,6 +131,8 @@ export interface StudentDetailResponse {
  */
 export interface UpdateStudentRecordPayload {
   firstName?: string;
+  /** Optional everywhere. Absent, `null` and `""` all mean "no middle name". */
+  middleName?: string;
   lastName?: string;
   email?: string;
   phone?: string;

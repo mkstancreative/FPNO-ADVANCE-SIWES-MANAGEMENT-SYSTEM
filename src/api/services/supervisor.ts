@@ -5,13 +5,18 @@ import type {
   CreateSupervisorPayload,
   CreateSupervisorResponse,
   UpdateSupervisorDepartmentsPayload,
+  UpdateSupervisorPayload,
+  UpdateSupervisorResponse,
   UpdateSupervisorDepartmentsResponse,
 } from "../types/supervisor";
 
 export const getSupervisorTemplate = async (): Promise<Blob> => {
-  const response = await api.get("/admin/supervisors/school/download-template", {
-    responseType: "blob",
-  });
+  const response = await api.get(
+    "/admin/supervisors/school/download-template",
+    {
+      responseType: "blob",
+    },
+  );
   return response.data;
 };
 
@@ -44,6 +49,24 @@ export const updateSupervisorDepartments = async (
 ): Promise<UpdateSupervisorDepartmentsResponse> => {
   const response = await api.put(
     `/admin/supervisors/school/${id}/departments`,
+    payload,
+  );
+  return response.data;
+};
+
+/**
+ * Admin correction of a supervisor's own details.
+ * PUT /admin/supervisors/school/:id
+ *
+ * Partial — pass only the fields that changed. Departments are not editable
+ * here; they have their own endpoint because they decide student ownership.
+ */
+export const updateSupervisor = async (
+  id: string,
+  payload: UpdateSupervisorPayload,
+): Promise<UpdateSupervisorResponse> => {
+  const response = await api.put<UpdateSupervisorResponse>(
+    `/admin/supervisors/school/${id}`,
     payload,
   );
   return response.data;

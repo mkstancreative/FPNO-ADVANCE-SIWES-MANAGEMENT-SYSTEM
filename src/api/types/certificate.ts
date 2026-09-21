@@ -10,11 +10,7 @@
  * student still owes money, but only `pending` has an RRR to resume from.
  */
 export type CertificatePaymentStatus =
-  | "unpaid"
-  | "pending"
-  | "successful"
-  | "failed"
-  | "covered";
+  "unpaid" | "pending" | "successful" | "failed" | "covered";
 
 export type CertificateApprovalStatus = "pending" | "approved" | "rejected";
 
@@ -23,10 +19,7 @@ export type CertificateApprovalStatus = "pending" | "approved" | "rejected";
  * paying. Separate from `approvalStatus`, which covers the certificate itself.
  */
 export type CertificateDocumentStatus =
-  | "pending"
-  | "submitted"
-  | "approved"
-  | "rejected";
+  "pending" | "submitted" | "approved" | "rejected";
 
 /**
  * The single field that decides which screen a student sees. Prefer this over
@@ -117,6 +110,8 @@ export interface AdminCertificateRequest {
     _id: string;
     email: string;
     firstName: string;
+    /** Optional everywhere. Absent, `null` and `""` all mean "no middle name". */
+    middleName?: string;
     lastName: string;
   };
   graduationYear: number;

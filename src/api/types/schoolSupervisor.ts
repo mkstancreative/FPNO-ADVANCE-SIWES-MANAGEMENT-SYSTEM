@@ -17,6 +17,8 @@ export interface User {
   _id: string;
   email: string;
   firstName: string;
+  /** Optional everywhere. Absent, `null` and `""` all mean "no middle name". */
+  middleName?: string;
   lastName: string;
   phone: string;
 }
@@ -152,11 +154,7 @@ export interface StudentDetailResponse {
 // ─── Supervisor Logbook Types ─────────────────────────────
 
 export type LogbookStatus =
-  | "submitted"
-  | "approved"
-  | "rejected"
-  | "needs_revision"
-  | "draft";
+  "submitted" | "approved" | "rejected" | "needs_revision" | "draft";
 
 export interface LogbookIndustrialReview {
   rating?: number;

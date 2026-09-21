@@ -1,3 +1,4 @@
+import { displayName, nameInitials } from "../../../helpers/names";
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -114,10 +115,8 @@ export default function AdminStudentView() {
     );
   }
 
-  const fullName = [s.user?.firstName, s.user?.lastName].filter(Boolean).join(" ") || s.registrationNumber;
-  const initials =
-    `${s.user?.firstName?.charAt(0) || ""}${s.user?.lastName?.charAt(0) || ""}`.toUpperCase() ||
-    "??";
+  const fullName = displayName(s.user, s.registrationNumber);
+  const initials = nameInitials(s.user, "") || "??";
   const batchName = typeof s.batch === "object" ? s.batch.name : s.batch;
 
   return (
@@ -157,9 +156,7 @@ export default function AdminStudentView() {
           <button
             className="sv-edit-btn"
             onClick={() =>
-              openModal(
-                <EditStudent isOpen onClose={closeModal} student={s} />,
-              )
+              openModal(<EditStudent isOpen onClose={closeModal} student={s} />)
             }
           >
             <Pencil size={13} /> Update Profile
@@ -284,7 +281,7 @@ export default function AdminStudentView() {
           <Section title="Academic Supervisor" icon={<User size={15} />}>
             <InfoRow
               label="Name"
-              value={[s.supervisors.school.user?.firstName, s.supervisors.school.user?.lastName].filter(Boolean).join(" ") || "—"}
+              value={displayName(s.supervisors.school.user, "—")}
             />
             <InfoRow label="Email" value={s.supervisors.school.user?.email} />
             <InfoRow label="Phone" value={s.supervisors.school.user?.phone} />

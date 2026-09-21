@@ -1,3 +1,4 @@
+import { displayName } from "../../../helpers/names";
 import { usePermissions } from "../../../hooks/usePermissions";
 import { Eye, Star } from "lucide-react";
 import GeneralTable from "../../ui/GeneralTable/GeneralTable";
@@ -53,9 +54,7 @@ export default function InternshipsTable({
       render: (row) => {
         const s = row.student;
         if (typeof s === "string") return s;
-        const fullName = [s.user?.firstName, s.user?.lastName]
-          .filter(Boolean)
-          .join(" ");
+        const fullName = displayName(s.user);
         return (
           <div className="cell-stack">
             <span

@@ -1,3 +1,4 @@
+import { displayName } from "../../helpers/names";
 import { useState } from "react";
 import { Users, Zap } from "lucide-react";
 import AddButton from "../../components/ui/AddButton/AddButton";
@@ -79,9 +80,7 @@ export default function UnAssignedStudents() {
     navigate(`/admin/students/${student._id}/progress`);
 
   const openViewReport = (student: Student) => {
-    const fullName = [student.user?.firstName, student.user?.lastName]
-      .filter(Boolean)
-      .join(" ");
+    const fullName = displayName(student.user);
     const name = encodeURIComponent(
       fullName || student.registrationNumber || "Student",
     );

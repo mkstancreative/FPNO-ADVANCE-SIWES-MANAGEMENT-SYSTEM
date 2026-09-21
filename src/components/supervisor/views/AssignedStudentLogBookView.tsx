@@ -1,3 +1,4 @@
+import { displayName } from "../../../helpers/names";
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -175,7 +176,10 @@ export default function AssignedStudentLogBookView() {
               <div className="lbv2-sc-row">
                 <span className="lbv2-sc-label">Student</span>
                 <span className="lbv2-sc-value">
-                  {[student.user?.firstName, student.user?.lastName].filter(Boolean).join(" ") || student.registrationNumber || "Student"}
+                  {displayName(
+                    student.user,
+                    student.registrationNumber || "Student",
+                  )}
                 </span>
               </div>
               <div className="lbv2-sc-row">
@@ -205,7 +209,9 @@ export default function AssignedStudentLogBookView() {
               <div className="lbv2-sc-row">
                 <span className="lbv2-sc-label">Status</span>
                 <span className="lbv2-sc-value">
-                  <StatusBadge status={logbook?.internship?.placement?.status ?? "N/A"} />
+                  <StatusBadge
+                    status={logbook?.internship?.placement?.status ?? "N/A"}
+                  />
                 </span>
               </div>
             </div>

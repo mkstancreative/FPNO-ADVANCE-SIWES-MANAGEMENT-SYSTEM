@@ -1,3 +1,4 @@
+import { nameInitials } from "../../helpers/names";
 import {
   BookOpen,
   Building2,
@@ -57,8 +58,7 @@ export default function DashBoardAdmin() {
   const totalInternships = resp.data?.totalInternships ?? 0;
 
   const firstName = user?.firstName ?? "Admin";
-  const initials =
-    `${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`.toUpperCase();
+  const initials = nameInitials(user);
 
   const placementRate =
     students.total > 0

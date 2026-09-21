@@ -1,4 +1,5 @@
-import { UserRoundCog, Users } from "lucide-react";
+import { displayName } from "../../../helpers/names";
+import { UserRoundCog, UserRoundPen, Users } from "lucide-react";
 import { useSupervisors } from "../../../hooks/useSupervisor";
 import type {
   Supervisor,
@@ -17,6 +18,8 @@ interface Props {
   onLimitChange: (l: number) => void;
   /** Omitted for coordinators — department ownership is admin-only. */
   onEditDepartments?: (supervisor: Supervisor) => void;
+  /** Omitted for coordinators — correcting a record is admin-only. */
+  onEdit?: (supervisor: Supervisor) => void;
 }
 
 export default function SupervisorsTable({
@@ -27,6 +30,7 @@ export default function SupervisorsTable({
   onPageChange,
   onLimitChange,
   onEditDepartments,
+  onEdit,
 }: Props) {
   const params: SupervisorParams = {
     page,
@@ -55,9 +59,7 @@ export default function SupervisorsTable({
     {
       header: "Name",
       render: (sv) => {
-        const fullName = [sv.user?.firstName, sv.user?.lastName]
-          .filter(Boolean)
-          .join(" ");
+        const fullName = displayName(sv.user);
         return (
           <div className="cell-stack">
             <span
@@ -127,8 +129,17 @@ export default function SupervisorsTable({
       header: "Actions",
       render: (sv) => (
         <ActionDropdown
-          actions={
-            onEditDepartments
+          actions={[
+            ...(onEdit
+              ? [
+                  {
+                    label: "Edit Record",
+                    icon: <UserRoundPen size={13} />,
+                    onClick: () => onEdit(sv),
+                  },
+                ]
+              : []),
+            ...(onEditDepartments
               ? [
                   {
                     label: "Edit Departments",
@@ -136,8 +147,8 @@ export default function SupervisorsTable({
                     onClick: () => onEditDepartments(sv),
                   },
                 ]
-              : []
-          }
+              : []),
+          ]}
         />
       ),
     },

@@ -1,3 +1,4 @@
+import { displayName } from "../../../helpers/names";
 import { usePermissions } from "../../../hooks/usePermissions";
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -120,9 +121,7 @@ export default function InternshipView() {
 
   const handleViewReport = () => {
     if (!student) return;
-    const fullName = [student.user?.firstName, student.user?.lastName]
-      .filter(Boolean)
-      .join(" ");
+    const fullName = displayName(student.user);
     const name = encodeURIComponent(
       fullName || student.registrationNumber || "Student",
     );

@@ -1,3 +1,4 @@
+import { displayName } from "../../helpers/names";
 import { useEffect, useState } from "react";
 import { KeyRound, Search, UsersRound } from "lucide-react";
 import SearchInput from "../../components/ui/SearchInput/SearchInput";
@@ -44,12 +45,10 @@ export default function UserAccounts() {
   }, [search]);
 
   const canSearch = query.length >= MIN_QUERY;
-  const {
-    data,
-    isFetching,
-    isError,
-    error,
-  } = useAdminUserLookup(query, canSearch);
+  const { data, isFetching, isError, error } = useAdminUserLookup(
+    query,
+    canSearch,
+  );
 
   const users: AdminUserLookupItem[] = data?.data ?? [];
 
@@ -63,10 +62,10 @@ export default function UserAccounts() {
       header: "User",
       render: (u) => (
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <span style={{ fontWeight: 600 }}>
-            {u.name || `${u?.firstName || ""} ${u?.lastName || ""}`.trim() || "—"}
-          </span>
-          <span style={{ fontSize: 11.5, color: "var(--color-text-secondary)" }}>
+          <span style={{ fontWeight: 600 }}>{displayName(u, "—")}</span>
+          <span
+            style={{ fontSize: 11.5, color: "var(--color-text-secondary)" }}
+          >
             {u.email}
           </span>
         </div>
@@ -139,7 +138,11 @@ export default function UserAccounts() {
           onClear={() => setSearch("")}
           placeholder="Search by name, email, or registration number…"
         />
-        <ResetButton onClick={() => { setSearch(""); }} />
+        <ResetButton
+          onClick={() => {
+            setSearch("");
+          }}
+        />
       </div>
 
       <div className="table-wrapper" style={{ marginTop: 24 }}>
@@ -150,8 +153,8 @@ export default function UserAccounts() {
             </div>
             <h3>Search for a user</h3>
             <p>
-              Type at least {MIN_QUERY} characters — a name, an email address, or
-              a registration number — to look up an account.
+              Type at least {MIN_QUERY} characters — a name, an email address,
+              or a registration number — to look up an account.
             </p>
           </div>
         ) : isError ? (
@@ -161,8 +164,9 @@ export default function UserAccounts() {
             </div>
             <h3>Lookup failed</h3>
             <p>
-              {(error as { response?: { data?: { message?: string } } })?.response
-                ?.data?.message || "Could not search users. Please try again."}
+              {(error as { response?: { data?: { message?: string } } })
+                ?.response?.data?.message ||
+                "Could not search users. Please try again."}
             </p>
           </div>
         ) : isFetching && users.length === 0 ? (

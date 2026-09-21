@@ -1,3 +1,4 @@
+import { displayName, nameInitials } from "../../helpers/names";
 import React from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import {
@@ -112,7 +113,9 @@ export default function AssignedStudentPage() {
   const batchId = searchParams.get("batchId") ?? undefined;
   const navigate = useNavigate();
 
-  const { data: response, isLoading } = useStudentDetail(studentId, { batchId });
+  const { data: response, isLoading } = useStudentDetail(studentId, {
+    batchId,
+  });
   const { data: evaluationsResp } = useStudentEvaluations(studentId);
 
   const s = response?.data?.student;
@@ -122,10 +125,8 @@ export default function AssignedStudentPage() {
     "",
   );
 
-  const fullName = s ? `${s.user.firstName} ${s.user.lastName}` : "Student";
-  const initials = s
-    ? `${s.user.firstName[0]}${s.user.lastName[0]}`.toUpperCase()
-    : "?";
+  const fullName = s ? displayName(s.user, "Student") : "Student";
+  const initials = s ? nameInitials(s.user) : "?";
 
   return (
     <div className="page-container">

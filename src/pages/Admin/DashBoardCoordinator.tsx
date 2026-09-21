@@ -1,3 +1,4 @@
+import { nameInitials } from "../../helpers/names";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowRight,
@@ -92,8 +93,7 @@ export default function DashBoardCoordinator() {
   const totalQueue = certQueue + companyQueue + placementQueue;
 
   const firstName = user?.firstName ?? "Coordinator";
-  const initials =
-    `${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`.toUpperCase();
+  const initials = nameInitials(user);
   const appName = resolveName(settingsResp?.settings);
 
   const queues = [
@@ -149,7 +149,6 @@ export default function DashBoardCoordinator() {
         }
         initials={initials}
         gradient="linear-gradient(135deg, #0d9488 100%)"
-        
       />
 
       {/* ── The queues this role exists to clear ───────────────────────────── */}

@@ -1,16 +1,17 @@
 // ─── Auth Types ───────────────────────────────────────────────────────────────
 
 export type UserRole =
-  | "student"
-  | "admin"
-  | "coordinator"
-  | "school_supervisor";
+  "student" | "admin" | "coordinator" | "school_supervisor";
 
 export interface AuthUser {
   id: string;
   email: string;
   firstName: string;
+  /** Optional everywhere. Absent, `null` and `""` all mean "no middle name". */
+  middleName?: string;
   lastName: string;
+  /** Composed by the API — already includes the middle name. */
+  fullName?: string;
   role: UserRole;
   mustChangePassword?: boolean;
 }
@@ -56,6 +57,8 @@ export interface ResetPasswordPayload {
 
 export interface RegisterPayload {
   firstName: string;
+  /** Optional everywhere. Absent, `null` and `""` all mean "no middle name". */
+  middleName?: string;
   lastName: string;
   email: string;
   phone: string;
@@ -69,7 +72,11 @@ export interface MeUserInfo {
   id: string;
   email: string;
   firstName: string;
+  /** Optional everywhere. Absent, `null` and `""` all mean "no middle name". */
+  middleName?: string;
   lastName: string;
+  /** Composed by the API — already includes the middle name. */
+  fullName?: string;
   role: UserRole;
 }
 

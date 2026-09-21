@@ -1,3 +1,4 @@
+import { displayName } from "../../../helpers/names";
 import { Eye, KeyRound, Mail, UserRoundPen } from "lucide-react";
 import GeneralTable from "../../ui/GeneralTable/GeneralTable";
 import type { Column, TableMeta } from "../../ui/GeneralTable/GeneralTable";
@@ -60,7 +61,7 @@ export default function StaffTable({
     {
       header: "Coordinator",
       render: (s) => {
-        const fullName = [s.firstName, s.lastName].filter(Boolean).join(" ");
+        const fullName = displayName(s, "—");
         return (
           <div className="staff-td-identity">
             <span className="staff-td-name">{fullName || "—"}</span>

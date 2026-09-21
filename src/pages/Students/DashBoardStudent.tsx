@@ -1,3 +1,4 @@
+import { displayName } from "../../helpers/names";
 import { CheckCircle2, TrendingUp } from "lucide-react";
 import { useCallback, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -40,10 +41,7 @@ import type {
   CertificateNextAction,
   RRRData,
 } from "../../api/types/certificate";
-import {
-  isActionUnlocked,
-  isFeeSettled,
-} from "../../helpers/certificateFlow";
+import { isActionUnlocked, isFeeSettled } from "../../helpers/certificateFlow";
 import { useStudentFeeTrack } from "../../hooks/useStudentFeeTrack";
 import { fmt, ago } from "../../helpers/utilities";
 import { useInternship } from "../../context/useInternship";
@@ -158,7 +156,9 @@ export default function DashBoardStudent() {
   /** Opens the student's own RRR check, on whichever flow they belong to. */
   const openVerifyRRR = useCallback(
     (defaultRRR?: string) => {
-      openModal(<VerifyRRRModal defaultRRR={defaultRRR} onClose={closeModal} />);
+      openModal(
+        <VerifyRRRModal defaultRRR={defaultRRR} onClose={closeModal} />,
+      );
     },
     [openModal, closeModal],
   );
@@ -296,7 +296,10 @@ export default function DashBoardStudent() {
                     Request ID:
                   </span>
                   <span style={{ fontWeight: 600 }}>
-                    #{data.requestId ? data.requestId.slice(-8).toUpperCase() : ""}
+                    #
+                    {data.requestId
+                      ? data.requestId.slice(-8).toUpperCase()
+                      : ""}
                   </span>
                 </div>
                 <div
@@ -323,14 +326,11 @@ export default function DashBoardStudent() {
                   </span>
                   <span style={{ fontWeight: 600 }}>
                     {data.requestDate
-                      ? new Date(data.requestDate).toLocaleDateString(
-                        "en-GB",
-                        {
+                      ? new Date(data.requestDate).toLocaleDateString("en-GB", {
                           day: "numeric",
                           month: "long",
                           year: "numeric",
-                        },
-                      )
+                        })
                       : "Pending"}
                   </span>
                 </div>
@@ -431,11 +431,7 @@ export default function DashBoardStudent() {
       <div style={{ position: "absolute", left: "-9999px", top: "-9999px" }}>
         <Certificate
           ref={certRef}
-          studentName={
-            certData
-              ? `${certData.user.firstName} ${certData.user.lastName}`
-              : student.name
-          }
+          studentName={certData ? displayName(certData.user) : student.name}
           regNumber={
             certData?.student.registrationNumber || student.registrationNumber
           }

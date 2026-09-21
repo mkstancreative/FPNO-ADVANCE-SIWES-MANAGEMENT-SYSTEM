@@ -1,3 +1,4 @@
+import { displayName } from "../../../helpers/names";
 import { useState } from "react";
 import { CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import CustomModal from "../../ui/CustomModal/CustomModal";
@@ -140,7 +141,10 @@ export default function VerifyPlacements({
                         }}
                       >
                         {p
-                          ? [p.student?.user?.firstName, p.student?.user?.lastName].filter(Boolean).join(" ") || p.student?.registrationNumber || err.placementId
+                          ? displayName(
+                              p.student?.user,
+                              p.student?.registrationNumber || err.placementId,
+                            )
                           : err.placementId}
                       </span>
                       <span style={{ color: "#ef4444" }}>{err.error}</span>
@@ -207,7 +211,7 @@ export default function VerifyPlacements({
       subtitle={
         isBulk
           ? `Processing ${placements.length} selected placements`
-          : `Reviewing placement for ${[placement?.student?.user?.firstName, placement?.student?.user?.lastName].filter(Boolean).join(" ") || placement?.student?.registrationNumber || "student"}`
+          : `Reviewing placement for ${displayName(placement?.student?.user, placement?.student?.registrationNumber || "student")}`
       }
       size="medium"
       footer={footer}

@@ -1,3 +1,4 @@
+import { displayName } from "../../helpers/names";
 import { useCallback, useMemo, useState } from "react";
 import {
   Briefcase,
@@ -489,7 +490,7 @@ function PlacementInfo({ data }: { data: PlacementStatusData }) {
           <div className="pl-info-rows">
             <InfoRow
               label="Name"
-              value={`${supervisors.school.user.firstName ?? ""} ${supervisors.school.user.lastName ?? ""}`}
+              value={displayName(supervisors.school.user)}
             />
             <InfoRow
               label="Email"

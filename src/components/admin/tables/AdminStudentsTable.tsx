@@ -1,3 +1,4 @@
+import { displayName } from "../../../helpers/names";
 import { Eye, Pencil } from "lucide-react";
 import GeneralTable from "../../ui/GeneralTable/GeneralTable";
 import ActionDropDown from "../../ui/ActionDropdown/ActionDropDown";
@@ -178,7 +179,7 @@ export default function AdminStudentsTable({
     {
       header: "Student",
       render: (row) => {
-        const fullName = [row.user?.firstName, row.user?.lastName].filter(Boolean).join(" ");
+        const fullName = displayName(row.user);
         return (
           <Avatar
             src={row.passportPhoto}

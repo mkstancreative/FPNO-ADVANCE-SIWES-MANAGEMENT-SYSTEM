@@ -1,3 +1,4 @@
+import { nameInitials } from "../../helpers/names";
 import {
   BookOpen,
   CheckCircle2,
@@ -52,8 +53,7 @@ export default function DashBoardSupervisor() {
       : 0;
 
   const firstName = user?.firstName ?? "Supervisor";
-  const initials =
-    `${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`.toUpperCase();
+  const initials = nameInitials(user);
 
   return (
     <div className="db-page">

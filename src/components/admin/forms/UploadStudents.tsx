@@ -280,7 +280,11 @@ export default function UploadStudents({
         >
           <strong>Note:</strong> The Excel file must follow the template format.
           Each row should contain student details including name, email,
-          registration number and department.
+          registration number and department. A middle-name column is optional
+          &mdash; headers like &ldquo;Middle Name&rdquo; or &ldquo;Other
+          Names&rdquo; are all recognised, and blank cells import exactly as
+          before. Column headers are matched loosely, so casing, spaces and
+          punctuation do not have to match the template exactly.
         </p>
       </form>
     </CustomModal>

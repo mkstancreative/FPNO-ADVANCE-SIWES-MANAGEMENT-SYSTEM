@@ -1,3 +1,4 @@
+import { displayName } from "../../../helpers/names";
 import { useState } from "react";
 import { UserRoundCog } from "lucide-react";
 import CustomModal from "../../ui/CustomModal/CustomModal";
@@ -69,7 +70,7 @@ export default function EditSupervisorDepartments({
       isOpen={isOpen}
       onClose={handleClose}
       title="Edit Departments"
-      subtitle={`${[supervisor.user?.firstName, supervisor.user?.lastName].filter(Boolean).join(" ") || supervisor.staffId || "Supervisor"} — owned departments`}
+      subtitle={`${displayName(supervisor.user, supervisor.staffId || "Supervisor")} — owned departments`}
       icon={<UserRoundCog size={16} />}
       size="medium"
       footer={footer}
@@ -87,9 +88,9 @@ export default function EditSupervisorDepartments({
             lineHeight: 1.6,
           }}
         >
-          Adding a department assigns its students to this supervisor;
-          removing one releases its students. A department
-          already owned by another supervisor can't be added here.
+          Adding a department assigns its students to this supervisor; removing
+          one releases its students. A department already owned by another
+          supervisor can't be added here.
         </p>
         <div className="form-group">
           <label className="modal-label">

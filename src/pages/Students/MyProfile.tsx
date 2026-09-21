@@ -1,3 +1,4 @@
+import { displayName, nameInitials } from "../../helpers/names";
 import { useState, useRef, type FormEvent } from "react";
 import {
   User,
@@ -207,9 +208,7 @@ export default function MyProfile() {
     },
   };
 
-  const initials = user
-    ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
-    : "??";
+  const initials = user ? nameInitials(user) : "??";
 
   const apiBase = (import.meta.env.VITE_API_URL ?? "").replace(
     /\/api(\/v\d+)?\/?$/,
@@ -290,9 +289,7 @@ export default function MyProfile() {
                     }}
                   />
                 </div>
-                <div className="mp-name">
-                  {meData?.data.user.firstName} {meData?.data.user.lastName}
-                </div>
+                <div className="mp-name">{displayName(meData?.data.user)}</div>
                 <div className="mp-email">{meData?.data.user.email}</div>
                 <div className="mp-badges">
                   <span className="mp-role-badge">

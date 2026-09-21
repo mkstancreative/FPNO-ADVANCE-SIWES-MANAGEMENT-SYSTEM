@@ -1,3 +1,4 @@
+import { middleNameError, MIDDLE_NAME_MAX_LENGTH } from "../../helpers/names";
 import { useState, type FormEvent, type ChangeEvent } from "react";
 import { Link } from "react-router-dom";
 import "../Login/Login.css";
@@ -18,6 +19,7 @@ const Register = () => {
 
   const [formData, setFormData] = useState({
     firstName: "",
+    middleName: "",
     lastName: "",
     email: "",
     phone: "",
@@ -50,6 +52,12 @@ const Register = () => {
     }
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
+      return;
+    }
+    // Mirror the server rule rather than letting a 400 bounce the whole form.
+    const middleNameProblem = middleNameError(formData.middleName);
+    if (middleNameProblem) {
+      setError(middleNameProblem);
       return;
     }
     const payload = Object.fromEntries(
@@ -101,6 +109,25 @@ const Register = () => {
                     onChange={handleChange}
                     autoComplete="given-name"
                     required
+                  />
+                </div>
+              </div>
+
+              <div className="register-form-group">
+                <label className="form-label" htmlFor="middleName">
+                  Middle Name <span className="form-optional">(optional)</span>
+                </label>
+                <div className="form-input-wrap">
+                  <input
+                    id="middleName"
+                    name="middleName"
+                    type="text"
+                    className="form-input"
+                    placeholder="Chidinma"
+                    value={formData.middleName}
+                    onChange={handleChange}
+                    autoComplete="additional-name"
+                    maxLength={MIDDLE_NAME_MAX_LENGTH}
                   />
                 </div>
               </div>
@@ -214,7 +241,9 @@ const Register = () => {
                   <button
                     type="button"
                     className="register-icon-btn"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (

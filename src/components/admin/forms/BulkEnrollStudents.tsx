@@ -1,3 +1,4 @@
+import { displayName } from "../../../helpers/names";
 import { useState } from "react";
 import { UserPlus } from "lucide-react";
 import CustomModal from "../../ui/CustomModal/CustomModal";
@@ -45,7 +46,7 @@ export default function BulkEnrollStudents({
   const students = studentsData?.data ?? [];
 
   const studentOptions = students.map((s) => {
-    const fullName = [s.user?.firstName, s.user?.lastName].filter(Boolean).join(" ");
+    const fullName = displayName(s.user);
     return {
       id: s._id,
       name: fullName

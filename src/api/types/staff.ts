@@ -9,7 +9,11 @@ export interface StaffUser {
   _id: string;
   email: string;
   firstName?: string;
+  /** Optional everywhere. Absent, `null` and `""` all mean "no middle name". */
+  middleName?: string;
   lastName?: string;
+  /** Composed by the API — already includes the middle name. */
+  name?: string;
   phone?: string;
   /** "coordinator" for everything this screen creates; admins can appear too. */
   role?: string;
@@ -58,6 +62,8 @@ export interface StaffParams {
  */
 export interface UpdateStaffPayload {
   firstName?: string;
+  /** Send `""` to clear an existing middle name. */
+  middleName?: string;
   lastName?: string;
   email?: string;
   phone?: string;
@@ -84,6 +90,8 @@ export interface UpdateStaffResponse {
 
 export interface NewStaffUser {
   firstName: string;
+  /** Optional — omitting the key and sending `""` behave identically. */
+  middleName?: string;
   lastName: string;
   email: string;
 }
@@ -104,7 +112,10 @@ export interface CreatedStaffAccount {
   _id?: string;
   id?: string;
   firstName?: string;
+  middleName?: string;
   lastName?: string;
+  /** Composed by the API — already includes the middle name. */
+  name?: string;
   email: string;
   /**
    * The first password, if the backend hands it back. The exact spelling is
@@ -120,14 +131,16 @@ export interface CreatedStaffAccount {
 export interface CreateStaffResponse {
   success: boolean;
   message?: string;
-  data?: {
-    total?: number;
-    successful?: number;
-    failed?: number;
-    created?: CreatedStaffAccount[];
-    users?: CreatedStaffAccount[];
-    errors?: CreateStaffError[];
-  } | CreatedStaffAccount[];
+  data?:
+    | {
+        total?: number;
+        successful?: number;
+        failed?: number;
+        created?: CreatedStaffAccount[];
+        users?: CreatedStaffAccount[];
+        errors?: CreateStaffError[];
+      }
+    | CreatedStaffAccount[];
 }
 
 /** Pull the issued password out of whichever field carries it. */

@@ -1,3 +1,4 @@
+import { displayName, nameInitials } from "../../../helpers/names";
 import React from "react";
 import {
   User,
@@ -126,10 +127,8 @@ export default function AssignedStudentView({
     "",
   );
 
-  const fullName = s ? [s.user?.firstName, s.user?.lastName].filter(Boolean).join(" ") || s.registrationNumber : "";
-  const initials = s
-    ? `${s.user?.firstName?.[0] || ""}${s.user?.lastName?.[0] || ""}`.toUpperCase() || "?"
-    : "?";
+  const fullName = s ? displayName(s.user, s.registrationNumber) : "";
+  const initials = s ? nameInitials(s.user) : "?";
 
   return (
     <CustomModal

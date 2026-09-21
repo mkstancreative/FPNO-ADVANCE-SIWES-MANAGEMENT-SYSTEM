@@ -6,12 +6,14 @@ import {
   uploadSupervisorsExcel,
   createSupervisor,
   updateSupervisorDepartments,
+  updateSupervisor,
 } from "../api/services/supervisor";
-import { getApiErrorMessage } from "../api/services/api";
+import { getApiErrorMessage, getApiErrorStatus } from "../api/services/api";
 import type {
   SupervisorParams,
   CreateSupervisorPayload,
   UpdateSupervisorDepartmentsPayload,
+  UpdateSupervisorPayload,
 } from "../api/types/supervisor";
 
 // ── Download template ─────────────────────────────────────────────────────────
@@ -87,5 +89,28 @@ export const useSupervisors = (params?: SupervisorParams) => {
   return useQuery({
     queryKey: ["supervisors", params],
     queryFn: () => getSupervisors(params),
+  });
+};
+
+// ── Update a supervisor's own record ──────────────────────────────────────────
+export const useUpdateSupervisor = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: UpdateSupervisorPayload;
+    }) => updateSupervisor(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["supervisors"] });
+    },
+    // A 409 is handled in the form, which keeps the admin in place to fix the
+    // clashing email or staff ID.
+    onError: (err: unknown) => {
+      if (getApiErrorStatus(err) === 409) return;
+      toast.error(getApiErrorMessage(err, "Failed to update supervisor."));
+    },
   });
 };

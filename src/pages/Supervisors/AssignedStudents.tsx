@@ -1,3 +1,4 @@
+import { displayName } from "../../helpers/names";
 import { Layers } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -66,7 +67,7 @@ export default function AssignedStudents() {
   };
 
   const handleView = (student: StudentSummary) => {
-    const studentName = `${student.user.firstName} ${student.user.lastName}`;
+    const studentName = displayName(student.user);
     navigate(
       `/supervisor/students/${student._id}/internships?name=${encodeURIComponent(studentName)}`,
     );

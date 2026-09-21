@@ -4,6 +4,8 @@ export interface AdminUserLookupItem {
   _id?: string;
   name?: string;
   firstName?: string;
+  /** Optional everywhere. Absent, `null` and `""` all mean "no middle name". */
+  middleName?: string;
   lastName?: string;
   email: string;
   role: string;
