@@ -36,6 +36,7 @@ const RefundsAndBalances = lazy(
 );
 const SystemSettings = lazy(() => import("../pages/Admin/SystemSettings"));
 const UserAccounts = lazy(() => import("../pages/Admin/UserAccounts"));
+const Staff = lazy(() => import("../pages/Admin/Staff"));
 const Internships = lazy(() => import("../pages/Admin/Internships"));
 const InternshipView = lazy(
   () => import("../components/admin/view/InternshipView"),
@@ -90,6 +91,7 @@ export default function AdminRoutes() {
         <Route path="notifications" element={<Notifications />} />
         <Route path="change-password" element={<ChangePassword />} />
         <Route path="user-accounts" element={<UserAccounts />} />
+        <Route path="staff" element={<Staff />} />
         <Route path="settings" element={<SystemSettings />} />
 
         <Route path="*" element={<NotFound />} />

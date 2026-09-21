@@ -10,6 +10,7 @@ import {
   ReceiptText,
   Scale,
   Settings2,
+  UserRoundCog,
   UsersRound,
 } from "lucide-react";
 
@@ -129,6 +130,11 @@ export const ADMIN_NAV = [
   {
     section: "Settings",
     items: [
+      {
+        label: "Staff",
+        icon: <UserRoundCog size={18} />,
+        path: "/admin/staff",
+      },
       {
         label: "User Accounts",
         icon: <UsersRound size={18} />,
