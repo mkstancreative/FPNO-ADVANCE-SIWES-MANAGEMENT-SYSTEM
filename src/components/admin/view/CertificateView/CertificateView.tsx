@@ -1,3 +1,4 @@
+import { formatItPeriod } from "../../../../helpers/utilities";
 import { displayName } from "../../../../helpers/names";
 import React from "react";
 import CustomModal from "../../../ui/CustomModal/CustomModal";
@@ -11,18 +12,158 @@ import {
   MapPin,
   Calendar,
   ExternalLink,
+  AlertCircle,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 import StatusBadge from "../../../ui/StatusBadge/StatusBadge";
-import { useCertDetails } from "../../../../hooks/useCertificate";
+import Spinner from "../../../ui/Spinner/Spinner";
+import {
+  useCertDetails,
+  useBulkApproveCert,
+  useBulkRejectCert,
+} from "../../../../hooks/useCertificate";
 
 interface CertificateViewProps {
   id: string;
   onClose: () => void;
 }
 
+/** What the bulk endpoints report back for the one certificate sent. */
+interface BulkOutcome {
+  success: boolean;
+  message?: string;
+  data?: {
+    successful?: string[];
+    failed?: { id: string; reason: string }[];
+  };
+}
+
+/**
+ * The reviewer is either reading the request or committing to a decision on
+ * it. Both decisions confirm in place rather than in a second modal — the
+ * whole point of this screen is having the documents in front of you while you
+ * decide, and a rejection reason written without them is a worse reason.
+ */
+type Mode = "view" | "approve" | "reject";
+
 const CertificateView: React.FC<CertificateViewProps> = ({ id, onClose }) => {
   const { data: certResponse, isLoading } = useCertDetails(id);
   const req: AdminCertificateRequest | undefined = certResponse?.data;
+
+  const [mode, setMode] = React.useState<Mode>("view");
+  const [reason, setReason] = React.useState("");
+  const [failure, setFailure] = React.useState("");
+
+  const { mutate: approve, isPending: approving } = useBulkApproveCert();
+  const { mutate: reject, isPending: rejecting } = useBulkRejectCert();
+  const isDeciding = approving || rejecting;
+
+  // There is no single-certificate endpoint — the bulk ones take an array, so
+  // one decision is a one-item batch.
+  const settle = (res: BulkOutcome) => {
+    const failed = res.data?.failed ?? [];
+    if (failed.length > 0) {
+      // Keep the reviewer here with the reason rather than closing on a
+      // refusal they never saw.
+      setFailure(failed[0].reason || res.message || "The request was refused.");
+      setMode("view");
+      return;
+    }
+    onClose();
+  };
+
+  const handleApprove = () =>
+    approve(
+      { certificateIds: [id] },
+      { onSuccess: (r) => settle(r as BulkOutcome) },
+    );
+
+  const handleReject = () => {
+    if (!reason.trim()) return;
+    reject(
+      { certificateIds: [id], reason: reason.trim() },
+      { onSuccess: (r) => settle(r as BulkOutcome) },
+    );
+  };
+
+  // Already decided? Then there is nothing to do but read it.
+  const isDecided =
+    req?.approvalStatus === "approved" || req?.approvalStatus === "rejected";
+
+  const footer = req ? (
+    mode === "view" ? (
+      <>
+        <button className="modal-cancel" type="button" onClick={onClose}>
+          Close
+        </button>
+        {!isDecided && (
+          <>
+            <button
+              type="button"
+              className="cv-btn cv-btn--reject"
+              onClick={() => {
+                setFailure("");
+                setMode("reject");
+              }}
+            >
+              <XCircle size={14} />
+              Reject
+            </button>
+            <button
+              type="button"
+              className="cv-btn cv-btn--approve"
+              onClick={() => {
+                setFailure("");
+                setMode("approve");
+              }}
+            >
+              <CheckCircle2 size={14} />
+              Approve
+            </button>
+          </>
+        )}
+      </>
+    ) : (
+      <>
+        <button
+          className="modal-cancel"
+          type="button"
+          onClick={() => setMode("view")}
+          disabled={isDeciding}
+        >
+          Back
+        </button>
+        {mode === "approve" ? (
+          <button
+            type="button"
+            className="cv-btn cv-btn--approve"
+            onClick={handleApprove}
+            disabled={isDeciding}
+          >
+            {approving ? (
+              <Spinner size={14} color="#fff" text="" />
+            ) : (
+              "Confirm Approval"
+            )}
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="cv-btn cv-btn--reject-solid"
+            onClick={handleReject}
+            disabled={isDeciding || !reason.trim()}
+          >
+            {rejecting ? (
+              <Spinner size={14} color="#fff" text="" />
+            ) : (
+              "Confirm Rejection"
+            )}
+          </button>
+        )}
+      </>
+    )
+  ) : undefined;
 
   return (
     <CustomModal
@@ -33,9 +174,48 @@ const CertificateView: React.FC<CertificateViewProps> = ({ id, onClose }) => {
       }
       size="large"
       isLoading={isLoading}
+      footer={footer}
     >
       {req && (
         <div className="cert-view-container">
+          {failure && (
+            <div className="cv-notice cv-notice--error">
+              <AlertCircle size={15} />
+              <span>{failure}</span>
+            </div>
+          )}
+
+          {mode === "approve" && (
+            <div className="cv-notice cv-notice--approve">
+              <CheckCircle2 size={15} />
+              <span>
+                Approving issues the certificate and notifies the student. Check
+                the dates and documents below before confirming.
+              </span>
+            </div>
+          )}
+
+          {mode === "reject" && (
+            <div className="cv-decide">
+              <label className="cv-decide-label" htmlFor="cv-reason">
+                Reason for rejection <span style={{ color: "#ef4444" }}>*</span>
+              </label>
+              <textarea
+                id="cv-reason"
+                rows={3}
+                className="cv-reason"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="e.g. The IT discharge letter does not cover the dates entered."
+                autoFocus
+              />
+              <p className="cv-decide-hint">
+                The student is shown this, and resubmits against it — so name
+                the specific document or field that is wrong.
+              </p>
+            </div>
+          )}
+
           <div className="cert-view-grid">
             {/* Section 1: Student Details */}
             <div className="cert-view-section">
@@ -108,6 +288,21 @@ const CertificateView: React.FC<CertificateViewProps> = ({ id, onClose }) => {
                   }}
                 >
                   <MapPin size={12} /> {req.placeOfIT}
+                </div>
+              </div>
+              <div className="section-item">
+                <span className="item-label">IT Period</span>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 5,
+                    color: "#1e293b",
+                    fontWeight: 600,
+                  }}
+                >
+                  <Calendar size={12} />{" "}
+                  {formatItPeriod(req.itPeriod ?? req.student?.itPeriod)}
                 </div>
               </div>
               <div className="section-item">

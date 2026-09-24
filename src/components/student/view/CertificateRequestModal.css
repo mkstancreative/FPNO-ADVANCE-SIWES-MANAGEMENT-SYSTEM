@@ -497,3 +497,12 @@ input[type="date"].crm-input {
   }
 }
 
+
+/* Inline validation, e.g. an IT end date that is not after the start. */
+.crm-field-error {
+  display: block;
+  margin-top: 4px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #b91c1c;
+}

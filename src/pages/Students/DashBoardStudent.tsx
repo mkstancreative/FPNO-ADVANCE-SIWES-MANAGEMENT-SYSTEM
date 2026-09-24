@@ -460,11 +460,19 @@ export default function DashBoardStudent() {
           }
           serialNumber={certData?._id || certificate?.requestId || "3845"}
           certificateNumber={certificate?.certificateNumber}
+          // `student.itPeriod` is the period the API resolved for this
+          // certificate — the dates a self-registered student entered, or the
+          // internship's period for a platform student. The batch period is
+          // only a fallback, and is wrong for self-registered students.
           itStartDate={
-            certData?.student.batch?.itPeriod?.startDate || progress.startDate
+            certData?.student.itPeriod?.startDate ||
+            certData?.student.batch?.itPeriod?.startDate ||
+            progress.startDate
           }
           itEndDate={
-            certData?.student.batch?.itPeriod?.endDate || progress.endDate
+            certData?.student.itPeriod?.endDate ||
+            certData?.student.batch?.itPeriod?.endDate ||
+            progress.endDate
           }
           issueDate={
             certData?.issuedAt ||

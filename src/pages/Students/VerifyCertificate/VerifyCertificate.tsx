@@ -1,3 +1,4 @@
+import { formatItPeriod } from "../../../helpers/utilities";
 import { useSearchParams, Link, useParams } from "react-router-dom";
 import {
   XCircle,
@@ -47,7 +48,9 @@ const VerifyCertificate = () => {
     );
   }
 
-  if (error || !resp?.success) {
+  // A success with no payload has nothing to show, so it belongs in the same
+  // branch as an outright failure rather than rendering an empty certificate.
+  if (error || !resp?.success || !resp.data) {
     return (
       <div className="vc-root">
         <div className="vc-glow vc-glow--red" />
@@ -121,6 +124,11 @@ const VerifyCertificate = () => {
       icon: <Building2 size={16} />,
       label: "Place of IT",
       value: data.placeOfIT,
+    },
+    {
+      icon: <Calendar size={16} />,
+      label: "IT Period",
+      value: formatItPeriod(data.itPeriod),
     },
     {
       icon: <Calendar size={16} />,

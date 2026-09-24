@@ -28,6 +28,13 @@ interface CertificateRequestModalProps {
   isOpen: boolean;
   onClose: () => void;
   requestId?: string;
+  /**
+   * Seed values for a resubmission, when the caller has them. Requests
+   * rejected before the IT period was collected have none saved, so these
+   * start empty and the student types them in.
+   */
+  initialItStartDate?: string;
+  initialItEndDate?: string;
   // When selfRegistered is false, the backend only needs internshipId + batchId
   selfRegistered?: boolean;
   internshipId?: string;
@@ -145,6 +152,8 @@ export const CertificateRequestModal: React.FC<
   isOpen,
   onClose,
   requestId,
+  initialItStartDate = "",
+  initialItEndDate = "",
   selfRegistered = true,
   internshipId,
   batchId,
@@ -168,6 +177,10 @@ export const CertificateRequestModal: React.FC<
     graduationMonth: "January",
     graduationDate: new Date().toISOString().split("T")[0],
     placeOfIT: "",
+    // A self-registered student did their IT off-platform, so nothing here
+    // knows when it ran — they enter it, and it goes on the certificate.
+    internshipStartDate: initialItStartDate,
+    internshipEndDate: initialItEndDate,
   });
 
   const [schooledInPoly, setSchooledInPoly] = useState(true);
@@ -187,6 +200,19 @@ export const CertificateRequestModal: React.FC<
     setFiles((prev) => ({ ...prev, [name]: file }));
   };
 
+  /**
+   * The server rejects an end date that is not strictly after the start. The
+   * `min` attribute stops most of it; this catches the rest before a round
+   * trip that would lose the chosen files.
+   */
+  const itPeriodError =
+    selfRegistered &&
+    formData.internshipStartDate &&
+    formData.internshipEndDate &&
+    formData.internshipEndDate <= formData.internshipStartDate
+      ? "The IT end date must be after the start date."
+      : "";
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -205,12 +231,16 @@ export const CertificateRequestModal: React.FC<
       return;
     }
 
+    if (itPeriodError) return;
+
     // Self-registered: full FormData
     const data = new FormData();
     data.append("graduationYear", formData.graduationYear);
     data.append("graduationMonth", formData.graduationMonth);
     data.append("graduationDate", formData.graduationDate);
     data.append("placeOfIT", formData.placeOfIT);
+    data.append("internshipStartDate", formData.internshipStartDate);
+    data.append("internshipEndDate", formData.internshipEndDate);
 
     if (files.ndStatementOfResult) {
       data.append("ndStatementOfResult", files.ndStatementOfResult);
@@ -270,7 +300,7 @@ export const CertificateRequestModal: React.FC<
             className="modal-submit"
             type="submit"
             form="cert-request-form"
-            disabled={isPending}
+            disabled={isPending || Boolean(itPeriodError)}
           >
             {isPending ? (
               <Spinner size={14} color="#fff" />
@@ -285,17 +315,15 @@ export const CertificateRequestModal: React.FC<
         </>
       }
     >
-      <form
-        id="cert-request-form"
-        onSubmit={handleSubmit}
-        className="crm-form"
-      >
+      <form id="cert-request-form" onSubmit={handleSubmit} className="crm-form">
         {!selfRegistered ? (
           /* ── Non-self-registered: display batch & internship info ── */
           <div className="crm-platform-card">
             <div className="crm-platform-header">
               <Info size={16} />
-              <span>Your internship record will be used to generate your certificate</span>
+              <span>
+                Your internship record will be used to generate your certificate
+              </span>
             </div>
 
             <div className="crm-platform-grid">
@@ -309,7 +337,13 @@ export const CertificateRequestModal: React.FC<
                     <div className="crm-platform-item-value">
                       {batchName}
                       {batchSession && (
-                        <span style={{ color: "var(--color-text-muted)", fontWeight: 400, fontSize: 12 }}>
+                        <span
+                          style={{
+                            color: "var(--color-text-muted)",
+                            fontWeight: 400,
+                            fontSize: 12,
+                          }}
+                        >
                           ({batchSession})
                         </span>
                       )}
@@ -336,7 +370,8 @@ export const CertificateRequestModal: React.FC<
             <div className="crm-platform-footer">
               <ShieldCheck size={14} color="var(--color-accent, #2dd4bf)" />
               <span>
-                Your internship fee covers this certificate — there is nothing further to pay.
+                Your internship fee covers this certificate — there is nothing
+                further to pay.
               </span>
             </div>
           </div>
@@ -347,7 +382,8 @@ export const CertificateRequestModal: React.FC<
               <div className="crm-banner">
                 <ShieldCheck size={18} className="crm-banner-icon" />
                 <span>
-                  Certificate fee received. Complete the details below and upload your documents to send your request for review.
+                  Certificate fee received. Complete the details below and
+                  upload your documents to send your request for review.
                 </span>
               </div>
             )}
@@ -406,6 +442,41 @@ export const CertificateRequestModal: React.FC<
               </div>
 
               <div className="crm-form-group">
+                <label className="crm-label" htmlFor="internshipStartDate">
+                  IT Start Date <span className="req">*</span>
+                </label>
+                <input
+                  id="internshipStartDate"
+                  type="date"
+                  name="internshipStartDate"
+                  className="crm-input"
+                  value={formData.internshipStartDate}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              <div className="crm-form-group">
+                <label className="crm-label" htmlFor="internshipEndDate">
+                  IT End Date <span className="req">*</span>
+                </label>
+                <input
+                  id="internshipEndDate"
+                  type="date"
+                  name="internshipEndDate"
+                  className="crm-input"
+                  value={formData.internshipEndDate}
+                  onChange={handleInputChange}
+                  // Rules out the invalid range in the picker itself.
+                  min={formData.internshipStartDate || undefined}
+                  required
+                />
+                {itPeriodError && (
+                  <span className="crm-field-error">{itPeriodError}</span>
+                )}
+              </div>
+
+              <div className="crm-form-group">
                 <label className="crm-label" htmlFor="graduationDate">
                   Exact Graduation Date <span className="req">*</span>
                 </label>
@@ -439,7 +510,8 @@ export const CertificateRequestModal: React.FC<
 
             <div className="crm-form-group col-full">
               <label className="crm-label">
-                Did you do your ND at Federal Polytechnic Nekede, Owerri? <span className="req">*</span>
+                Did you do your ND at Federal Polytechnic Nekede, Owerri?{" "}
+                <span className="req">*</span>
               </label>
               <div className="crm-radio-grid">
                 <div
@@ -493,12 +565,16 @@ export const CertificateRequestModal: React.FC<
               <span>Required Documents</span>
             </div>
 
-            <div className={`crm-docs-grid ${!schooledInPoly ? "has-three" : ""}`}>
+            <div
+              className={`crm-docs-grid ${!schooledInPoly ? "has-three" : ""}`}
+            >
               <FileUploadField
                 label="ND Statement of Result"
                 name="ndStatementOfResult"
                 file={files.ndStatementOfResult}
-                onFileSelect={(file) => handleFileChange("ndStatementOfResult", file)}
+                onFileSelect={(file) =>
+                  handleFileChange("ndStatementOfResult", file)
+                }
                 required
               />
 
@@ -506,7 +582,9 @@ export const CertificateRequestModal: React.FC<
                 label="IT Discharge Letter"
                 name="itDischargeLetter"
                 file={files.itDischargeLetter}
-                onFileSelect={(file) => handleFileChange("itDischargeLetter", file)}
+                onFileSelect={(file) =>
+                  handleFileChange("itDischargeLetter", file)
+                }
                 required
               />
 
@@ -515,7 +593,9 @@ export const CertificateRequestModal: React.FC<
                   label="HND Statement of Result"
                   name="hndStatementOfResult"
                   file={files.hndStatementOfResult}
-                  onFileSelect={(file) => handleFileChange("hndStatementOfResult", file)}
+                  onFileSelect={(file) =>
+                    handleFileChange("hndStatementOfResult", file)
+                  }
                   required={!schooledInPoly}
                 />
               )}

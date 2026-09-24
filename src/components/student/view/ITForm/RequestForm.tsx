@@ -166,7 +166,7 @@ export const RequestForm = () => {
           <Section letter="A" title="Student Bio-data">
             <Field label="Full Name" value={student.name} />
             <Field
-              label="Matric / Reg. Number"
+              label="Reg. Number"
               value={student.registrationNumber}
             />
             <Field label="Department" value={student.department} />
@@ -236,7 +236,7 @@ export const RequestForm = () => {
               <div className="req-section-line" />
             </div>
             <div className="req-declaration">
-              I, <strong>{student.name}</strong>, with Matric Number{" "}
+              I, <strong>{student.name}</strong>, with Reg Number{" "}
               <strong>{student.registrationNumber}</strong>, a student of the
               Department of <strong>{student.department}</strong>, Federal
               Polytechnic Nekede, Owerri, hereby declare that all information

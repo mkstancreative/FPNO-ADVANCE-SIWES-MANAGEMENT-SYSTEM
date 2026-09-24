@@ -16,15 +16,19 @@ export interface NameParts {
 }
 
 /**
- * How a person's name is rendered, anywhere.
+ * How a person's name is rendered, anywhere: **surname first**.
  *
- * Prefers whatever the API already composed, because the backend owns the
- * rule. Falls back to joining the parts the same way its `fullName()` helper
- * does — dropping the blanks first, so the common case of no middle name never
- * leaves a double space or the word "undefined" on screen.
+ *   "Oluebube, Nwachukwu Faith"
+ *   "Kenneth, Agim"              ← no middle name, the common case
  *
- * Never interpolate the parts by hand:
- *   `${u.firstName} ${u.middleName} ${u.lastName}` → "Agim  Kenneth"
+ * This is why the parts win over the API's own `name` / `fullName`: those are
+ * composed as "First Middle Last", which is the opposite order. The composed
+ * string is only used when the parts are not there to reorder — a payload that
+ * carries nothing but a finished string cannot be split safely, because a
+ * surname can be more than one word.
+ *
+ * Blanks are dropped before joining, so a missing middle name never leaves a
+ * double space or the word "undefined" on screen. Never interpolate by hand.
  */
 export const displayName = (
   person?: NameParts | null,
@@ -32,30 +36,46 @@ export const displayName = (
 ): string => {
   if (!person) return fallback;
 
-  const composed = (person.fullName ?? person.name ?? "").trim();
-  if (composed) return composed;
-
-  const joined = [person.firstName, person.middleName, person.lastName]
+  const surname = (person.lastName ?? "").trim();
+  const rest = [person.firstName, person.middleName]
     .map((part) => (part ?? "").trim())
     .filter(Boolean)
     .join(" ");
 
-  return joined || fallback;
+  if (surname && rest) return `${surname}, ${rest}`;
+  // One half missing: show whichever exists, with no stray comma.
+  if (surname || rest) return surname || rest;
+
+  return (person.fullName ?? person.name ?? "").trim() || fallback;
 };
 
 /**
- * Avatar initials: the first letter of the first and last name parts, skipping
- * the middle one. "Nwachukwu Faith Oluebube" → "NO".
+ * Avatar initials, still given name first: "Nwachukwu Faith Oluebube" → "NO".
+ * Deliberately not reordered with the display name — an avatar reads as a
+ * person, not as a record, and "ON" would look like a different one.
+ *
+ * Falls back to the first and last words of a composed string when the parts
+ * are not available.
  */
 export const nameInitials = (
   person?: NameParts | null,
   fallback = "?",
 ): string => {
-  const words = displayName(person).split(/\s+/).filter(Boolean);
+  const first = (person?.firstName ?? "").trim();
+  const last = (person?.lastName ?? "").trim();
+
+  if (first || last) {
+    return `${first[0] ?? ""}${last[0] ?? ""}`.toUpperCase() || fallback;
+  }
+
+  const words = (person?.fullName ?? person?.name ?? "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
   if (words.length === 0) return fallback;
-  const first = words[0][0] ?? "";
-  const last = words.length > 1 ? (words[words.length - 1][0] ?? "") : "";
-  return `${first}${last}`.toUpperCase() || fallback;
+  const head = words[0][0] ?? "";
+  const tail = words.length > 1 ? (words[words.length - 1][0] ?? "") : "";
+  return `${head}${tail}`.toUpperCase() || fallback;
 };
 
 // ─── Validation ───────────────────────────────────────────────────────────────

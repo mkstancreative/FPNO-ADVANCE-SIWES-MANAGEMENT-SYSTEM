@@ -7,6 +7,7 @@ import type {
   CertificateFeeResponse,
   CertificateStatusResponse,
   CertificateVerifyPaymentResponse,
+  CertificateVerifyResponse,
   MispricedInvoicesResponse,
   RepricePayload,
   RepriceReportResponse,
@@ -166,8 +167,10 @@ export const financialStats = async () => {
 };
 
 /** Public verification — scanned from the QR code on an issued certificate. */
-export const certificateQRCode = async (id: string) => {
-  const response = await publicApi.get(
+export const certificateQRCode = async (
+  id: string,
+): Promise<CertificateVerifyResponse> => {
+  const response = await publicApi.get<CertificateVerifyResponse>(
     `/certificates/verify?certificateNumber=${encodeURIComponent(id)}`,
   );
   return response.data;

@@ -1,3 +1,5 @@
+import type { ITPeriodDates } from "../../helpers/utilities";
+
 // ─── Shared payment primitives ────────────────────────────────────────────────
 
 /**
@@ -96,6 +98,13 @@ export interface AdminCertificateRequest {
     };
     _id: string;
     registrationNumber: string;
+    /**
+     * The period to show. For a self-registered student these are the dates
+     * they typed on the request; for a platform student it is the internship's
+     * period. Null when the backend cannot work one out. Only `startDate` and
+     * `endDate` are dependable — see `ITPeriodDates`.
+     */
+    itPeriod?: ITPeriodDates | null;
     batch?: {
       itPeriod: {
         name: string;
@@ -118,6 +127,11 @@ export interface AdminCertificateRequest {
   graduationMonth: string;
   graduationDate: string;
   placeOfIT: string;
+  /**
+   * Sits next to `placeOfIT` on the admin review response, so a reviewer can
+   * check the dates the student entered against the uploaded discharge letter.
+   */
+  itPeriod?: ITPeriodDates | null;
   paymentStatus: CertificatePaymentStatus;
   documentStatus?: CertificateDocumentStatus;
   paymentAmount?: number;
@@ -372,4 +386,41 @@ export interface AddCertificateDiscountResponse {
   success: boolean;
   message?: string;
   data: Partial<RepriceReport> & Record<string, unknown>;
+}
+
+// ─── Public verification ──────────────────────────────────────────────────────
+
+/** `GET /certificates/verify?certificateNumber=…` — what a QR scan shows. */
+export interface CertificateVerifyData {
+  certificateNumber: string;
+  studentName: string;
+  registrationNumber: string;
+  department: string;
+  program: string;
+  graduationYear: number;
+  graduationMonth: string;
+  placeOfIT: string;
+  /** Null when no period could be found — render a dash, do not crash. */
+  itPeriod?: ITPeriodDates | null;
+  issueDate: string;
+}
+
+export interface CertificateVerifyResponse {
+  success: boolean;
+  verified: boolean;
+  message?: string;
+  data?: CertificateVerifyData;
+}
+
+// ─── Self-registered request: the IT period the student enters ────────────────
+
+/**
+ * A self-registered student did their IT outside the platform, so nothing here
+ * knows when it ran — they type it in. Both are required, and the end must be
+ * strictly after the start.
+ */
+export interface CertificateITPeriodInput {
+  /** ISO date, `YYYY-MM-DD` — exactly what an `<input type="date">` gives. */
+  internshipStartDate: string;
+  internshipEndDate: string;
 }

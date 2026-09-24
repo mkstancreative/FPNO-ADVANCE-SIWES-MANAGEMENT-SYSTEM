@@ -121,7 +121,7 @@ export const CompletionForm = ({
               <span className="cert-fill cert-fill--wide">{student.name}</span>
             </p>
             <p className="cert-para">
-              with matriculation number{" "}
+              with registration number{" "}
               <span className="cert-fill cert-fill--wide">
                 {student.registrationNumber}
               </span>
