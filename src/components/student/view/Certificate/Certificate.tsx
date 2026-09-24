@@ -213,7 +213,7 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(
                   />
                 </div>
                 <div className="cert-sig-line" />
-                <p className="cert-sig-name">Engr. Dr. Okorie N.K.</p>
+                <p className="cert-sig-name">Dr. Nosike Emmanuel Chimaobi</p>
                 <p className="cert-sig-label">DIRECTOR, IPC/SIWES</p>
               </div>
 
