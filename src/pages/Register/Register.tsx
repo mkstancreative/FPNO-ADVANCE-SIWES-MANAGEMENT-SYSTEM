@@ -6,24 +6,41 @@ import "./Register.css";
 import { useRegisterStudent } from "../../hooks/useAuth";
 import { useSystemSettings } from "../../hooks/useSettings";
 import { resolveLogo, resolveName } from "../../utils/branding";
-import { departmentOptions, findDepartment } from "../../config/departments";
-import type { ProgramType } from "../../config/departments";
+import { departmentOptions } from "../../config/departments";
 import SelectFilter from "../../components/ui/SelectFilter/SelectFilter";
 
-const PROGRAM_OPTIONS = [
-  { value: "", label: "Select your programme" },
-  { value: "ND", label: "ND" },
-  { value: "HND", label: "HND" },
+const DEPARTMENT_OPTIONS = [
+  { value: "", label: "Select your department" },
+  ...departmentOptions(),
 ];
 
+type RegNumberKind = "ND" | "HND";
+
 /**
- * The example shown under the registration number. Formats are not validated —
- * these are a shape to copy, not a rule.
+ * Which of the two numbers a student should be typing. Nobody who did their ND
+ * at another institution can guess this, so it is asked outright rather than
+ * left in a footnote.
  */
-const REG_NUMBER_EXAMPLE: Record<ProgramType, string> = {
-  ND: "FPO/CST/ND2/2024/007",
-  HND: "FPO/CST/HND2/2024/007",
-};
+const REG_NUMBER_CHOICES: {
+  value: RegNumberKind;
+  title: string;
+  detail: string;
+  example: string;
+}[] = [
+  {
+    value: "ND",
+    title: "ND Registration Number",
+    detail: "You did your ND at Federal Polytechnic Nekede.",
+    example: "FPO/CST/ND2/2024/007",
+  },
+  {
+    value: "HND",
+    title: "HND Registration Number",
+    detail:
+      "You did your ND elsewhere and your HND at Federal Polytechnic Nekede.",
+    example: "FPO/CST/HND2/2024/007",
+  },
+];
 
 const Register = () => {
   const { mutate: register, isPending } = useRegisterStudent();
@@ -41,12 +58,11 @@ const Register = () => {
   });
 
   /**
-   * Which registration number the student is entering. Local to this form —
-   * the register endpoint does not take it. It picks the example shown and
-   * narrows the department list, since several departments admit only one of
-   * the two programmes.
+   * Guidance only — it shapes the label and example below and is never posted.
+   * Left unset rather than defaulted, so the student makes the call instead of
+   * inheriting a guess.
    */
-  const [programType, setProgramType] = useState<"" | ProgramType>("");
+  const [regNumberKind, setRegNumberKind] = useState<"" | RegNumberKind>("");
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -58,41 +74,15 @@ const Register = () => {
     if (error) setError("");
   };
 
+  const chosenKind = REG_NUMBER_CHOICES.find((c) => c.value === regNumberKind);
+
   const handleDepartmentChange = (value: string) => {
     setFormData((prev) => ({ ...prev, departmentName: value }));
     if (error) setError("");
   };
 
-  const handleProgramChange = (value: string) => {
-    const next = value as "" | ProgramType;
-    setProgramType(next);
-    setFormData((prev) => {
-      // A department chosen under the other programme may not admit this one —
-      // drop it rather than submitting a pairing the institution does not run.
-      const entry = findDepartment(prev.departmentName);
-      const stillValid =
-        !prev.departmentName ||
-        !next ||
-        !entry ||
-        entry.programs.includes(next);
-      return stillValid ? prev : { ...prev, departmentName: "" };
-    });
-    if (error) setError("");
-  };
-
-  // Only the departments admitting the chosen programme; everything until one
-  // is picked.
-  const departmentChoices = [
-    { value: "", label: "Select your department" },
-    ...departmentOptions(undefined, programType || undefined),
-  ];
-
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!programType) {
-      setError("Please select whether you are an ND or HND student");
-      return;
-    }
     if (!formData.departmentName) {
       setError("Please select your department");
       return;
@@ -241,19 +231,46 @@ const Register = () => {
 
               <div className="register-form-group register-select-group">
                 <SelectFilter
-                  label="Programme"
-                  name="programType"
-                  options={PROGRAM_OPTIONS}
-                  value={programType}
-                  onChange={handleProgramChange}
+                  label="Department"
+                  name="departmentName"
+                  options={DEPARTMENT_OPTIONS}
+                  value={formData.departmentName}
+                  onChange={handleDepartmentChange}
                 />
               </div>
 
-              <div className="register-form-group">
+              <fieldset className="register-form-group reg-kind">
+                <legend className="form-label">
+                  Which registration number are you entering?
+                </legend>
+                <div className="reg-kind-options">
+                  {REG_NUMBER_CHOICES.map((choice) => (
+                    <label
+                      key={choice.value}
+                      className={`reg-kind-option${
+                        regNumberKind === choice.value ? " is-selected" : ""
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="regNumberKind"
+                        value={choice.value}
+                        checked={regNumberKind === choice.value}
+                        onChange={() => setRegNumberKind(choice.value)}
+                      />
+                      <span className="reg-kind-mark" aria-hidden="true" />
+                      <span className="reg-kind-text">
+                        <span className="reg-kind-title">{choice.title}</span>
+                        <span className="reg-kind-detail">{choice.detail}</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
+              <div className="register-form-group reg-number-group">
                 <label className="form-label" htmlFor="registrationNumber">
-                  {programType
-                    ? `${programType} Registration Number`
-                    : "Registration Number"}
+                  {chosenKind ? chosenKind.title : "Registration Number"}
                 </label>
                 <div className="form-input-wrap">
                   <input
@@ -262,33 +279,14 @@ const Register = () => {
                     type="text"
                     className="form-input"
                     placeholder={
-                      programType
-                        ? REG_NUMBER_EXAMPLE[programType]
-                        : "Select your programme first"
+                      chosenKind ? chosenKind.example : "FPO/CST/ND2/2024/007"
                     }
                     value={formData.registrationNumber}
                     onChange={handleChange}
                     autoCapitalize="characters"
-                    // Nothing to copy the shape of until a programme is chosen.
-                    disabled={!programType}
                     required
                   />
                 </div>
-                <span className="form-hint">
-                  {programType
-                    ? `Enter the registration number on your ${programType} records.`
-                    : "Choose ND or HND above to continue."}
-                </span>
-              </div>
-
-              <div className="register-form-group register-select-group">
-                <SelectFilter
-                  label="Department"
-                  name="departmentName"
-                  options={departmentChoices}
-                  value={formData.departmentName}
-                  onChange={handleDepartmentChange}
-                />
               </div>
 
               <div className="register-form-group">

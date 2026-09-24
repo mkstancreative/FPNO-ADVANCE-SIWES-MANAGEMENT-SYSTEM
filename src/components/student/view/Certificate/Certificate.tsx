@@ -120,7 +120,7 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(
               </div>
 
               <div className="cert-line-wrapper">
-                <span className="cert-label">with matriculation number</span>
+                <span className="cert-label">with registration number</span>
                 <div className="cert-full-dotted">
                   <span className="cert-value">{regNumber}</span>
                 </div>
