@@ -134,6 +134,17 @@
   z-index: 30;
 }
 
+/*
+ * An open dropdown has to paint over the fields below it. Every select group
+ * sits at the same z-index, so painting order falls back to DOM order and the
+ * later group — Department — covers the options list of the earlier one. The
+ * list's own z-index cannot help: it is trapped inside its group's stacking
+ * context, so the group itself is what has to rise.
+ */
+.register-select-group:has(.custom-select-wrapper.open) {
+  z-index: 60;
+}
+
 .register-select-group .filter-container {
   display: flex;
   flex-direction: column;
@@ -397,4 +408,29 @@
 .form-optional {
   font-weight: 400;
   color: var(--color-text-muted);
+}
+
+/* Guidance under a field — e.g. which registration number to type. */
+.form-hint {
+  display: block;
+  margin-top: 5px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--color-text-muted, #94a3b8);
+}
+
+/*
+ * A field that cannot be filled in yet reads as waiting, not as broken. It
+ * keeps this card's own dark input colours and is only dimmed — the theme
+ * variables here resolve light, which would put a pale block on a dark card.
+ */
+.register-card .form-input:disabled {
+  cursor: not-allowed;
+  color: #6b7280;
+  background: #0b0f14;
+  border-color: #1a2531;
+}
+
+.register-card .form-input:disabled::placeholder {
+  color: #4b5563;
 }

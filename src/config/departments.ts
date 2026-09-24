@@ -616,12 +616,22 @@ export const OTHER_DEPARTMENTS_GROUP = "Other";
  * that the catalogue doesn't (legacy or renamed departments) is appended, so a
  * department already attached to real records never becomes unselectable.
  */
-export function mergeDepartmentNames(apiNames?: string[]): string[] {
+export function mergeDepartmentNames(
+  apiNames?: string[],
+  /** Keep only catalogue departments admitting this programme. */
+  program?: ProgramType,
+): string[] {
   const known = new Set(DEPARTMENTS.map((d) => d.name.toLowerCase()));
   const extras = (apiNames ?? []).filter(
     (name) => name && !known.has(name.trim().toLowerCase()),
   );
-  return [...DEPARTMENT_NAMES, ...Array.from(new Set(extras))];
+  // Names the API reports but the catalogue does not know carry no programme
+  // information, so they survive the filter rather than vanishing from a list
+  // a real record may already point at.
+  const catalogue = program
+    ? DEPARTMENTS.filter((d) => d.programs.includes(program)).map((d) => d.name)
+    : DEPARTMENT_NAMES;
+  return [...catalogue, ...Array.from(new Set(extras))];
 }
 
 export interface DepartmentOption {
@@ -631,9 +641,17 @@ export interface DepartmentOption {
   group: string;
 }
 
-/** Catalogue departments as grouped select options, plus any extra API names. */
-export function departmentOptions(apiNames?: string[]): DepartmentOption[] {
-  return mergeDepartmentNames(apiNames).map((name) => ({
+/**
+ * Catalogue departments as grouped select options, plus any extra API names.
+ *
+ * Pass a `program` to narrow the list to departments that admit it — several
+ * are ND-only, and the HND specializations exist only under HND.
+ */
+export function departmentOptions(
+  apiNames?: string[],
+  program?: ProgramType,
+): DepartmentOption[] {
+  return mergeDepartmentNames(apiNames, program).map((name) => ({
     value: name,
     label: name,
     group: findDepartment(name)?.school ?? OTHER_DEPARTMENTS_GROUP,
