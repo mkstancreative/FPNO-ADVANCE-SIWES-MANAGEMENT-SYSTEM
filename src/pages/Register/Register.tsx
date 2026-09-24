@@ -171,7 +171,7 @@ const Register = () => {
 
               <div className="register-form-group">
                 <label className="form-label" htmlFor="lastName">
-                  Last Name
+                  Surname
                 </label>
                 <div className="form-input-wrap">
                   <input

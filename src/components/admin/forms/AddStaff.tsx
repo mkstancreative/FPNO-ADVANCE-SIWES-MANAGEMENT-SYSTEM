@@ -229,7 +229,7 @@ export default function AddStaff({ isOpen, onClose }: Props) {
             </div>
             <div className="form-group">
               <label className="modal-label">
-                Last Name <Required />
+                Surname <Required />
               </label>
               <input
                 required

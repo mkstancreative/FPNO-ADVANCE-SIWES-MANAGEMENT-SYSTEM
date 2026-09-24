@@ -399,7 +399,7 @@ export default function UploadSupervisors({ isOpen, onClose }: Props) {
             </div>
             <div className="form-group">
               <label className="modal-label">
-                Last Name <span style={{ color: "#ef4444" }}>*</span>
+                Surname <span style={{ color: "#ef4444" }}>*</span>
               </label>
               <input
                 className="modal-input"

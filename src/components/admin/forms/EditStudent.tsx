@@ -409,7 +409,7 @@ function EditStudentForm({
             </div>
             <div className="form-group col-2">
               <label className="modal-label">
-                Last Name <Required />
+                Surname <Required />
               </label>
               <input
                 required
