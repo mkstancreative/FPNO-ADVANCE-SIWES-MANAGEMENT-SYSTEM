@@ -132,6 +132,24 @@ const Register = () => {
           <form onSubmit={handleSubmit}>
             <div className="register-grid">
               <div className="register-form-group">
+                <label className="form-label" htmlFor="lastName">
+                  Surname
+                </label>
+                <div className="form-input-wrap">
+                  <input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    className="form-input"
+                    placeholder="Johnson"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    autoComplete="family-name"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="register-form-group">
                 <label className="form-label" htmlFor="firstName">
                   First Name
                 </label>
@@ -165,25 +183,6 @@ const Register = () => {
                     onChange={handleChange}
                     autoComplete="additional-name"
                     maxLength={MIDDLE_NAME_MAX_LENGTH}
-                  />
-                </div>
-              </div>
-
-              <div className="register-form-group">
-                <label className="form-label" htmlFor="lastName">
-                  Surname
-                </label>
-                <div className="form-input-wrap">
-                  <input
-                    id="lastName"
-                    name="lastName"
-                    type="text"
-                    className="form-input"
-                    placeholder="Johnson"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    autoComplete="family-name"
-                    required
                   />
                 </div>
               </div>
@@ -279,7 +278,7 @@ const Register = () => {
                     type="text"
                     className="form-input"
                     placeholder={
-                      chosenKind ? chosenKind.example : "FPO/CST/ND2/2024/007"
+                      chosenKind ? chosenKind.example : "24H/0000/CS"
                     }
                     value={formData.registrationNumber}
                     onChange={handleChange}
