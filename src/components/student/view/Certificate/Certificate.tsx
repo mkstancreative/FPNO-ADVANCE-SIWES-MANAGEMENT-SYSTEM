@@ -56,9 +56,17 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(
           year: "numeric",
         });
 
+    // The QR must point at the public site, not wherever the PDF happened to be
+    // generated — a certificate downloaded from a dev server would otherwise
+    // encode http://localhost. The number goes in the query string because it
+    // contains slashes, and servers such as Apache reject %2F inside a path.
+    const publicOrigin = (
+      (import.meta.env.VITE_APP_URL as string | undefined) ||
+      window.location.origin
+    ).replace(/\/+$/, "");
     const qrValue =
       verifyUrl ||
-      `${window.location.origin}/certificates/verify/${encodeURIComponent(certificateNumber || serialNumber)}`;
+      `${publicOrigin}/certificates/verify?certificateNumber=${encodeURIComponent(certificateNumber || serialNumber)}`;
 
     return (
       <div className="certificate-paper" ref={ref}>
