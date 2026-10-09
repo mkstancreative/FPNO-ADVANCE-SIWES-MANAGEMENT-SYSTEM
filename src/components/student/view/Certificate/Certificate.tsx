@@ -30,15 +30,24 @@ const getItPeriodDuration = (startDate?: string, endDate?: string) => {
     return "";
   }
 
-  const days = Math.floor((end.getTime() - start.getTime()) / 86_400_000) + 1;
-  const months = Math.ceil(days / 30);
-  const remainingDays = days % 30;
-  const parts = [
-    months ? `${months} ${months === 1 ? "month" : "months"}` : "",
-    remainingDays ? `${remainingDays} ${remainingDays === 1 ? "day" : "days"}` : "",
-  ].filter(Boolean);
+  // Count whole completed months
+  let months =
+    (end.getUTCFullYear() - start.getUTCFullYear()) * 12 +
+    end.getUTCMonth() -
+    start.getUTCMonth();
 
-  return parts.join(" ");
+  // Adjust if the day-of-month hasn't been reached yet
+  const anniversary = new Date(start);
+  anniversary.setUTCMonth(anniversary.getUTCMonth() + months);
+  if (anniversary > end) months -= 1;
+
+  // If there are any remaining days beyond the last whole month, ceil up
+  const completedAnniversary = new Date(start);
+  completedAnniversary.setUTCMonth(completedAnniversary.getUTCMonth() + months);
+  const remainingMs = end.getTime() - completedAnniversary.getTime();
+  if (remainingMs > 0) months += 1;
+
+  return `${months} ${months === 1 ? "month" : "months"}`;
 };
 
 const Certificate = forwardRef<HTMLDivElement, CertificateProps>(
