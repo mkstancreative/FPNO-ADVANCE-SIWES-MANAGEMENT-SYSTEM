@@ -31,7 +31,7 @@ const getItPeriodDuration = (startDate?: string, endDate?: string) => {
   }
 
   const days = Math.floor((end.getTime() - start.getTime()) / 86_400_000) + 1;
-  const months = Math.floor(days / 30);
+  const months = Math.ceil(days / 30);
   const remainingDays = days % 30;
   const parts = [
     months ? `${months} ${months === 1 ? "month" : "months"}` : "",
