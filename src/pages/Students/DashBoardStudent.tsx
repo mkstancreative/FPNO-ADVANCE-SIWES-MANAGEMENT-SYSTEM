@@ -437,17 +437,8 @@ export default function DashBoardStudent() {
           }
           department={certData?.student.department.name || student.department}
           program={certData?.student.program.type || student.program}
-          level={
-            certData
-              ? certData.student.program.type === "HND"
-                ? "HND"
-                : "ND"
-              : student.program.includes("HND")
-                ? "HND"
-                : "ND"
-          }
           graduationDate={
-            certData?.graduationDate || new Date().toLocaleDateString("en-GB")
+            certData?.graduationDate
           }
           graduationMonth={
             certData?.graduationMonth || certificate?.graduationMonth
@@ -455,25 +446,12 @@ export default function DashBoardStudent() {
           graduationYear={
             certData?.graduationYear || certificate?.graduationYear
           }
-          organizationName={
-            certData?.placeOfIT || placement.company || certificate?.placeOfIT
-          }
-          serialNumber={certData?._id || certificate?.requestId || "3845"}
-          certificateNumber={certificate?.certificateNumber}
-          // `student.itPeriod` is the period the API resolved for this
-          // certificate — the dates a self-registered student entered, or the
-          // internship's period for a platform student. The batch period is
-          // only a fallback, and is wrong for self-registered students.
-          itStartDate={
-            certData?.student.itPeriod?.startDate ||
-            certData?.student.batch?.itPeriod?.startDate ||
-            progress.startDate
-          }
-          itEndDate={
-            certData?.student.itPeriod?.endDate ||
-            certData?.student.batch?.itPeriod?.endDate ||
-            progress.endDate
-          }
+          organizationName={certData?.placeOfIT}
+          serialNumber={certData?._id}
+          certificateNumber={certData?.certificateNumber || certificate?.certificateNumber}
+          // Use the dates resolved on this certificate response.
+          itStartDate={certData?.student.itPeriod?.startDate}
+          itEndDate={certData?.student.itPeriod?.endDate}
           issueDate={
             certData?.issuedAt ||
             certificate?.issuedAt ||

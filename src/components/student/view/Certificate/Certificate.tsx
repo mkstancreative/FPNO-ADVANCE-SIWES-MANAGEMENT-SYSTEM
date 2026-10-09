@@ -10,7 +10,6 @@ interface CertificateProps {
   graduationYear?: number;
   graduationMonth?: string;
   graduationDate?: string;
-  level: "ND" | "HND";
   placeOfIT?: string;
   organizationName?: string;
   serialNumber?: string;
@@ -22,6 +21,26 @@ interface CertificateProps {
   issuedAt?: string;
 }
 
+const getItPeriodDuration = (startDate?: string, endDate?: string) => {
+  if (!startDate || !endDate) return "";
+
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) {
+    return "";
+  }
+
+  const days = Math.floor((end.getTime() - start.getTime()) / 86_400_000) + 1;
+  const months = Math.floor(days / 30);
+  const remainingDays = days % 30;
+  const parts = [
+    months ? `${months} ${months === 1 ? "month" : "months"}` : "",
+    remainingDays ? `${remainingDays} ${remainingDays === 1 ? "day" : "days"}` : "",
+  ].filter(Boolean);
+
+  return parts.join(" ");
+};
+
 const Certificate = forwardRef<HTMLDivElement, CertificateProps>(
   (
     {
@@ -29,10 +48,9 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(
       regNumber,
       department,
       program,
-      level,
       placeOfIT,
-      organizationName = "NITDA (National Information Technology Development Agency)",
-      serialNumber = "3845",
+      organizationName,
+      serialNumber,
       issueDate,
       certificateNumber,
       verifyUrl,
@@ -42,7 +60,8 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(
     },
     ref,
   ) => {
-    const displayOrg = placeOfIT || organizationName;
+    const displayOrg = placeOfIT || organizationName || "";
+    const itPeriodDuration = getItPeriodDuration(itStartDate, itEndDate);
     const activeIssueDate = issuedAt || issueDate;
     const displayDate = activeIssueDate
       ? new Date(activeIssueDate).toLocaleDateString("en-GB", {
@@ -50,11 +69,7 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(
           month: "long",
           year: "numeric",
         })
-      : new Date().toLocaleDateString("en-GB", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        });
+      : "";
 
     // The QR must point at the public site, not wherever the PDF happened to be
     // generated — a certificate downloaded from a dev server would otherwise
@@ -66,7 +81,7 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(
     ).replace(/\/+$/, "");
     const qrValue =
       verifyUrl ||
-      `${publicOrigin}/certificates/verify?certificateNumber=${encodeURIComponent(certificateNumber || serialNumber)}`;
+      `${publicOrigin}/certificates/verify?certificateNumber=${encodeURIComponent(certificateNumber || serialNumber || "")}`;
 
     return (
       <div className="certificate-paper" ref={ref}>
@@ -115,7 +130,7 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(
 
             <h3 className="cert-main-title">COMPLETION CERTIFICATE</h3>
             <h4 className="cert-level-sub">
-              MANDATORY INDUSTRIAL TRAINING FOR {level} GRADUATES
+              MANDATORY INDUSTRIAL TRAINING FOR {program} GRADUATES
             </h4>
 
             {/* ── BODY ── */}
@@ -194,10 +209,10 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(
 
               <p className="cert-para">
                 During the period, the student was attached to our Department
-                and gained practical experiences and skills. We are pleased to
-                confirm that he/she has successfully completed the mandatory
-                training (minimum 4 months) and has demonstrated a good
-                understanding of the required competencies.
+                and gained practical experiences and skills
+                {itPeriodDuration ? ` over a period of ${itPeriodDuration}` : ""}.
+                The student has demonstrated a good understanding of the
+                required competencies.
               </p>
               <p className="cert-para">
                 Please kindly give him/her the necessary cooperation and
@@ -251,7 +266,7 @@ const Certificate = forwardRef<HTMLDivElement, CertificateProps>(
               <div className="cert-serial">
                 FPN/IPC/SIWES/{" "}
                 <span style={{ fontSize: "18px" }}>
-                  {certificateNumber || serialNumber}
+                {certificateNumber || serialNumber || ""}
                 </span>
               </div>
               <div className="cert-program">{program}</div>
