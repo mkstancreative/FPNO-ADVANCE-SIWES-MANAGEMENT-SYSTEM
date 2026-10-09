@@ -450,8 +450,8 @@ export default function DashBoardStudent() {
           serialNumber={certData?._id}
           certificateNumber={certData?.certificateNumber || certificate?.certificateNumber}
           // Use the dates resolved on this certificate response.
-          itStartDate={certData?.student.itPeriod?.startDate}
-          itEndDate={certData?.student.itPeriod?.endDate}
+          itStartDate={certData?.student.itPeriod?.startDate ?? undefined}
+          itEndDate={certData?.student.itPeriod?.endDate ?? undefined}
           issueDate={
             certData?.issuedAt ||
             certificate?.issuedAt ||
