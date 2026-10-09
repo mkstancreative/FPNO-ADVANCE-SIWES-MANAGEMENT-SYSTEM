@@ -30,22 +30,24 @@ const getItPeriodDuration = (startDate?: string, endDate?: string) => {
     return "";
   }
 
-  // Count whole completed months
   let months =
     (end.getUTCFullYear() - start.getUTCFullYear()) * 12 +
     end.getUTCMonth() -
     start.getUTCMonth();
 
-  // Adjust if the day-of-month hasn't been reached yet
-  const anniversary = new Date(start);
-  anniversary.setUTCMonth(anniversary.getUTCMonth() + months);
-  if (anniversary > end) months -= 1;
+  // Compare calendar days only (ignore time of day). A start day that doesn't
+  // exist in the end month (e.g. the 31st) is reached on that month's last day.
+  const lastDayOfEndMonth = new Date(
+    Date.UTC(end.getUTCFullYear(), end.getUTCMonth() + 1, 0),
+  ).getUTCDate();
+  const anniversaryDay = Math.min(start.getUTCDate(), lastDayOfEndMonth);
+  const endDay = end.getUTCDate();
 
-  // If there are any remaining days beyond the last whole month, round up by 1
-  const completedAnniversary = new Date(start);
-  completedAnniversary.setUTCMonth(completedAnniversary.getUTCMonth() + months);
-  const remainingMs = end.getTime() - completedAnniversary.getTime();
-  if (remainingMs > 0) months += 1;
+  // Whole completed months
+  if (endDay < anniversaryDay) months -= 1;
+
+  // Any remaining days beyond the last whole month → add 1
+  if (endDay !== anniversaryDay) months += 1;
 
   return `${months} ${months === 1 ? "month" : "months"}`;
 };
