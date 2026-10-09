@@ -41,11 +41,12 @@ const getItPeriodDuration = (startDate?: string, endDate?: string) => {
   anniversary.setUTCMonth(anniversary.getUTCMonth() + months);
   if (anniversary > end) months -= 1;
 
-  // If there are any remaining days beyond the last whole month, ceil up
+  // If there are any remaining days beyond the last whole month, add 2
+  // (e.g. 16 months + 16 days → 18 months)
   const completedAnniversary = new Date(start);
   completedAnniversary.setUTCMonth(completedAnniversary.getUTCMonth() + months);
   const remainingMs = end.getTime() - completedAnniversary.getTime();
-  if (remainingMs > 0) months += 1;
+  if (remainingMs > 0) months += 2;
 
   return `${months} ${months === 1 ? "month" : "months"}`;
 };
